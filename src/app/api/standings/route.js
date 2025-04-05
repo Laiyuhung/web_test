@@ -1,3 +1,4 @@
+// src/app/api/standings/route.js
 import supabase from '@/lib/supabase'
 
 export async function POST(req) {
@@ -18,12 +19,18 @@ export async function POST(req) {
 
   const { data, error } = await supabase
     .from('standings')
-    .select(`id, ${cols.join(', ')}`)
+    .select(`id, ${cols.join(', ')}, managers(name)`)
     .order(`${type}_points`, { ascending: false })
 
   if (error) {
     return Response.json({ error: error.message }, { status: 500 })
   }
 
-  return Response.json(data)
+  // 合併 manager 名稱
+  const merged = data.map(row => ({
+    ...row,
+    name: row.managers?.name || '未知',
+  }))
+
+  return Response.json(merged)
 }

@@ -4,12 +4,7 @@ import { useRouter } from 'next/navigation'
 import supabase from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 export default function HomePage() {
   const router = useRouter()
@@ -19,48 +14,32 @@ export default function HomePage() {
   const [selectedWeek, setSelectedWeek] = useState('')
   const [currentWeek, setCurrentWeek] = useState('')
   const [standings, setStandings] = useState([])
+  const [tab, setTab] = useState('firstHalf')
 
   // 取得登入者名稱
   useEffect(() => {
-    const cookie = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('user_id='))
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('user_id='))
     if (!cookie) return router.push('/login')
     const user_id = cookie.split('=')[1]
-    supabase
-      .from('managers')
-      .select('name')
-      .eq('id', user_id)
-      .single()
-      .then(({ data }) => {
-        if (data) setUserName(data.name)
-      })
+    supabase.from('managers').select('name').eq('id', user_id).single().then(({ data }) => {
+      if (data) setUserName(data.name)
+    })
   }, [])
 
-  // 取得賽程與推算當週
+  // 取得 schedule 與目前週次
   useEffect(() => {
     async function fetchSchedules() {
-      const { data } = await supabase
-        .from('schedule')
-        .select('*')
-        .order('start_date', { ascending: true })
-
+      const { data } = await supabase.from('schedule').select('*').order('start_date', { ascending: true })
       if (!data) return
+
       setSchedules(data)
-
-      const sorted = [...data].sort((a, b) => {
-        const aWeek = parseInt(a.week.replace('W', ''))
-        const bWeek = parseInt(b.week.replace('W', ''))
-        return aWeek - bWeek
-      })
-
+      const sorted = [...data].sort((a, b) => parseInt(a.week.replace('W', '')) - parseInt(b.week.replace('W', '')))
       const today = new Date()
       const current = sorted.find(row => {
         const start = new Date(row.start_date)
         const end = new Date(row.end_date)
         return today >= start && today <= end
       })
-
       if (current) {
         setCurrentWeek(current.week)
         setSelectedWeek(current.week)
@@ -72,14 +51,19 @@ export default function HomePage() {
     fetchSchedules()
   }, [])
 
-  // 取得戰績資料
+  // 查詢 standings 資料 (API POST)
   useEffect(() => {
     async function fetchStandings() {
-      const { data } = await supabase.from('standings').select('*')
-      if (data) setStandings(data)
+      const res = await fetch('/api/standings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: tab }),
+      })
+      const result = await res.json()
+      setStandings(result)
     }
     fetchStandings()
-  }, [])
+  }, [tab])
 
   const handleFilter = week => {
     setSelectedWeek(week)
@@ -87,50 +71,50 @@ export default function HomePage() {
     else setFiltered(schedules.filter(s => s.week === week))
   }
 
-  const renderStandingTable = (type) => {
-    const labelMap = {
-      firstHalf: '上半季',
-      secondHalf: '下半季',
-      season: '整季'
-    }
+  const renderStandings = (type) => {
+    const keys = [
+      `${type}_1st`,
+      `${type}_2nd`,
+      `${type}_3rd`,
+      `${type}_4th`,
+      `${type}_points`,
+    ]
+
     return (
-      <Card className="mt-6">
-        <CardContent className="p-4">
-          <h2 className="text-lg font-bold mb-2">{labelMap[type]} 戰績</h2>
-          <table className="w-full text-sm text-center border">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-2">名次</th>
-                <th className="p-2">分數</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[1, 2, 3, 4].map(rank => (
-                <tr key={rank} className="border-t">
-                  <td className="p-2">{standings[0]?.[`${type}_${rank}st`] || standings[0]?.[`${type}_${rank}nd`] || standings[0]?.[`${type}_${rank}rd`] || standings[0]?.[`${type}_${rank}th`]}</td>
-                  <td className="p-2">{standings[0]?.[`${type}_points`] || 0}</td>
-                </tr>
+      <table className="w-full text-sm text-center mt-4">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="p-2">名次</th>
+            <th className="p-2">名稱</th>
+            <th className="p-2">1st</th>
+            <th className="p-2">2nd</th>
+            <th className="p-2">3rd</th>
+            <th className="p-2">4th</th>
+            <th className="p-2">分數</th>
+          </tr>
+        </thead>
+        <tbody>
+          {standings.map((s, i) => (
+            <tr key={s.id} className="border-t">
+              <td className="p-2">{i + 1}</td>
+              <td className="p-2">{s.name}</td>
+              {keys.map(k => (
+                <td key={k} className="p-2">{s[k]}</td>
               ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     )
   }
 
   return (
     <div className="p-6">
       <div className="mb-4 flex gap-2 flex-wrap">
-        <Button
-          onClick={() => handleFilter(currentWeek)}
-          variant={selectedWeek === currentWeek ? 'default' : 'outline'}
-        >
+        <Button onClick={() => handleFilter(currentWeek)} variant={selectedWeek === currentWeek ? 'default' : 'outline'}>
           This week ⭐
         </Button>
-        <Button
-          onClick={() => handleFilter('')}
-          variant={selectedWeek === '' ? 'default' : 'outline'}
-        >
+        <Button onClick={() => handleFilter('')} variant={selectedWeek === '' ? 'default' : 'outline'}>
           All schedule
         </Button>
       </div>
@@ -172,16 +156,18 @@ export default function HomePage() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="firstHalf" className="mt-8">
-        <TabsList className="mb-4">
-          <TabsTrigger value="firstHalf">上半季</TabsTrigger>
-          <TabsTrigger value="secondHalf">下半季</TabsTrigger>
-          <TabsTrigger value="season">整季</TabsTrigger>
-        </TabsList>
-        <TabsContent value="firstHalf">{renderStandingTable('firstHalf')}</TabsContent>
-        <TabsContent value="secondHalf">{renderStandingTable('secondHalf')}</TabsContent>
-        <TabsContent value="season">{renderStandingTable('season')}</TabsContent>
-      </Tabs>
+      <Card className="mt-6">
+        <CardContent>
+          <Tabs defaultValue="firstHalf" value={tab} onValueChange={setTab}>
+            <TabsList>
+              <TabsTrigger value="firstHalf">上半季</TabsTrigger>
+              <TabsTrigger value="secondHalf">下半季</TabsTrigger>
+              <TabsTrigger value="season">全年</TabsTrigger>
+            </TabsList>
+            <TabsContent value={tab}>{renderStandings(tab)}</TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   )
 }

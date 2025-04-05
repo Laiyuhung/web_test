@@ -2,7 +2,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import supabase from '@/lib/supabase'
 
 export default function Navbar() {
   const router = useRouter()
@@ -13,20 +12,15 @@ export default function Navbar() {
       .split('; ')
       .find(row => row.startsWith('user_id='))
     if (!cookie) return
-
     const user_id = cookie.split('=')[1]
-
-    supabase
-      .from('managers')
-      .select('name')
-      .eq('id', user_id)
-      .single()
-      .then(({ data, error }) => {
-        if (data?.name) {
-          setUserName(data.name)
-        } else {
-          console.warn('無法取得名稱', error)
-        }
+    fetch('/api/username', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.name) setUserName(data.name)
       })
   }, [])
 
@@ -36,14 +30,22 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-blue-600 p-4 text-white flex justify-between items-center">
-      <div className="text-xl font-bold">Fantasy Baseball</div>
-      <div className="flex items-center gap-4">
-        <span>👤 歡迎 {userName || '...'}</span>
-        <Link href="/home" className="hover:underline">
-          Home
+    <nav className="bg-[#003366] text-white px-6 py-3 flex items-center justify-between shadow-md">
+      <div className="flex items-center space-x-8">
+        <div className="text-2xl font-bold tracking-wide">2025 CPBL FANTASY</div>
+        <Link href="/home" className="font-semibold hover:text-gray-300">
+          HOME
         </Link>
-        <button onClick={handleLogout} className="hover:underline text-red-200">
+        {/* 可加更多選單 */}
+      </div>
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-1 text-sm">
+          <span className="text-lg">👤</span> 歡迎 {userName}
+        </div>
+        <button
+          onClick={handleLogout}
+          className="text-sm text-white hover:text-red-300"
+        >
           登出
         </button>
       </div>

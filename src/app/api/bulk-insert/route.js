@@ -20,7 +20,7 @@ export async function POST(req) {
     const parseLine = (line) => {
 
       line = line.replace(/（0）/g, '0').replace(/（/g, '(').replace(/）/g, ')')
-      
+
       const parts = line.split(/\s+/)
       let name, rawPos, stats
 
@@ -39,7 +39,6 @@ export async function POST(req) {
       const position = extractPositions(rawPos) // 陣列格式
 
       const toInt = (val) => parseInt(val) || 0
-      const avg = parseFloat(stats[18]) || 0
 
       return {
         name,
@@ -52,16 +51,16 @@ export async function POST(req) {
         triples: toInt(stats[5]),
         home_runs: toInt(stats[6]),
         double_plays: toInt(stats[7]),
-        walks: toInt(stats[9]),
-        ibb: toInt(stats[10]),
-        hbp: toInt(stats[11]),
-        strikeouts: toInt(stats[12]),
-        sacrifice_bunts: toInt(stats[13]),
-        sacrifice_flies: toInt(stats[14]),
-        stolen_bases: toInt(stats[15]),
-        caught_stealing: toInt(stats[16]),
-        errors: toInt(stats[17]),
-        avg,
+        walks: toInt(stats[8]),
+        ibb: toInt(stats[9]),
+        hbp: toInt(stats[10]),
+        strikeouts: toInt(stats[11]),
+        sacrifice_bunts: toInt(stats[12]),
+        sacrifice_flies: toInt(stats[13]),
+        stolen_bases: toInt(stats[14]),
+        caught_stealing: toInt(stats[15]),
+        errors: toInt(stats[16]),
+        avg: toFloat(stats[17]),
         game_date: date,
         is_major: isMajor
       }

@@ -7,21 +7,22 @@ import Navbar from '@/components/Navbar'
 export default function GuardLayout({ children }) {
   const pathname = usePathname()
   const router = useRouter()
-
-  const [isLoggedIn, setIsLoggedIn] = useState(null)
+  const [isReady, setIsReady] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
-    const hasCookie = document.cookie.includes('user_id=')
-    setIsLoggedIn(hasCookie)
+    const loggedIn = document.cookie.includes('user_id=')
+    setIsLoggedIn(loggedIn)
+    setIsReady(true)
 
-    if (!hasCookie && pathname !== '/login') {
+    if (!loggedIn && pathname !== '/login') {
       router.push('/login')
-    } else if (hasCookie && pathname === '/login') {
+    } else if (loggedIn && pathname === '/login') {
       router.push('/home')
     }
   }, [pathname, router])
 
-  if (isLoggedIn === null) return null // 等待判斷 cookie 完成
+  if (!isReady) return null
 
   const showNavbar = isLoggedIn && pathname !== '/login'
 

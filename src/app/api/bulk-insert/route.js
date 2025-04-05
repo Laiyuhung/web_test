@@ -12,9 +12,9 @@ export async function POST(req) {
     const lines = text.split('\n').map(line => line.trim()).filter(line => line)
 
     const extractPositions = (rawPos) => {
-      // 抓出所有大寫英文字母（包含括號內的也一起抓）
-      const matches = rawPos.match(/[A-Z]+/g)
-      return matches || []
+        rawPos = rawPos.replace(/（/g, '(').replace(/）/g, ')')
+        const matches = rawPos.match(/[A-Z]+\d*|\d+[A-Z]+/g)
+        return matches || []
     }
 
     const parseLine = (line) => {

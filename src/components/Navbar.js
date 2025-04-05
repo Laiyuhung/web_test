@@ -1,12 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState } from 'react'
 import supabase from '@/lib/supabase'
 
 export default function Navbar() {
-  const [userName, setUserName] = useState('')
   const router = useRouter()
+  const [userName, setUserName] = useState('')
 
   useEffect(() => {
     const cookie = document.cookie
@@ -20,7 +20,7 @@ export default function Navbar() {
       .eq('id', user_id)
       .single()
       .then(({ data }) => {
-        if (data) setUserName(data.name)
+        if (data?.name) setUserName(data.name)
       })
   }, [])
 
@@ -30,11 +30,18 @@ export default function Navbar() {
   }
 
   return (
-    <div className="flex justify-between items-center px-6 py-4 bg-gray-100 mb-4">
-      <div className="text-lg font-bold">👤 歡迎 {userName}</div>
-      <Button variant="destructive" onClick={handleLogout}>
-        登出
-      </Button>
-    </div>
+    <nav className="bg-blue-600 p-4 text-white flex justify-between items-center">
+      <div className="text-xl font-bold">Fantasy Baseball</div>
+
+      <div className="flex items-center gap-4">
+        <span>👤 歡迎 {userName || '...'}</span>
+        <Link href="/home" className="hover:underline">
+          Home
+        </Link>
+        <button onClick={handleLogout} className="hover:underline text-red-200">
+          登出
+        </button>
+      </div>
+    </nav>
   )
 }

@@ -89,10 +89,10 @@ export default function HomePage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
+      {/* <div className="flex justify-between items-center mb-4">
         <div className="text-xl font-bold">👤 歡迎 {userName}</div>
         <Button variant="destructive" onClick={handleLogout}>登出</Button>
-      </div>
+      </div> */}
 
       <div className="mb-4 flex gap-2 flex-wrap">
         <Button

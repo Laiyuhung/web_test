@@ -18,6 +18,9 @@ export async function POST(req) {
     }
 
     const parseLine = (line) => {
+
+      line = line.replace(/（0）/g, '0').replace(/（/g, '(').replace(/）/g, ')')
+      
       const parts = line.split(/\s+/)
       let name, rawPos, stats
 

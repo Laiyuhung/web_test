@@ -1,33 +1,61 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 export default function Home() {
-  const [data, setData] = useState([])
+  const [name, setName] = useState('')
+  const [age, setAge] = useState('')
+  const [tableData, setTableData] = useState([])
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    fetch('/api/data')
-      .then(res => res.json())
-      .then(result => {
-        if (result.error) {
-          setError(result.error)
-        } else {
-          setData(result.data)
-        }
+  const handleSubmit = async () => {
+    try {
+      const res = await fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, age }),
       })
-      .catch(err => setError(err.message))
-  }, [])
+      const result = await res.json()
+
+      if (result.error) {
+        setError(result.error)
+      } else {
+        setTableData(result.data)
+        setError('')
+        setName('')
+        setAge('')
+      }
+    } catch (err) {
+      setError(err.message)
+    }
+  }
 
   return (
     <div style={{ padding: 40 }}>
-      <h1>Supabase 測試</h1>
-      {error && <div style={{ color: 'red' }}>⚠️ 錯誤：{error}</div>}
+      <h1>App Router 表格測試</h1>
+      <input placeholder="名字" value={name} onChange={e => setName(e.target.value)} />
+      <input
+        placeholder="年齡"
+        type="number"
+        value={age}
+        onChange={e => setAge(e.target.value)}
+        style={{ marginLeft: 10 }}
+      />
+      <button onClick={handleSubmit} style={{ marginLeft: 10 }}>送出</button>
+      {error && <div style={{ color: 'red', marginTop: 10 }}>⚠️ 錯誤：{error}</div>}
 
-      <ul>
-        {data.map((item, i) => (
-          <li key={i}>{item.name} - {item.age}</li>
-        ))}
-      </ul>
+      <table border="1" cellPadding="8" style={{ marginTop: 20 }}>
+        <thead>
+          <tr><th>名字</th><th>年齡</th></tr>
+        </thead>
+        <tbody>
+          {tableData.map((item, i) => (
+            <tr key={i}>
+              <td>{item.name}</td>
+              <td>{item.age}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

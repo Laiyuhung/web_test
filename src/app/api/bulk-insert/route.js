@@ -39,6 +39,7 @@ export async function POST(req) {
       const position = extractPositions(rawPos) // 陣列格式
 
       const toInt = (val) => parseInt(val) || 0
+      const toFloat = (val) => parseFloat(val) || 0
 
       return {
         name,

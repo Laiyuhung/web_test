@@ -40,7 +40,7 @@ export default function PlayerPage() {
               {players.map((p, i) => (
                 <tr key={i}>
                   <td className="p-2 border">
-                    {p.Name} <span className="text-xs text-gray-500">({p.Team} / {p['土/洋']})</span>
+                    {p.Name} <span className="text-xs text-gray-500">({p.Team} / {p.Identity})</span>
                   </td>
                   <td className="p-2 border">
                     {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` : p.status}

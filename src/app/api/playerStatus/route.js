@@ -4,7 +4,7 @@ export async function GET() {
   try {
     const { data: players, error: err1 } = await supabase
       .from('playerslist')
-      .select('Player_no, Name, Team, 土/洋')
+      .select('Player_no, Name, Team, identity')
     if (err1 || !Array.isArray(players)) throw new Error('playerslist error')
 
     const { data: transactions, error: err2 } = await supabase
@@ -47,7 +47,7 @@ export async function GET() {
         Player_no: player.Player_no,
         Name: player.Name,
         Team: player.Team,
-        '土/洋': player['土/洋'],
+        Identity: player.identity,
         status,
         owner,
       }

@@ -6,18 +6,21 @@ export default function BulkInsertPage() {
   const [text, setText] = useState('')
   const [date, setDate] = useState('')
   const [isMajor, setIsMajor] = useState(true)
+  const [isPitcher, setIsPitcher] = useState(false) // ⚾️ true = 投手
   const [message, setMessage] = useState('')
 
   const handleSubmit = async () => {
     setMessage('匯入中...')
-    const res = await fetch('/api/bulk-insert', {
+    const endpoint = isPitcher ? '/api/pitching-insert' : '/api/bulk-insert'
+
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, date, isMajor }),
     })
     const result = await res.json()
     if (res.ok) {
-      setMessage(`✅ 成功匯入 ${result.count} 筆資料`)
+      setMessage(`✅ 匯入成功`)
       setText('')
     } else {
       setMessage(`❌ 錯誤：${result.error}`)
@@ -26,9 +29,9 @@ export default function BulkInsertPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">打者成績批次匯入</h1>
+      <h1 className="text-xl font-bold mb-4">成績批次匯入</h1>
 
-      <div className="mb-4 flex gap-4 items-center">
+      <div className="mb-4 flex gap-4 items-center flex-wrap">
         <div>
           <label className="block text-sm mb-1">比賽日期</label>
           <input
@@ -47,6 +50,17 @@ export default function BulkInsertPage() {
           >
             <option value="1">是</option>
             <option value="0">否</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm mb-1">匯入類型</label>
+          <select
+            className="border px-3 py-1 rounded"
+            value={isPitcher ? 'pitcher' : 'batter'}
+            onChange={e => setIsPitcher(e.target.value === 'pitcher')}
+          >
+            <option value="batter">打者</option>
+            <option value="pitcher">投手</option>
           </select>
         </div>
       </div>

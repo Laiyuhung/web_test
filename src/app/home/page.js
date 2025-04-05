@@ -36,7 +36,7 @@ export default function HomePage() {
       const { data } = await supabase
         .from('schedule')
         .select('*')
-        .order('week')
+        .order('start_date', { ascending: true })
 
       if (!data) return
       setSchedules(data)

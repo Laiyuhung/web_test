@@ -3,8 +3,8 @@ import supabase from '@/lib/supabase'
 
 export async function GET() {
   try {
-    const { data: players, error: err1 } = await supabase.from('playersList').select('*')
-    if (err1 || !Array.isArray(players)) throw new Error('playersList error')
+    const { data: players, error: err1 } = await supabase.from('playerslist').select('*')
+    if (err1 || !Array.isArray(players)) throw new Error('playerslist error')
 
     const { data: transactions, error: err2 } = await supabase.from('transactions').select('*')
     if (err2 || !Array.isArray(transactions)) throw new Error('transactions error')

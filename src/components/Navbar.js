@@ -14,8 +14,6 @@ export default function Navbar() {
     if (!cookie) return
     const user_id = cookie.split('=')[1]
 
-    console.log('👤 user_id from cookie:', user_id)
-
     fetch('/api/username', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -23,7 +21,6 @@ export default function Navbar() {
     })
       .then(res => res.json())
       .then(data => {
-        console.log('✅ username API 回傳:', data)
         if (data.name) setUserName(data.name)
       })
       .catch(err => console.error('❌ username fetch 錯誤:', err))
@@ -40,6 +37,9 @@ export default function Navbar() {
         <div className="text-2xl font-bold tracking-wide">2025 CPBL FANTASY</div>
         <Link href="/home" className="font-semibold hover:text-gray-300">
           HOME
+        </Link>
+        <Link href="/player" className="font-semibold hover:text-gray-300">
+          PLAYERS
         </Link>
       </div>
       <div className="flex items-center space-x-4">

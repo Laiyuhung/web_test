@@ -6,18 +6,20 @@ import { useEffect, useState } from 'react'
 export default function Navbar() {
   const router = useRouter()
   const [userName, setUserName] = useState('')
+  const [userId, setUserId] = useState('')
 
   useEffect(() => {
     const cookie = document.cookie
       .split('; ')
       .find(row => row.startsWith('user_id='))
     if (!cookie) return
-    const user_id = cookie.split('=')[1]
+    const id = cookie.split('=')[1]
+    setUserId(id)
 
     fetch('/api/username', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id }),
+      body: JSON.stringify({ user_id: id }),
     })
       .then(res => res.json())
       .then(data => {
@@ -41,6 +43,11 @@ export default function Navbar() {
         <Link href="/player" className="font-semibold hover:text-gray-300">
           PLAYERS
         </Link>
+        {userId === '2' && (
+          <Link href="/entry" className="font-semibold hover:text-yellow-300">
+            資料登錄系統
+          </Link>
+        )}
       </div>
       <div className="flex items-center space-x-4">
         {userName && (

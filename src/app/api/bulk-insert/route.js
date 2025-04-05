@@ -11,33 +11,57 @@ export async function POST(req) {
 
     const lines = text.split('\n').map(line => line.trim()).filter(line => line)
 
+    const extractPositions = (rawPos) => {
+      // 抓出所有大寫英文字母（包含括號內的也一起抓）
+      const matches = rawPos.match(/[A-Z]+/g)
+      return matches || []
+    }
+
     const parseLine = (line) => {
       const parts = line.split(/\s+/)
+      let name, rawPos, stats
+
+      if (!isNaN(parts[0])) {
+        // 有棒次
+        name = parts[1]
+        rawPos = parts[2]
+        stats = parts.slice(3)
+      } else {
+        // 無棒次（替補）
+        name = parts[0]
+        rawPos = parts[1]
+        stats = parts.slice(2)
+      }
+
+      const position = extractPositions(rawPos) // 陣列格式
+
+      const toInt = (val) => parseInt(val) || 0
+      const avg = parseFloat(stats[18]) || 0
 
       return {
-        name: parts[1],
-        position: parts[2],
-        at_bats: parseInt(parts[3]),
-        runs: parseInt(parts[4]),
-        hits: parseInt(parts[5]),
-        rbis: parseInt(parts[6]),
-        doubles: parseInt(parts[7]),
-        triples: parseInt(parts[8]),
-        home_runs: parseInt(parts[9]),
-        double_plays: parseInt(parts[10]),
-        walks: parseInt(parts[12]),
-        ibb: parseInt(parts[13]),
-        hbp: parseInt(parts[14]),
-        strikeouts: parseInt(parts[15]),
-        sacrifice_bunts: parseInt(parts[16]),
-        sacrifice_flies: parseInt(parts[17]),
-        stolen_bases: parseInt(parts[18]),
-        caught_stealing: parseInt(parts[19]),
-        errors: 0, // 若沒有資料則填 0 或 null
-        avg: parseFloat(parts[20]),
+        name,
+        position,
+        at_bats: toInt(stats[0]),
+        runs: toInt(stats[1]),
+        hits: toInt(stats[2]),
+        rbis: toInt(stats[3]),
+        doubles: toInt(stats[4]),
+        triples: toInt(stats[5]),
+        home_runs: toInt(stats[6]),
+        double_plays: toInt(stats[7]),
+        walks: toInt(stats[9]),
+        ibb: toInt(stats[10]),
+        hbp: toInt(stats[11]),
+        strikeouts: toInt(stats[12]),
+        sacrifice_bunts: toInt(stats[13]),
+        sacrifice_flies: toInt(stats[14]),
+        stolen_bases: toInt(stats[15]),
+        caught_stealing: toInt(stats[16]),
+        errors: toInt(stats[17]),
+        avg,
         game_date: date,
         is_major: isMajor,
-        team: null // 若你有傳入球隊名稱可寫進來
+        team: null
       }
     }
 

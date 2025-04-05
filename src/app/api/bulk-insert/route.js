@@ -18,6 +18,9 @@ export async function POST(req) {
     }
 
     const parseLine = (line) => {
+      line = line.replace(/（0）/g, '0')
+      line = line.replace(/（/g, '(').replace(/）/g, ')')
+
       const parts = line.split(/\s+/)
       let name, rawPos, stats
 
@@ -36,7 +39,12 @@ export async function POST(req) {
       const position = extractPositions(rawPos) // 陣列格式
 
       const toInt = (val) => parseInt(val) || 0
-      const avg = parseFloat(stats[18]) || 0
+      const toFloat = (val) => parseFloat(val) || 0
+
+      if (stats.length !== 19) {
+        console.warn('⚠️ 欄位數錯誤：', name, stats.length, stats)
+        return null
+      }
 
       return {
         name,
@@ -58,13 +66,13 @@ export async function POST(req) {
         stolen_bases: toInt(stats[15]),
         caught_stealing: toInt(stats[16]),
         errors: toInt(stats[17]),
-        avg,
+        avg: toFloat(stats[18]),
         game_date: date,
         is_major: isMajor
       }
     }
 
-    const records = lines.map(parseLine)
+    const records = lines.map(parseLine).filter(Boolean)
 
     const { error } = await supabase.from('batting_stats').insert(records)
 
@@ -73,7 +81,7 @@ export async function POST(req) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, count: records.length })
   } catch (err) {
     console.error('❌ API 例外錯誤:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })

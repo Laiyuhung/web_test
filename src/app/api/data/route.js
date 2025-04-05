@@ -2,6 +2,8 @@ import supabase from '@/lib/supabase'
 
 export async function POST(request) {
   try {
+    const start = Date.now() // 🔴 開始計時
+
     const { name, age } = await request.json()
     if (!name || !age) {
       return Response.json({ error: '缺少 name 或 age' }, { status: 400 })
@@ -22,24 +24,13 @@ export async function POST(request) {
       return Response.json({ error: selectError.message }, { status: 500 })
     }
 
-    return Response.json({ data })
+    const elapsed = Date.now() - start // 🔴 結束計時
+    console.log(`🕒 Supabase 插入 + 查詢共耗時 ${elapsed}ms`)
+
+    return Response.json({ data, elapsed })
 
   } catch (err) {
     console.error('❌ 例外錯誤:', err)
-    return Response.json({ error: err.message }, { status: 500 })
-  }
-}
-
-export async function GET() {
-  try {
-    const { data, error } = await supabase.from('users').select('*')
-    if (error) {
-      console.error('❌ GET 錯誤:', error)
-      return Response.json({ error: error.message }, { status: 500 })
-    }
-
-    return Response.json({ data })
-  } catch (err) {
     return Response.json({ error: err.message }, { status: 500 })
   }
 }

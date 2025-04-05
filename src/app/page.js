@@ -6,6 +6,7 @@ export default function Home() {
   const [age, setAge] = useState('')
   const [tableData, setTableData] = useState([])
   const [error, setError] = useState('')
+  const [elapsed, setElapsed] = useState(0) // ⏱️ 顯示耗時
 
   const handleSubmit = async () => {
     try {
@@ -23,6 +24,7 @@ export default function Home() {
         setError('')
         setName('')
         setAge('')
+        setElapsed(result.elapsed || 0) // ⏱️ 記錄耗時
       }
     } catch (err) {
       setError(err.message)
@@ -41,7 +43,9 @@ export default function Home() {
         style={{ marginLeft: 10 }}
       />
       <button onClick={handleSubmit} style={{ marginLeft: 10 }}>送出</button>
+      
       {error && <div style={{ color: 'red', marginTop: 10 }}>⚠️ 錯誤：{error}</div>}
+      {elapsed > 0 && <div style={{ marginTop: 10 }}>⚡ 插入 + 查詢耗時：{elapsed}ms</div>}
 
       <table border="1" cellPadding="8" style={{ marginTop: 20 }}>
         <thead>

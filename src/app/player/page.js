@@ -44,7 +44,7 @@ export default function PlayerPage() {
                   <td className="p-2 border">{p.Player_no}</td>
                   <td className="p-2 border">{p.Name}</td>
                   <td className="p-2 border">{p.status}</td>
-                  <td className="p-2 border">{p.owner_name || '-'}</td>
+                  <td className="p-2 border">{p.owner}</td>
                 </tr>
               ))}
             </tbody>

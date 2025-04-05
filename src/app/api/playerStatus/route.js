@@ -1,54 +1,50 @@
-// /app/api/playerStatus/route.js
+// ✅ /app/api/playerStatus/route.js
 import supabase from '@/lib/supabase'
 
 export async function GET() {
-  const { data: players, error: err1 } = await supabase
-    .from('playersList')
-    .select('Player_no, Name')
+  try {
+    const { data: players, error: err1 } = await supabase.from('playersList').select('*')
+    if (err1 || !Array.isArray(players)) throw new Error('playersList error')
 
-  if (err1) return Response.json({ error: err1.message }, { status: 500 })
+    const { data: transactions, error: err2 } = await supabase.from('transactions').select('*')
+    if (err2 || !Array.isArray(transactions)) throw new Error('transactions error')
 
-  const { data: txns, error: err2 } = await supabase
-    .from('transactions')
-    .select('player_no, manager_id, type, transaction_time')
+    const result = players.map(player => {
+      const playerTx = transactions.filter(t => t.Player_no === player.Player_no)
+      const addCount = playerTx.filter(t => t.type.includes('Add')).length
+      const dropCount = playerTx.filter(t => t.type.includes('Drop')).length
 
-  if (err2) return Response.json({ error: err2.message }, { status: 500 })
+      let status = 'Free Agent'
+      let manager_id = null
 
-  const now = new Date()
-
-  const result = players.map(player => {
-    const records = txns
-      .filter(t => t.player_no === player.Player_no)
-      .sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))
-
-    const addCount = records.filter(t => t.type.includes('Add')).length
-    const dropCount = records.filter(t => t.type.includes('Drop')).length
-    const net = addCount - dropCount
-
-    let status = 'Free Agent'
-    let owner = ''
-
-    if (net === 1) {
-      // 找最近一次 Add 的人
-      const recentAdd = records.find(t => t.type.includes('Add'))
-      status = 'On Team'
-      owner = recentAdd?.manager_id ?? ''
-    } else {
-      const lastDrop = records.find(t => t.type.includes('Drop'))
-      if (lastDrop) {
-        const dropTime = new Date(lastDrop.transaction_time)
-        const diff = (now - dropTime) / (1000 * 60 * 60 * 24) // 天數
-        status = diff >= 2 ? 'Free Agent' : 'Waiver'
+      if (addCount - dropCount === 1) {
+        const lastAdd = [...playerTx].reverse().find(t => t.type.includes('Add'))
+        if (lastAdd) {
+          status = 'On Team'
+          manager_id = lastAdd.manager_id
+        }
+      } else if (addCount - dropCount === 0) {
+        const lastDrop = [...playerTx].reverse().find(t => t.type.includes('Drop'))
+        if (lastDrop) {
+          const dropTime = new Date(lastDrop.transaction_time)
+          const now = new Date()
+          const diffMs = now.getTime() - dropTime.getTime()
+          const fullTwoDays = 2 * 24 * 60 * 60 * 1000
+          status = diffMs >= fullTwoDays ? 'Free Agent' : 'Waiver'
+        }
       }
-    }
 
-    return {
-      Player_no: player.Player_no,
-      Name: player.Name,
-      status,
-      owner
-    }
-  })
+      return {
+        Player_no: player.Player_no,
+        Name: player.Name,
+        status,
+        manager_id
+      }
+    })
 
-  return Response.json(result)
+    return Response.json(result)
+  } catch (err) {
+    console.error('❌ API playerStatus error:', err)
+    return Response.json({ error: err.message }, { status: 500 })
+  }
 }

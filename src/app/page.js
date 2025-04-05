@@ -14,11 +14,12 @@ export default function LoginPage() {
     setElapsed(null)
 
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api/data', {  // ← 這裡改成 /api/data
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ account, password }),
       })
+
       const result = await res.json()
 
       if (!res.ok || result.error) {

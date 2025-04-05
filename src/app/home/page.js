@@ -96,17 +96,18 @@ export default function HomePage() {
 
       <div className="mb-4 flex gap-2 flex-wrap">
         <Button
-          onClick={() => handleFilter('')}
-          variant={selectedWeek === '' ? 'default' : 'outline'}
-        >
-          全部週次
-        </Button>
-        <Button
           onClick={() => handleFilter(currentWeek)}
           variant={selectedWeek === currentWeek ? 'default' : 'outline'}
         >
           This week ⭐
         </Button>
+        <Button
+          onClick={() => handleFilter('')}
+          variant={selectedWeek === '' ? 'default' : 'outline'}
+        >
+          All schedule
+        </Button>
+        
       </div>
 
       <Card>
@@ -114,16 +115,16 @@ export default function HomePage() {
           <table className="w-full text-sm text-center">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-2">週次</th>
-                <th className="p-2">期間</th>
-                <th className="p-2">隊伍1</th>
-                <th className="p-2">分數</th>
-                <th className="p-2">隊伍2</th>
-                <th className="p-2">分數</th>
-                <th className="p-2">隊伍3</th>
-                <th className="p-2">分數</th>
-                <th className="p-2">隊伍4</th>
-                <th className="p-2">分數</th>
+                <th className="p-2">Week</th>
+                <th className="p-2">Date</th>
+                <th className="p-2">Team</th>
+                <th className="p-2">Points</th>
+                <th className="p-2">Team</th>
+                <th className="p-2">Points</th>
+                <th className="p-2">Team</th>
+                <th className="p-2">Points</th>
+                <th className="p-2">Team</th>
+                <th className="p-2">Points</th>
               </tr>
             </thead>
             <tbody>

@@ -60,8 +60,7 @@ export async function POST(req) {
         errors: toInt(stats[17]),
         avg,
         game_date: date,
-        is_major: isMajor,
-        team: null
+        is_major: isMajor
       }
     }
 

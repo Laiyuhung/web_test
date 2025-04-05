@@ -60,8 +60,7 @@ export async function POST(req) {
         era: toFloat(stats[15]),
         whip: toFloat(stats[16]),
         game_date: date,
-        is_major: isMajor,
-        team: null
+        is_major: isMajor
       }
     }
 

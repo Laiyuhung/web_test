@@ -34,17 +34,17 @@ export default function PlayerPage() {
               <tr>
                 <th className="p-2 border">球員姓名</th>
                 <th className="p-2 border">狀態</th>
-                <th className="p-2 border">所屬玩家</th>
               </tr>
             </thead>
             <tbody>
               {players.map((p, i) => (
                 <tr key={i}>
-                  <td className="p-2 border">{p.Name}</td>
+                  <td className="p-2 border">
+                    {p.Name} <span className="text-xs text-gray-500">({p.Team} / {p['土/洋']})</span>
+                  </td>
                   <td className="p-2 border">
                     {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` : p.status}
                   </td>
-                  <td className="p-2 border">{p.owner || '-'}</td>
                 </tr>
               ))}
             </tbody>

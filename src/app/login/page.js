@@ -1,16 +1,23 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [account, setAccount] = useState('')
   const [password, setPassword] = useState('')
-  const [userId, setUserId] = useState(null)
-  const [elapsed, setElapsed] = useState(null)
   const [error, setError] = useState('')
+  const [elapsed, setElapsed] = useState(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    // 自動檢查 cookie，有登入就導回首頁
+    if (document.cookie.includes('user_id=')) {
+      router.push('/home')
+    }
+  }, [])
 
   const handleLogin = async () => {
     setError('')
-    setUserId(null)
     setElapsed(null)
 
     const start = Date.now()
@@ -26,8 +33,9 @@ export default function LoginPage() {
       if (!res.ok || result.error) {
         setError(result.error || '登入失敗')
       } else {
-        setUserId(result.id)
+        document.cookie = `user_id=${result.id}; path=/`
         setElapsed(duration)
+        router.push('/home')
       }
     } catch (err) {
       setError(err.message)
@@ -59,12 +67,8 @@ export default function LoginPage() {
         </button>
 
         {error && <div className="text-red-600 mt-4">⚠️ {error}</div>}
-        {userId && (
-          <div className="text-green-600 mt-4">
-            ✅ 登入成功，使用者 ID：{userId}
-            <br />
-            🕓 花費時間：{elapsed}ms
-          </div>
+        {elapsed !== null && (
+          <div className="text-green-600 mt-4">🕓 花費時間：{elapsed}ms</div>
         )}
       </div>
     </div>

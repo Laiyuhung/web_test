@@ -44,7 +44,7 @@ export default function Navbar() {
           PLAYERS
         </Link>
         {userId === '2' && (
-          <Link href="/entry" className="font-semibold hover:text-yellow-300">
+          <Link href="/bulk-insert" className="font-semibold hover:text-yellow-300">
             資料登錄系統
           </Link>
         )}

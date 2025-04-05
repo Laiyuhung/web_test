@@ -11,7 +11,7 @@ export async function POST(request) {
     }
 
     const { data, error } = await supabase
-      .from('users')
+      .from('managers')
       .select('id')
       .eq('account', account)
       .eq('password', password)

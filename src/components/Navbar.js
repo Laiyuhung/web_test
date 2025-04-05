@@ -13,14 +13,20 @@ export default function Navbar() {
       .split('; ')
       .find(row => row.startsWith('user_id='))
     if (!cookie) return
+
     const user_id = cookie.split('=')[1]
+
     supabase
       .from('managers')
       .select('name')
       .eq('id', user_id)
       .single()
-      .then(({ data }) => {
-        if (data?.name) setUserName(data.name)
+      .then(({ data, error }) => {
+        if (data?.name) {
+          setUserName(data.name)
+        } else {
+          console.warn('無法取得名稱', error)
+        }
       })
   }, [])
 
@@ -32,7 +38,6 @@ export default function Navbar() {
   return (
     <nav className="bg-blue-600 p-4 text-white flex justify-between items-center">
       <div className="text-xl font-bold">Fantasy Baseball</div>
-
       <div className="flex items-center gap-4">
         <span>👤 歡迎 {userName || '...'}</span>
         <Link href="/home" className="hover:underline">

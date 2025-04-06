@@ -26,38 +26,41 @@ export default function HomePage() {
     })
   }, [])
 
-  // 取得 schedule 與目前週次
+  // 取得 schedule + managers 對應隊名
   useEffect(() => {
     async function fetchSchedules() {
-      const { data } = await supabase.from('schedule').select('*').order('start_date', { ascending: true })
-      if (!data) return
+      const [{ data: scheduleData }, { data: managerData }] = await Promise.all([
+        supabase.from('schedule').select('*').order('start_date', { ascending: true }),
+        supabase.from('managers').select('id, team_name')
+      ])
+      if (!scheduleData || !managerData) return
 
-      setSchedules(data)
-      const sorted = [...data].sort((a, b) => parseInt(a.week.replace('W', '')) - parseInt(b.week.replace('W', '')))
+      const nameMap = Object.fromEntries(managerData.map(m => [String(m.id), m.team_name]))
+
+      const mapped = scheduleData.map(row => ({
+        ...row,
+        team1: nameMap[row.team1] || row.team1,
+        team2: nameMap[row.team2] || row.team2,
+        team3: nameMap[row.team3] || row.team3,
+        team4: nameMap[row.team4] || row.team4,
+      }))
+
+      setSchedules(mapped)
+
+      const sorted = [...mapped].sort((a, b) => parseInt(a.week.replace('W', '')) - parseInt(b.week.replace('W', '')))
       const today = new Date()
-      console.log('📅 今日日期:', today.toISOString().split('T')[0])
 
       const current = sorted.find(row => {
         const start = new Date(row.start_date)
-        const end = new Date(row.end_date + 'T23:59:59') // 補上時間以涵蓋整天
-
-        const inRange = today >= start && today <= end
-        console.log(`🔍 檢查週次 ${row.week}：`, {
-          start: start.toISOString().split('T')[0],
-          end: end.toISOString().split('T')[0],
-          inRange,
-        })
-
-        return inRange
+        const end = new Date(row.end_date + 'T23:59:59')
+        return today >= start && today <= end
       })
 
       if (current) {
-        console.log('✅ 命中目前週次：', current.week)
         setCurrentWeek(current.week)
         setSelectedWeek(current.week)
         setFiltered([current])
       } else {
-        console.log('❌ 今日未落在任何週次內，顯示全部')
         setFiltered(sorted)
       }
     }
@@ -65,7 +68,7 @@ export default function HomePage() {
     fetchSchedules()
   }, [])
 
-  // 查詢 standings 資料 (API POST)
+  // 查詢 standings（API 傳回 team_name）
   useEffect(() => {
     async function fetchStandings() {
       const res = await fetch('/api/standings', {
@@ -99,7 +102,7 @@ export default function HomePage() {
         <thead className="bg-gray-100">
           <tr>
             <th className="p-2">名次</th>
-            <th className="p-2">名稱</th>
+            <th className="p-2">隊名</th>
             <th className="p-2">1st</th>
             <th className="p-2">2nd</th>
             <th className="p-2">3rd</th>
@@ -111,7 +114,7 @@ export default function HomePage() {
           {standings.map((s, i) => (
             <tr key={s.id} className="border-t">
               <td className="p-2">{i + 1}</td>
-              <td className="p-2">{s.name}</td>
+              <td className="p-2">{s.team_name}</td>
               {keys.map(k => (
                 <td key={k} className="p-2">{s[k]}</td>
               ))}

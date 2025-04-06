@@ -5,7 +5,7 @@ import supabase from '@/lib/supabaseServer'
 const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
 
 export async function GET() {
-  // 1. 撈資料表
+  // 1. 撈出所有資料表
   const [{ data: registerlist }, { data: start_major }, { data: movements }, { data: players }] = await Promise.all([
     supabase.from('registerlist').select('Player_no'),
     supabase.from('start_major').select('Player_no'),
@@ -13,36 +13,34 @@ export async function GET() {
     supabase.from('playerslist').select('Player_no, Name')
   ])
 
-  // 2. 編號對名字
+  // 2. Player_no -> cleaned name 對照表
   const playerNoToName = {}
   players.forEach(p => {
     const cleaned = cleanName(p.Name)
     playerNoToName[p.Player_no] = cleaned
   })
 
-  // 3. 註冊名單：registerlist + 新註冊
+  // 3. 建立註冊名單（registerlist + 新註冊）
   const registeredNames = new Set()
   registerlist.forEach(row => {
     const name = playerNoToName[row.Player_no]
     if (name) registeredNames.add(name)
   })
-
   movements.forEach(row => {
     const name = cleanName(row.name)
     if (row.action === '新註冊') registeredNames.add(name)
   })
 
-  // 4. 註銷名單
+  // 4. 建立註銷名單
   const canceledNames = new Set()
   movements.forEach(row => {
     const name = cleanName(row.name)
     if (row.action === '註冊註銷' || row.action === '除役') canceledNames.add(name)
   })
 
-  // 5. 升降次數統計
+  // 5. 統計升降次數
   const statusCount = {}
   const allNames = new Set()
-
   movements.forEach(row => {
     const name = cleanName(row.name)
     allNames.add(name)
@@ -60,13 +58,13 @@ export async function GET() {
     statusCount[name].up++
   })
 
-  // 7. 收集所有出現在 registerlist 的人
-  registerlist.forEach(row => {
-    const name = playerNoToName[row.Player_no]
-    if (name) allNames.add(name)
+  // 6.5 把所有球員清名都加入 allNames（避免沒異動紀錄就不見）
+  players.forEach(p => {
+    const cleaned = cleanName(p.Name)
+    if (cleaned) allNames.add(cleaned)
   })
 
-  // 8. 整合最終狀態
+  // 7. 整合狀態
   const result = Array.from(allNames).map(name => {
     if (canceledNames.has(name)) {
       return { name, status: '註銷' }
@@ -77,11 +75,8 @@ export async function GET() {
     }
 
     const { up = 0, down = 0 } = statusCount[name] || {}
-    if (up > down) {
-      return { name, status: '一軍' }
-    } else {
-      return { name, status: '二軍' }
-    }
+    const status = up > down ? '一軍' : '二軍'
+    return { name, status }
   })
 
   return NextResponse.json(result)

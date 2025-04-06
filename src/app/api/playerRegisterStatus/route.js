@@ -4,20 +4,26 @@ import supabase from '@/lib/supabaseServer'
 const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
 
 export async function GET() {
-  // 1. 撈出所有需要用到的表
-  const [{ data: registerlist }, { data: start_major }, { data: movements }] = await Promise.all([
-    supabase.from('registerlist').select('Player_no, name'),
+  // 1. 撈出四張資料表
+  const [{ data: registerlist }, { data: start_major }, { data: movements }, { data: players }] = await Promise.all([
+    supabase.from('registerlist').select('Player_no'),
     supabase.from('start_major').select('Player_no'),
-    supabase.from('player_movements').select('name, action')
+    supabase.from('player_movements').select('name, action'),
+    supabase.from('players').select('player_no, name')
   ])
 
-  // 2. 整理出註冊名單（開季註冊 + 新註冊）
-  const registeredNames = new Set()
+  // 2. 建立 Player_no → cleaned name 對照表
   const playerNoToName = {}
+  players.forEach(p => {
+    const cleaned = cleanName(p.name)
+    playerNoToName[p.player_no] = cleaned
+  })
+
+  // 3. 建立註冊名單（開季註冊 + 新註冊）
+  const registeredNames = new Set()
   registerlist.forEach(row => {
-    const cleaned = cleanName(row.name)
-    playerNoToName[row.Player_no] = cleaned
-    registeredNames.add(cleaned)
+    const name = playerNoToName[row.Player_no]
+    if (name) registeredNames.add(name)
   })
 
   movements.forEach(row => {
@@ -27,7 +33,7 @@ export async function GET() {
     }
   })
 
-  // 3. 整理出註銷名單
+  // 4. 建立註銷名單
   const canceledNames = new Set()
   movements.forEach(row => {
     const cleaned = cleanName(row.name)
@@ -36,7 +42,7 @@ export async function GET() {
     }
   })
 
-  // 4. 記錄升/降次數
+  // 5. 統計升/降次數
   const statusCount = {}
   const allNames = new Set()
 
@@ -48,7 +54,7 @@ export async function GET() {
     if (row.action === '降二軍') statusCount[cleaned].down++
   })
 
-  // 5. 把開季一軍也算入升一軍次數
+  // 6. 把開季一軍也當成升一軍
   start_major.forEach(row => {
     const name = playerNoToName[row.Player_no]
     if (!name) return
@@ -57,7 +63,7 @@ export async function GET() {
     statusCount[name].up++
   })
 
-  // 6. 整合狀態
+  // 7. 整合狀態
   const result = Array.from(allNames).map(name => {
     if (canceledNames.has(name)) return { name, status: '註銷' }
     if (!registeredNames.has(name)) return { name, status: '未註冊' }

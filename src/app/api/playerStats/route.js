@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
 import supabase from '@/lib/supabase'
 
+// 將 OUT 整數轉為 0.1/0.2/1.0 格式的 IP 顯示
+function formatIP(outs) {
+  const fullInnings = Math.floor(outs / 3)
+  const remainder = outs % 3
+  return `${fullInnings}.${remainder}`
+}
+
 export async function POST(req) {
   try {
     const { type, from, to } = await req.json()
@@ -8,7 +15,7 @@ export async function POST(req) {
       return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
     }
 
-    // 🟠 Batter 處理
+    // 🔶 打者統計處理
     if (type === 'batter') {
       const { data, error } = await supabase
         .from('batting_stats')
@@ -61,7 +68,7 @@ export async function POST(req) {
       return NextResponse.json(result)
     }
 
-    // 🔵 Pitcher 處理
+    // 🔷 投手統計處理
     if (type === 'pitcher') {
       const { data, error } = await supabase
         .from('pitching_stats')
@@ -103,12 +110,12 @@ export async function POST(req) {
       }
 
       const result = Object.values(statsMap).map(s => {
-        const IP = s.OUT / 3
-        const ERA = IP ? (9 * s.ER / IP) : 0
-        const WHIP = IP ? (s.BB + s.H) / IP : 0
+        const IP_raw = s.OUT / 3
+        const ERA = IP_raw ? (9 * s.ER / IP_raw) : 0
+        const WHIP = IP_raw ? (s.BB + s.H) / IP_raw : 0
         return {
           ...s,
-          IP: IP.toFixed(1), // ex: 5.2 表示五又 2/3 局
+          IP: formatIP(s.OUT),          // 顯示：0.1 / 5.2
           ERA: ERA.toFixed(2),
           WHIP: WHIP.toFixed(2)
         }

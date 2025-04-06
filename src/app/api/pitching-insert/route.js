@@ -13,19 +13,26 @@ export async function POST(req) {
 
     const parseInnings = (str) => {
       if (str.includes('/')) {
-        const match = str.match(/^(\d+)(\d)\/3$/)
-        if (match) {
-          const whole = parseInt(match[1])
-          const out = parseInt(match[2])
-          return Math.floor(whole / 10) + (out === 1 ? 0.1 : out === 2 ? 0.2 : 0)
+        const [whole, fraction] = str.split('/').map(Number)
+    
+        if (!isNaN(whole) && !isNaN(fraction) && fraction === 3) {
+          if (whole < 10) {
+            // 純 1/3 或 2/3
+            return whole === 1 ? 0.1 : whole === 2 ? 0.2 : 0
+          } else {
+            // 11/3 ➝ 1.1，12/3 ➝ 1.2 ...
+            const intPart = Math.floor(whole / 10)
+            const outPart = whole % 10
+            return intPart + (outPart === 1 ? 0.1 : outPart === 2 ? 0.2 : 0)
+          }
         }
-        const [num, den] = str.split('/').map(Number)
-        if (num === 1 && den === 3) return 0.1
-        if (num === 2 && den === 3) return 0.2
+    
         return 0
       }
+    
       return parseFloat(str) || 0
     }
+    
 
     const parseLine = (line, index) => {
       const parts = line.trim().split(/\s+/)

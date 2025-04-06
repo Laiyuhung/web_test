@@ -14,12 +14,23 @@ export async function POST(req) {
 
     const parseInnings = (str) => {
       if (str.includes('/')) {
-        const [whole, fraction] = str.split('/').map(Number)
-        const base = Math.floor(whole)
-        if (fraction === 1) return base + 0.1
-        if (fraction === 2) return base + 0.2
-        return base
+        // 支援格式 11/3、21/3 → 1.1、2.1
+        const match = str.match(/^(\d+)(\d)\/3$/)
+        if (match) {
+          const whole = parseInt(match[1])
+          const out = parseInt(match[2])
+          if (out === 1) return Math.floor(whole / 10) + 0.1
+          if (out === 2) return Math.floor(whole / 10) + 0.2
+          return Math.floor(whole / 10)
+        }
+
+        // 支援格式 1/3、2/3 → 0.1、0.2
+        const [num, den] = str.split('/').map(Number)
+        if (num === 1 && den === 3) return 0.1
+        if (num === 2 && den === 3) return 0.2
+        return 0
       }
+
       return parseFloat(str) || 0
     }
 
@@ -33,23 +44,23 @@ export async function POST(req) {
     }
 
     const parseLine = (line, index) => {
-      const parts = line.split(/\s+/)
+      const parts = line.trim().split(/\s+/)
       const sequence = parseInt(parts[0]) || 0
 
       const inningIndex = parts.findIndex(p =>
         /^(\d+\/3|\d+(\.\d)?)$/.test(p)
       )
+
       if (inningIndex === -1) {
-        console.error(`❌ 第 ${index + 1} 行找不到投球局數:`, line)
+        console.error(`❌ 第 ${index + 1} 行找不到投球局數欄位:`, line)
         throw new Error('找不到投球局數欄位')
       }
 
-      const namePart = parts.slice(1, inningIndex).join(' ')
-      const { name, note } = extractNameAndNote(namePart)
+      const nameRaw = parts.slice(1, inningIndex).join(' ')
+      const { name, note } = extractNameAndNote(nameRaw)
 
       let stats = parts.slice(inningIndex).map(p => p.replace(/[（）]/g, ''))
 
-      // 補齊 stats 欄位
       if (stats.length > 17) stats = stats.slice(0, 17)
       while (stats.length < 17) stats.push('0')
 

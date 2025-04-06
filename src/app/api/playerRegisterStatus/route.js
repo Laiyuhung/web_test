@@ -15,8 +15,8 @@ export async function GET() {
   // 2. 建立 Player_no → cleaned name 對照表
   const playerNoToName = {}
   players.forEach(p => {
-    const cleaned = cleanName(p.name)
-    playerNoToName[p.player_no] = cleaned
+    const cleaned = cleanName(p.Name)
+    playerNoToName[p.Player_no] = cleaned
   })
 
   // 3. 建立註冊名單（開季註冊 + 新註冊）

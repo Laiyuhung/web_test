@@ -13,10 +13,11 @@ export default function PlayerPage() {
 
   const today = new Date()
 
-  const formatDateInput = (date: Date) =>
-    date.toISOString().slice(0, 10)
+  const formatDateInput = (date) => {
+    return date.toISOString().slice(0, 10)
+  }
 
-  const applyDateRange = (range: string) => {
+  const applyDateRange = (range) => {
     const d = new Date(today)
     let from = '', to = ''
     switch (range) {
@@ -31,19 +32,19 @@ export default function PlayerPage() {
         const last7 = new Date(today)
         last7.setDate(last7.getDate() - 7)
         from = formatDateInput(last7)
-        to = formatDateInput(new Date(today.setDate(today.getDate() - 1)))
+        to = formatDateInput(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1))
         break
       case 'Last 14 days':
         const last14 = new Date(today)
         last14.setDate(last14.getDate() - 14)
         from = formatDateInput(last14)
-        to = formatDateInput(new Date(today.setDate(today.getDate() - 1)))
+        to = formatDateInput(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1))
         break
       case 'Last 30 days':
         const last30 = new Date(today)
         last30.setDate(last30.getDate() - 30)
         from = formatDateInput(last30)
-        to = formatDateInput(new Date(today.setDate(today.getDate() - 1)))
+        to = formatDateInput(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1))
         break
       case '2025 Season':
       default:

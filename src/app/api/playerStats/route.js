@@ -8,6 +8,7 @@ export async function POST(req) {
       return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
     }
 
+    // 🟠 Batter 處理
     if (type === 'batter') {
       const { data, error } = await supabase
         .from('batting_stats')
@@ -60,6 +61,7 @@ export async function POST(req) {
       return NextResponse.json(result)
     }
 
+    // 🔵 Pitcher 處理
     if (type === 'pitcher') {
       const { data, error } = await supabase
         .from('pitching_stats')
@@ -71,18 +73,22 @@ export async function POST(req) {
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
       const statsMap = {}
+
       for (const row of data) {
         const name = row.name
         if (!statsMap[name]) {
           statsMap[name] = {
             name,
-            IP: 0, W: 0, L: 0, HLD: 0, SV: 0,
-            H: 0, ER: 0, K: 0, BB: 0, QS: 0
+            W: 0, L: 0, HLD: 0, SV: 0,
+            H: 0, ER: 0, K: 0, BB: 0, QS: 0,
+            OUT: 0
           }
         }
+
         const s = statsMap[name]
-        const ip = row.innings_pitched || 0
-        s.IP += ip
+        const rawIP = row.innings_pitched || 0
+        const outs = Math.floor(rawIP) * 3 + Math.round((rawIP % 1) * 10)  // 0.1 → 1 out, 0.2 → 2 out
+        s.OUT += outs
         s.H += row.hits_allowed || 0
         s.ER += row.earned_runs || 0
         s.K += row.strikeouts || 0
@@ -93,19 +99,18 @@ export async function POST(req) {
         if (record === 'L') s.L += 1
         if (record === 'HLD') s.HLD += 1
         if (record === 'SV') s.SV += 1
-        if (ip >= 6 && row.earned_runs <= 3) s.QS += 1
+        if (rawIP >= 6 && row.earned_runs <= 3) s.QS += 1
       }
 
       const result = Object.values(statsMap).map(s => {
-        const OUT = s.IP * 3
-        const ERA = s.IP ? (9 * s.ER / s.IP) : 0
-        const WHIP = s.IP ? (s.BB + s.H) / s.IP : 0
+        const IP = s.OUT / 3
+        const ERA = IP ? (9 * s.ER / IP) : 0
+        const WHIP = IP ? (s.BB + s.H) / IP : 0
         return {
           ...s,
-          OUT,
+          IP: IP.toFixed(1), // ex: 5.2 表示五又 2/3 局
           ERA: ERA.toFixed(2),
-          WHIP: WHIP.toFixed(2),
-          H: s.H // 加入被安打數
+          WHIP: WHIP.toFixed(2)
         }
       })
 

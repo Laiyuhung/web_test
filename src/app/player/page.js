@@ -92,12 +92,16 @@ export default function PlayerPage() {
       const merged = filteredStatus.map(p => {
         const stat = statsData.find(s => s.name === p.Name)
         const register = registerData.find(r => r.name === p.Name)
+        const registerStatus = register?.status || '未知'
+      
+        console.log(`[${p.Name}] 登錄狀態：${registerStatus}`)
+      
         return {
           ...p,
           ...(stat || {}),
-          registerStatus: register?.status || '未知'
+          registerStatus
         }
-      })
+      })      
 
       setPlayers(merged)
     } catch (err) {

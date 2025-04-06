@@ -24,24 +24,33 @@ export async function POST(req) {
 
     const extractNameAndNote = (raw) => {
       const match = raw.match(/^(.+?)\s*(?:\(([^)]+)\))?$/)
+      const note = match?.[2]?.split(',')[0].trim() || null
       return {
         name: match?.[1].trim() || '',
-        note: match?.[2]?.trim() || null
+        note
       }
     }
 
     const parseLine = (line) => {
       const parts = line.split(/\s+/)
+      const sequence = parseInt(parts[0]) || 0
 
-      const dashIndex = parts.findIndex(p => p.includes('-'))
-      const namePart = parts[dashIndex + 1]
+      const inningIndex = parts.findIndex(p =>
+        /^(\d+\/3|\d+(\.\d)?)$/.test(p)
+      )
+
+      if (inningIndex === -1) throw new Error('❌ 找不到投球局數欄位')
+
+      const namePart = parts.slice(1, inningIndex).join(' ')
+      const stats = parts.slice(inningIndex).map(p => p.replace(/[（）]/g, '')) // 全形括號轉半形
+
       const { name, note } = extractNameAndNote(namePart)
-      const stats = parts.slice(dashIndex + 2)
 
       const toInt = val => parseInt(val) || 0
       const toFloat = val => parseFloat(val) || 0
 
       return {
+        sequence,
         name,
         record: note,
         innings_pitched: parseInnings(stats[0]),

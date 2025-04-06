@@ -35,19 +35,33 @@ export default function HomePage() {
       setSchedules(data)
       const sorted = [...data].sort((a, b) => parseInt(a.week.replace('W', '')) - parseInt(b.week.replace('W', '')))
       const today = new Date()
+      console.log('📅 今日日期:', today.toISOString().split('T')[0])
+
       const current = sorted.find(row => {
         const start = new Date(row.start_date)
-        const end = new Date(row.end_date)
-        return today >= start && today <= end+1
+        const end = new Date(row.end_date + 'T23:59:59') // 補上時間以涵蓋整天
+
+        const inRange = today >= start && today <= end
+        console.log(`🔍 檢查週次 ${row.week}：`, {
+          start: start.toISOString().split('T')[0],
+          end: end.toISOString().split('T')[0],
+          inRange,
+        })
+
+        return inRange
       })
+
       if (current) {
+        console.log('✅ 命中目前週次：', current.week)
         setCurrentWeek(current.week)
         setSelectedWeek(current.week)
         setFiltered([current])
       } else {
+        console.log('❌ 今日未落在任何週次內，顯示全部')
         setFiltered(sorted)
       }
     }
+
     fetchSchedules()
   }, [])
 
@@ -111,13 +125,13 @@ export default function HomePage() {
   return (
     <div className="p-6">
       <div className="mb-4 flex gap-2 flex-wrap">
-      <Button
-        onClick={() => currentWeek && handleFilter(currentWeek)}
-        variant={selectedWeek === currentWeek ? 'default' : 'outline'}
-        disabled={!currentWeek}
-      >
-        This week ⭐
-      </Button>
+        <Button
+          onClick={() => currentWeek && handleFilter(currentWeek)}
+          variant={selectedWeek === currentWeek ? 'default' : 'outline'}
+          disabled={!currentWeek}
+        >
+          This week ⭐
+        </Button>
         <Button onClick={() => handleFilter('')} variant={selectedWeek === '' ? 'default' : 'outline'}>
           All schedule
         </Button>

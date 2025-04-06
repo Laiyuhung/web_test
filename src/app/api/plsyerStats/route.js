@@ -16,7 +16,7 @@ export async function POST(req) {
         .lte('game_date', to)
         .eq('is_major', true)
 
-      if (error) throw error
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
       const statsMap = {}
       for (const row of data) {
@@ -68,7 +68,7 @@ export async function POST(req) {
         .lte('game_date', to)
         .eq('is_major', true)
 
-      if (error) throw error
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
       const statsMap = {}
       for (const row of data) {

@@ -1,5 +1,4 @@
 'use client'
-
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -33,9 +32,6 @@ export default function Navbar() {
     await fetch('/api/logout', { method: 'POST' })
     router.push('/login')
   }
-
-  // 👇 如果沒有登入（user_id 不存在），不顯示 Navbar
-  if (!userId) return null
 
   return (
     <nav className="bg-[#003366] text-white px-6 py-3 flex items-center justify-between shadow-md">

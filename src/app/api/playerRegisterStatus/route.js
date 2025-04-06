@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // 需使用 server 權限才能查全部資料
-)
+import supabase from '@/lib/supabaseServer'
 
 const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
 

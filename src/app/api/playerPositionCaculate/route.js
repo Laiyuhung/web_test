@@ -9,8 +9,8 @@ export async function GET() {
   const [{ data: players }, { data: posTable }, { data: batting }, { data: pitching }] = await Promise.all([
     supabase.from('playerslist').select('Player_no, Name, B_or_P'),
     supabase.from('position2024').select('Player_no, Position'),
-    supabase.from('batting_stats').select('player_name, position'),
-    supabase.from('pitching_stats').select('player_name, sequence')
+    supabase.from('batting_stats').select('name, position'),
+    supabase.from('pitching_stats').select('name, sequence')
   ])
 
   const nameToPlayerNo = {}

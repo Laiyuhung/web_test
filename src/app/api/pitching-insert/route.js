@@ -38,13 +38,16 @@ export async function POST(req) {
       const inningIndex = parts.findIndex(p =>
         /^(\d+\/3|\d+(\.\d)?)$/.test(p)
       )
-
       if (inningIndex === -1) throw new Error('❌ 找不到投球局數欄位')
 
       const namePart = parts.slice(1, inningIndex).join(' ')
-      const stats = parts.slice(inningIndex).map(p => p.replace(/[（）]/g, '')) // 全形括號轉半形
-
       const { name, note } = extractNameAndNote(namePart)
+
+      let stats = parts.slice(inningIndex).map(p => p.replace(/[（）]/g, ''))
+
+      // 🛡️ 防錯位處理：保證 stats 有 17 欄
+      if (stats.length > 17) stats = stats.slice(0, 17)
+      while (stats.length < 17) stats.push('0')
 
       const toInt = val => parseInt(val) || 0
       const toFloat = val => parseFloat(val) || 0

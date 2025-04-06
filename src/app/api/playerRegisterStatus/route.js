@@ -9,7 +9,7 @@ export async function GET() {
     supabase.from('registerlist').select('Player_no'),
     supabase.from('start_major').select('Player_no'),
     supabase.from('player_movements').select('name, action'),
-    supabase.from('playerslist').select('player_no, name')
+    supabase.from('playerslist').select('Player_no, Name')
   ])
 
   // 2. 建立 Player_no → cleaned name 對照表

@@ -65,17 +65,20 @@ export default function PlayerPage() {
     setLoading(true)
     setError('')
     try {
-      const [statusRes, statsRes] = await Promise.all([
+      const [statusRes, statsRes, registerRes] = await Promise.all([
         fetch('/api/playerStatus'),
         fetch('/api/playerStats', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: type.toLowerCase(), from: fromDate, to: toDate })
-        })
+        }),
+        fetch('/api/playerRegisterStatus')
       ])
-      const [statusData, statsData] = await Promise.all([
+
+      const [statusData, statsData, registerData] = await Promise.all([
         statusRes.json(),
-        statsRes.ok ? statsRes.json() : Promise.resolve([])
+        statsRes.ok ? statsRes.json() : [],
+        registerRes.ok ? registerRes.json() : []
       ])
 
       if (!Array.isArray(statusData)) throw new Error('狀態資料錯誤')
@@ -88,8 +91,14 @@ export default function PlayerPage() {
 
       const merged = filteredStatus.map(p => {
         const stat = statsData.find(s => s.name === p.Name)
-        return { ...p, ...(stat || {}) }
+        const register = registerData.find(r => r.name === p.Name)
+        return {
+          ...p,
+          ...(stat || {}),
+          registerStatus: register?.status || '未知'
+        }
       })
+
       setPlayers(merged)
     } catch (err) {
       console.error('統計錯誤:', err)
@@ -141,9 +150,9 @@ export default function PlayerPage() {
           <table className="text-xs w-full text-center border">
             <thead className="bg-gray-100">
               <tr>
-                <th className="p-2 border">姓名</th>
-                <th className="p-2 border">球隊</th>
-                <th className="p-2 border">狀態</th>
+                <th className="p-2 border">Name</th>
+                <th className="p-2 border">Team</th>
+                <th className="p-2 border">Status</th>
                 {type === 'Batter' ? (
                   <>
                     <th className="p-2 border">AB</th>
@@ -182,7 +191,19 @@ export default function PlayerPage() {
             <tbody>
               {players.map((p, i) => (
                 <tr key={i}>
-                  <td className="p-2 border">{p.Name}</td>
+                  <td className="p-2 border text-left">
+                    <span>{p.Name}</span>
+                    {p.registerStatus === '二軍' && (
+                      <span className="ml-1 inline-block bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">NA</span>
+                    )}
+                    {p.registerStatus === '未註冊' && (
+                      <span className="ml-1 inline-block bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">未註冊</span>
+                    )}
+                    {p.registerStatus === '註銷' && (
+                      <span className="ml-1 inline-block bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">註銷</span>
+                    )}
+                  </td>
+
                   <td className="p-2 border">{p.Team}</td>
                   <td className="p-2 border">
                     {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` :

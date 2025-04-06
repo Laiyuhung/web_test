@@ -1,0 +1,76 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY // 需使用 server 權限才能查全部資料
+)
+
+const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
+
+export async function GET() {
+  // 1. 撈出所有需要用到的表
+  const [{ data: registerlist }, { data: start_major }, { data: movements }] = await Promise.all([
+    supabase.from('registerlist').select('Player_no, name'),
+    supabase.from('start_major').select('Player_no'),
+    supabase.from('player_movements').select('name, action')
+  ])
+
+  // 2. 整理出註冊名單（開季註冊 + 新註冊）
+  const registeredNames = new Set()
+  const playerNoToName = {}
+  registerlist.forEach(row => {
+    const cleaned = cleanName(row.name)
+    playerNoToName[row.Player_no] = cleaned
+    registeredNames.add(cleaned)
+  })
+
+  movements.forEach(row => {
+    const cleaned = cleanName(row.name)
+    if (row.action === '新註冊') {
+      registeredNames.add(cleaned)
+    }
+  })
+
+  // 3. 整理出註銷名單
+  const canceledNames = new Set()
+  movements.forEach(row => {
+    const cleaned = cleanName(row.name)
+    if (row.action === '註冊註銷' || row.action === '除役') {
+      canceledNames.add(cleaned)
+    }
+  })
+
+  // 4. 記錄升/降次數
+  const statusCount = {}
+  const allNames = new Set()
+
+  movements.forEach(row => {
+    const cleaned = cleanName(row.name)
+    allNames.add(cleaned)
+    if (!statusCount[cleaned]) statusCount[cleaned] = { up: 0, down: 0 }
+    if (row.action === '升一軍') statusCount[cleaned].up++
+    if (row.action === '降二軍') statusCount[cleaned].down++
+  })
+
+  // 5. 把開季一軍也算入升一軍次數
+  start_major.forEach(row => {
+    const name = playerNoToName[row.Player_no]
+    if (!name) return
+    allNames.add(name)
+    if (!statusCount[name]) statusCount[name] = { up: 0, down: 0 }
+    statusCount[name].up++
+  })
+
+  // 6. 整合狀態
+  const result = Array.from(allNames).map(name => {
+    if (canceledNames.has(name)) return { name, status: '註銷' }
+    if (!registeredNames.has(name)) return { name, status: '未註冊' }
+
+    const { up = 0, down = 0 } = statusCount[name] || {}
+    const active = up > down ? '一軍' : '二軍'
+    return { name, status: active }
+  })
+
+  return NextResponse.json(result)
+}

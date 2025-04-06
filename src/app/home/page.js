@@ -38,7 +38,7 @@ export default function HomePage() {
       const current = sorted.find(row => {
         const start = new Date(row.start_date)
         const end = new Date(row.end_date)
-        return today >= start && today <= end
+        return today >= start && today <= end+1
       })
       if (current) {
         setCurrentWeek(current.week)

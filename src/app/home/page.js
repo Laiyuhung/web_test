@@ -111,9 +111,13 @@ export default function HomePage() {
   return (
     <div className="p-6">
       <div className="mb-4 flex gap-2 flex-wrap">
-        <Button onClick={() => handleFilter(currentWeek)} variant={selectedWeek === currentWeek ? 'default' : 'outline'}>
-          This week ⭐
-        </Button>
+      <Button
+        onClick={() => currentWeek && handleFilter(currentWeek)}
+        variant={selectedWeek === currentWeek ? 'default' : 'outline'}
+        disabled={!currentWeek}
+      >
+        This week ⭐
+      </Button>
         <Button onClick={() => handleFilter('')} variant={selectedWeek === '' ? 'default' : 'outline'}>
           All schedule
         </Button>

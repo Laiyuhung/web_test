@@ -1,63 +1,66 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 
 export default function PlayerPage() {
   const [players, setPlayers] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [type, setType] = useState('Batter')
-  const [range, setRange] = useState('')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
+  const [range, setRange] = useState('2025 Season')
 
-  const dateRanges = {
-    Today: () => {
-      const today = new Date()
-      return [today, today]
-    },
-    Yesterday: () => {
-      const y = new Date()
-      y.setDate(y.getDate() - 1)
-      return [y, y]
-    },
-    'Last 7 days': () => {
-      const end = new Date()
-      end.setDate(end.getDate() - 1)
-      const start = new Date()
-      start.setDate(end.getDate() - 6)
-      return [start, end]
-    },
-    'Last 14 days': () => {
-      const end = new Date()
-      end.setDate(end.getDate() - 1)
-      const start = new Date()
-      start.setDate(end.getDate() - 13)
-      return [start, end]
-    },
-    'Last 30 days': () => {
-      const end = new Date()
-      end.setDate(end.getDate() - 1)
-      const start = new Date()
-      start.setDate(end.getDate() - 29)
-      return [start, end]
-    },
-    '2025 Season': () => {
-      return [new Date('2025-03-28'), new Date('2025-11-30')]
-    },
+  const today = new Date()
+
+  const formatDateInput = (date: Date) =>
+    date.toISOString().slice(0, 10)
+
+  const applyDateRange = (range: string) => {
+    const d = new Date(today)
+    let from = '', to = ''
+    switch (range) {
+      case 'Today':
+        from = to = formatDateInput(d)
+        break
+      case 'Yesterday':
+        d.setDate(d.getDate() - 1)
+        from = to = formatDateInput(d)
+        break
+      case 'Last 7 days':
+        const last7 = new Date(today)
+        last7.setDate(last7.getDate() - 7)
+        from = formatDateInput(last7)
+        to = formatDateInput(new Date(today.setDate(today.getDate() - 1)))
+        break
+      case 'Last 14 days':
+        const last14 = new Date(today)
+        last14.setDate(last14.getDate() - 14)
+        from = formatDateInput(last14)
+        to = formatDateInput(new Date(today.setDate(today.getDate() - 1)))
+        break
+      case 'Last 30 days':
+        const last30 = new Date(today)
+        last30.setDate(last30.getDate() - 30)
+        from = formatDateInput(last30)
+        to = formatDateInput(new Date(today.setDate(today.getDate() - 1)))
+        break
+      case '2025 Season':
+      default:
+        from = '2025-03-27'
+        to = '2025-11-30'
+        break
+    }
+    setFromDate(from)
+    setToDate(to)
   }
 
-  const formatISO = (d) => d.toISOString().split('T')[0]
-
-  const handleRangeChange = (value) => {
-    setRange(value)
-    const [from, to] = dateRanges[value]()
-    setFromDate(formatISO(from))
-    setToDate(formatISO(to))
-  }
+  useEffect(() => {
+    applyDateRange(range)
+  }, [range])
 
   const fetchStatsAndStatus = async () => {
+    if (!fromDate || !toDate) return
     setLoading(true)
     setError('')
     try {
@@ -94,10 +97,14 @@ export default function PlayerPage() {
     setLoading(false)
   }
 
+  useEffect(() => {
+    fetchStatsAndStatus()
+  }, [type, fromDate, toDate])
+
   const formatDate = (str) => {
     const d = new Date(str)
     if (isNaN(d)) return ''
-    return d.toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' })
+    return d.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })
   }
 
   const formatAvg = (val) => {
@@ -110,18 +117,20 @@ export default function PlayerPage() {
       <h1 className="text-xl font-bold mb-4">球員狀態與數據</h1>
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
-      <div className="flex gap-4 items-center mb-4 flex-wrap">
+      <div className="flex flex-wrap gap-4 items-center mb-4">
         <select value={type} onChange={e => setType(e.target.value)} className="border px-2 py-1 rounded">
           <option value="Batter">Batter</option>
           <option value="Pitcher">Pitcher</option>
         </select>
-        <select value={range} onChange={e => handleRangeChange(e.target.value)} className="border px-2 py-1 rounded">
-          <option value="">選擇區間</option>
-          {Object.keys(dateRanges).map(key => (
-            <option key={key} value={key}>{key}</option>
-          ))}
+        <select value={range} onChange={e => setRange(e.target.value)} className="border px-2 py-1 rounded">
+          <option>Today</option>
+          <option>Yesterday</option>
+          <option>Last 7 days</option>
+          <option>Last 14 days</option>
+          <option>Last 30 days</option>
+          <option>2025 Season</option>
         </select>
-        <Button onClick={fetchStatsAndStatus}>查詢</Button>
+        <span className="text-sm text-gray-600">查詢區間：{fromDate} ~ {toDate}</span>
       </div>
 
       {loading && <div className="mb-4">讀取中...</div>}
@@ -134,6 +143,39 @@ export default function PlayerPage() {
                 <th className="p-2 border">姓名</th>
                 <th className="p-2 border">球隊</th>
                 <th className="p-2 border">狀態</th>
+                {type === 'Batter' ? (
+                  <>
+                    <th className="p-2 border">AB</th>
+                    <th className="p-2 border">R</th>
+                    <th className="p-2 border">H</th>
+                    <th className="p-2 border">HR</th>
+                    <th className="p-2 border">RBI</th>
+                    <th className="p-2 border">SB</th>
+                    <th className="p-2 border">K</th>
+                    <th className="p-2 border">BB</th>
+                    <th className="p-2 border">GIDP</th>
+                    <th className="p-2 border">XBH</th>
+                    <th className="p-2 border">TB</th>
+                    <th className="p-2 border">AVG</th>
+                    <th className="p-2 border">OPS</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="p-2 border">IP</th>
+                    <th className="p-2 border">W</th>
+                    <th className="p-2 border">L</th>
+                    <th className="p-2 border">HLD</th>
+                    <th className="p-2 border">SV</th>
+                    <th className="p-2 border">H</th>
+                    <th className="p-2 border">ER</th>
+                    <th className="p-2 border">K</th>
+                    <th className="p-2 border">BB</th>
+                    <th className="p-2 border">QS</th>
+                    <th className="p-2 border">OUT</th>
+                    <th className="p-2 border">ERA</th>
+                    <th className="p-2 border">WHIP</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -145,6 +187,39 @@ export default function PlayerPage() {
                     {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` :
                       p.status === 'Waiver' && p.offWaivers ? `off waivers ${formatDate(p.offWaivers)}` : p.status}
                   </td>
+                  {type === 'Batter' ? (
+                    <>
+                      <td className="p-2 border">{p.AB || 0}</td>
+                      <td className="p-2 border">{p.R || 0}</td>
+                      <td className="p-2 border">{p.H || 0}</td>
+                      <td className="p-2 border">{p.HR || 0}</td>
+                      <td className="p-2 border">{p.RBI || 0}</td>
+                      <td className="p-2 border">{p.SB || 0}</td>
+                      <td className="p-2 border">{p.K || 0}</td>
+                      <td className="p-2 border">{p.BB || 0}</td>
+                      <td className="p-2 border">{p.GIDP || 0}</td>
+                      <td className="p-2 border">{p.XBH || 0}</td>
+                      <td className="p-2 border">{p.TB || 0}</td>
+                      <td className="p-2 border">{formatAvg(p.AVG)}</td>
+                      <td className="p-2 border">{formatAvg(p.OPS)}</td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="p-2 border">{p.IP || 0}</td>
+                      <td className="p-2 border">{p.W || 0}</td>
+                      <td className="p-2 border">{p.L || 0}</td>
+                      <td className="p-2 border">{p.HLD || 0}</td>
+                      <td className="p-2 border">{p.SV || 0}</td>
+                      <td className="p-2 border">{p.H || 0}</td>
+                      <td className="p-2 border">{p.ER || 0}</td>
+                      <td className="p-2 border">{p.K || 0}</td>
+                      <td className="p-2 border">{p.BB || 0}</td>
+                      <td className="p-2 border">{p.QS || 0}</td>
+                      <td className="p-2 border">{p.OUT || 0}</td>
+                      <td className="p-2 border">{p.ERA || '0.00'}</td>
+                      <td className="p-2 border">{p.WHIP || '0.00'}</td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>

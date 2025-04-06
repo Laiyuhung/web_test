@@ -13,9 +13,7 @@ export default function PlayerPage() {
 
   const today = new Date()
 
-  const formatDateInput = (date) => {
-    return date.toISOString().slice(0, 10)
-  }
+  const formatDateInput = (date) => date.toISOString().slice(0, 10)
 
   const applyDateRange = (range) => {
     const d = new Date(today)
@@ -65,23 +63,23 @@ export default function PlayerPage() {
     setLoading(true)
     setError('')
     try {
-      const [statusRes, statsRes, registerRes] = await Promise.all([
+      const [statusRes, statsRes, registerRes, positionRes] = await Promise.all([
         fetch('/api/playerStatus'),
         fetch('/api/playerStats', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: type.toLowerCase(), from: fromDate, to: toDate })
         }),
-        fetch('/api/playerRegisterStatus')
+        fetch('/api/playerRegisterStatus'),
+        fetch('/api/playerPositionCaculate')
       ])
 
-      const [statusData, statsData, registerData] = await Promise.all([
+      const [statusData, statsData, registerData, positionData] = await Promise.all([
         statusRes.json(),
         statsRes.ok ? statsRes.json() : [],
-        registerRes.ok ? registerRes.json() : []
+        registerRes.ok ? registerRes.json() : [],
+        positionRes.ok ? positionRes.json() : []
       ])
-
-      if (!Array.isArray(statusData)) throw new Error('狀態資料錯誤')
 
       const filteredStatus = statusData.filter(p => {
         if (type === 'Batter') return p.B_or_P === 'Batter'
@@ -93,15 +91,18 @@ export default function PlayerPage() {
         const stat = statsData.find(s => s.name === p.Name)
         const register = registerData.find(r => r.name === p.Name)
         const registerStatus = register?.status || '未知'
-      
-        console.log(`[${p.Name}] 登錄狀態：${registerStatus}`)
-      
+        const position = positionData.find(pos => pos.name === p.Name)
+        const finalPosition = position?.finalPosition || []
+
+        console.log(`[${p.Name}] 登錄狀態：${registerStatus}｜守位：${finalPosition.join(', ')}`)
+
         return {
           ...p,
           ...(stat || {}),
-          registerStatus
+          registerStatus,
+          finalPosition
         }
-      })      
+      })
 
       setPlayers(merged)
     } catch (err) {
@@ -147,16 +148,17 @@ export default function PlayerPage() {
         <span className="text-sm text-gray-600">查詢區間：{fromDate} ~ {toDate}</span>
       </div>
 
-      {loading && <div className="mb-4">讀取中...</div>}
+      {loading && <div className="mb-4">Loading...</div>}
 
       <Card>
         <CardContent className="overflow-auto p-4">
           <table className="text-xs w-full text-center border">
             <thead className="bg-gray-100">
               <tr>
-                <th className="p-2 border">姓名</th>
-                <th className="p-2 border">球隊</th>
-                <th className="p-2 border">狀態</th>
+                <th className="p-2 border">Name</th>
+                <th className="p-2 border">Team</th>
+                <th className="p-2 border">Position</th>
+                <th className="p-2 border">Status</th>
                 {type === 'Batter' ? (
                   <>
                     <th className="p-2 border">AB</th>
@@ -195,15 +197,9 @@ export default function PlayerPage() {
             <tbody>
               {players.map((p, i) => (
                 <tr key={i}>
-                  <td className="p-2 border text-left">
-                    <span>{p.Name}</span>
-                    {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
-                      <span className="ml-1 inline-block bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">
-                        {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
-                      </span>
-                    )}
-                  </td>
+                  <td className="p-2 border text-left">{p.Name}</td>
                   <td className="p-2 border">{p.Team}</td>
+                  <td className="p-2 border">{(p.finalPosition || []).join(', ')}</td>
                   <td className="p-2 border">
                     {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` :
                       p.status === 'Waiver' && p.offWaivers ? `off waivers ${formatDate(p.offWaivers)}` : p.status}

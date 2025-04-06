@@ -104,7 +104,8 @@ export async function POST(req) {
           ...s,
           OUT,
           ERA: ERA.toFixed(2),
-          WHIP: WHIP.toFixed(2)
+          WHIP: WHIP.toFixed(2),
+          H: s.H // 加入被安打數
         }
       })
 

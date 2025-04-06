@@ -42,6 +42,16 @@ export default function PlayerPage() {
     setLoading(false)
   }
 
+  const formatDate = (str) => {
+    const d = new Date(str)
+    return d.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })
+  }
+
+  const formatAvg = (val) => {
+    const num = parseFloat(val)
+    return isNaN(num) ? '.000' : num.toFixed(3).replace(/^0/, '')
+  }
+
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">球員狀態與數據</h1>
@@ -66,7 +76,6 @@ export default function PlayerPage() {
               <tr>
                 <th className="p-2 border">姓名</th>
                 <th className="p-2 border">狀態</th>
-                <th className="p-2 border">所屬</th>
                 {type === 'batter' ? (
                   <>
                     <th className="p-2 border">AB</th>
@@ -77,6 +86,9 @@ export default function PlayerPage() {
                     <th className="p-2 border">SB</th>
                     <th className="p-2 border">K</th>
                     <th className="p-2 border">BB</th>
+                    <th className="p-2 border">GIDP</th>
+                    <th className="p-2 border">XBH</th>
+                    <th className="p-2 border">TB</th>
                     <th className="p-2 border">AVG</th>
                     <th className="p-2 border">OPS</th>
                   </>
@@ -87,9 +99,12 @@ export default function PlayerPage() {
                     <th className="p-2 border">L</th>
                     <th className="p-2 border">HLD</th>
                     <th className="p-2 border">SV</th>
+                    <th className="p-2 border">H</th>
                     <th className="p-2 border">ER</th>
                     <th className="p-2 border">K</th>
                     <th className="p-2 border">BB</th>
+                    <th className="p-2 border">QS</th>
+                    <th className="p-2 border">OUT</th>
                     <th className="p-2 border">ERA</th>
                     <th className="p-2 border">WHIP</th>
                   </>
@@ -103,9 +118,8 @@ export default function PlayerPage() {
                     {p.Name} <span className="text-xs text-gray-500">({p.Team} / {p.Identity})</span>
                   </td>
                   <td className="p-2 border">
-                    {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` : p.status === 'Waiver' ? `off waivers ${p.offWaivers}` : p.status}
+                    {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` : p.status === 'Waiver' ? `off waivers ${formatDate(p.offWaivers)}` : p.status}
                   </td>
-                  <td className="p-2 border">{p.owner || '-'}</td>
                   {type === 'batter' ? (
                     <>
                       <td className="p-2 border">{p.AB || 0}</td>
@@ -116,8 +130,11 @@ export default function PlayerPage() {
                       <td className="p-2 border">{p.SB || 0}</td>
                       <td className="p-2 border">{p.K || 0}</td>
                       <td className="p-2 border">{p.BB || 0}</td>
-                      <td className="p-2 border">{p.AVG || '0.000'}</td>
-                      <td className="p-2 border">{p.OPS || '0.000'}</td>
+                      <td className="p-2 border">{p.GIDP || 0}</td>
+                      <td className="p-2 border">{p.XBH || 0}</td>
+                      <td className="p-2 border">{p.TB || 0}</td>
+                      <td className="p-2 border">{formatAvg(p.AVG)}</td>
+                      <td className="p-2 border">{formatAvg(p.OPS)}</td>
                     </>
                   ) : (
                     <>
@@ -126,9 +143,12 @@ export default function PlayerPage() {
                       <td className="p-2 border">{p.L || 0}</td>
                       <td className="p-2 border">{p.HLD || 0}</td>
                       <td className="p-2 border">{p.SV || 0}</td>
+                      <td className="p-2 border">{p.H || 0}</td>
                       <td className="p-2 border">{p.ER || 0}</td>
                       <td className="p-2 border">{p.K || 0}</td>
                       <td className="p-2 border">{p.BB || 0}</td>
+                      <td className="p-2 border">{p.QS || 0}</td>
+                      <td className="p-2 border">{p.OUT || 0}</td>
                       <td className="p-2 border">{p.ERA || '0.00'}</td>
                       <td className="p-2 border">{p.WHIP || '0.00'}</td>
                     </>

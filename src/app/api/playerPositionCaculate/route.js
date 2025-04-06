@@ -27,13 +27,26 @@ export async function GET() {
   const staticPositions = {}
   posTable.forEach(row => {
     const raw = row.Position?.split(',').map(p => p.trim()).filter(Boolean) || []
-    const mapped = raw.map(p => isValidPosition(p) ? p : 'Util')
+    const player = playerNoToInfo[row.Player_no]
+    if (!player) return
+
+    let mapped
+    if (player.B_or_P === 'Batter') {
+      mapped = raw.map(p => isValidPosition(p) ? p : 'Util')
+      const hasValid = mapped.some(p => validPositions.includes(p))
+      if (!hasValid) mapped.push('Util')
+    } else {
+      mapped = raw.includes('SP') || raw.includes('RP')
+        ? raw.filter(p => ['SP', 'RP'].includes(p))
+        : ['P']
+    }
+
     staticPositions[row.Player_no] = Array.from(new Set(mapped))
   })
 
   const batterStats = {}
   batting.forEach(row => {
-    const cleaned = cleanName(row.player_name)
+    const cleaned = cleanName(row.name)
     const playerNo = nameToPlayerNo[cleaned]
     if (!playerNo || !Array.isArray(row.position)) return
     if (!batterStats[playerNo]) batterStats[playerNo] = {}
@@ -45,7 +58,7 @@ export async function GET() {
 
   const pitcherStats = {}
   pitching.forEach(row => {
-    const cleaned = cleanName(row.player_name)
+    const cleaned = cleanName(row.name)
     const playerNo = nameToPlayerNo[cleaned]
     if (!playerNo) return
     if (!pitcherStats[playerNo]) pitcherStats[playerNo] = { SP: 0, RP: 0 }
@@ -65,29 +78,23 @@ export async function GET() {
         if (stats[pos] >= 8) finalPos.add(pos)
       }
 
-      // 若沒有合法守位，補上 Util
       const hasValid = [...finalPos].some(p => validPositions.includes(p))
       if (!hasValid) finalPos.add('Util')
-    } else {
+      if (finalPos.has('Util') && hasValid) finalPos.delete('Util')
+
+    } else if (info.B_or_P === 'Pitcher') {
       const stat = pitcherStats[playerNo] || {}
 
       if (stat.SP >= 3) finalPos.add('SP')
       if (stat.RP >= 2) finalPos.add('RP')
 
-      // 有 SP/RP 就移除靜態的 P
       if ((finalPos.has('SP') || finalPos.has('RP')) && finalPos.has('P')) {
         finalPos.delete('P')
       }
 
-      // 沒有 SP/RP 才補上 P
       if (!finalPos.has('SP') && !finalPos.has('RP')) {
         finalPos.add('P')
       }
-    }
-
-    // 如果同時有合法守位與 Util，就移除 Util
-    if (finalPos.has('Util') && [...finalPos].some(p => validPositions.includes(p))) {
-      finalPos.delete('Util')
     }
 
     return {

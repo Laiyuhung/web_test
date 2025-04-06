@@ -1,4 +1,3 @@
-// ✅ /app/api/pitching-insert/route.js
 import { NextResponse } from 'next/server'
 import supabase from '@/lib/supabase'
 
@@ -13,10 +12,12 @@ export async function POST(req) {
     const lines = text.split('\n').map(line => line.trim()).filter(line => line)
 
     const parseInnings = (str) => {
-      // 支援 1、2.2、51/3、02/3 這類格式轉換為十進位
       if (str.includes('/')) {
-        const [num, den] = str.split('/').map(Number)
-        return den === 0 ? num : num / den
+        const [whole, fraction] = str.split('/').map(Number)
+        const base = Math.floor(whole)
+        if (fraction === 1) return base + 0.1
+        if (fraction === 2) return base + 0.2
+        return base
       }
       return parseFloat(str) || 0
     }
@@ -33,8 +34,8 @@ export async function POST(req) {
       const parts = line.split(/\s+/)
 
       const dashIndex = parts.findIndex(p => p.includes('-'))
-      let namePart = parts[dashIndex + 1]
-      const { name } = extractNameAndNote(namePart)
+      const namePart = parts[dashIndex + 1]
+      const { name, note } = extractNameAndNote(namePart)
       const stats = parts.slice(dashIndex + 2)
 
       const toInt = val => parseInt(val) || 0
@@ -42,6 +43,7 @@ export async function POST(req) {
 
       return {
         name,
+        record: note,
         innings_pitched: parseInnings(stats[0]),
         batters_faced: toInt(stats[1]),
         pitches_thrown: toInt(stats[2]),

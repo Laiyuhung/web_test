@@ -10,6 +10,7 @@ export async function POST(req) {
     }
 
     const lines = text.split('\n').map(line => line.trim()).filter(line => line)
+    console.log('🟡 接收到資料筆數:', lines.length)
 
     const parseInnings = (str) => {
       if (str.includes('/')) {
@@ -31,28 +32,31 @@ export async function POST(req) {
       }
     }
 
-    const parseLine = (line) => {
+    const parseLine = (line, index) => {
       const parts = line.split(/\s+/)
       const sequence = parseInt(parts[0]) || 0
 
       const inningIndex = parts.findIndex(p =>
         /^(\d+\/3|\d+(\.\d)?)$/.test(p)
       )
-      if (inningIndex === -1) throw new Error('❌ 找不到投球局數欄位')
+      if (inningIndex === -1) {
+        console.error(`❌ 第 ${index + 1} 行找不到投球局數:`, line)
+        throw new Error('找不到投球局數欄位')
+      }
 
       const namePart = parts.slice(1, inningIndex).join(' ')
       const { name, note } = extractNameAndNote(namePart)
 
       let stats = parts.slice(inningIndex).map(p => p.replace(/[（）]/g, ''))
 
-      // 🛡️ 防錯位處理：保證 stats 有 17 欄
+      // 補齊 stats 欄位
       if (stats.length > 17) stats = stats.slice(0, 17)
       while (stats.length < 17) stats.push('0')
 
       const toInt = val => parseInt(val) || 0
       const toFloat = val => parseFloat(val) || 0
 
-      return {
+      const parsed = {
         sequence,
         name,
         record: note,
@@ -76,9 +80,12 @@ export async function POST(req) {
         game_date: date,
         is_major: isMajor
       }
+
+      console.log(`✅ 第 ${index + 1} 筆解析結果:`, parsed)
+      return parsed
     }
 
-    const records = lines.map(parseLine)
+    const records = lines.map((line, i) => parseLine(line, i))
 
     const { error } = await supabase.from('pitching_stats').insert(records)
 

@@ -7,7 +7,7 @@ export default function PlayerPage() {
   const [players, setPlayers] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [type, setType] = useState('batter')
+  const [type, setType] = useState('Batter')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
 
@@ -20,7 +20,7 @@ export default function PlayerPage() {
         fetch('/api/playerStats', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, from: fromDate, to: toDate })
+          body: JSON.stringify({ type: type.toLowerCase(), from: fromDate, to: toDate })
         })
       ])
       const [statusData, statsData] = await Promise.all([
@@ -30,7 +30,13 @@ export default function PlayerPage() {
 
       if (!Array.isArray(statusData)) throw new Error('狀態資料錯誤')
 
-      const merged = statusData.map(p => {
+      const filteredStatus = statusData.filter(p => {
+        if (type === 'Batter') return p.B_or_P === 'B'
+        if (type === 'Pitcher') return p.B_or_P === 'P'
+        return true
+      })
+
+      const merged = filteredStatus.map(p => {
         const stat = statsData.find(s => s.name === p.Name)
         return { ...p, ...(stat || {}) }
       })
@@ -44,6 +50,7 @@ export default function PlayerPage() {
 
   const formatDate = (str) => {
     const d = new Date(str)
+    if (isNaN(d)) return ''
     return d.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })
   }
 
@@ -59,8 +66,8 @@ export default function PlayerPage() {
 
       <div className="flex gap-4 items-center mb-4">
         <select value={type} onChange={e => setType(e.target.value)} className="border px-2 py-1 rounded">
-          <option value="batter">打者</option>
-          <option value="pitcher">投手</option>
+          <option value="Batter">Batter</option>
+          <option value="Pitcher">Pitcher</option>
         </select>
         <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="border px-2 py-1 rounded" />
         <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="border px-2 py-1 rounded" />
@@ -75,8 +82,9 @@ export default function PlayerPage() {
             <thead className="bg-gray-100">
               <tr>
                 <th className="p-2 border">姓名</th>
+                <th className="p-2 border">球隊</th>
                 <th className="p-2 border">狀態</th>
-                {type === 'batter' ? (
+                {type === 'Batter' ? (
                   <>
                     <th className="p-2 border">AB</th>
                     <th className="p-2 border">R</th>
@@ -114,13 +122,13 @@ export default function PlayerPage() {
             <tbody>
               {players.map((p, i) => (
                 <tr key={i}>
+                  <td className="p-2 border">{p.Name}</td>
+                  <td className="p-2 border">{p.Team}</td>
                   <td className="p-2 border">
-                    {p.Name} <span className="text-xs text-gray-500">({p.Team} / {p.Identity})</span>
+                    {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` :
+                      p.status === 'Waiver' && p.offWaivers ? `off waivers ${formatDate(p.offWaivers)}` : p.status}
                   </td>
-                  <td className="p-2 border">
-                    {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` : p.status === 'Waiver' ? `off waivers ${formatDate(p.offWaivers)}` : p.status}
-                  </td>
-                  {type === 'batter' ? (
+                  {type === 'Batter' ? (
                     <>
                       <td className="p-2 border">{p.AB || 0}</td>
                       <td className="p-2 border">{p.R || 0}</td>

@@ -12,7 +12,6 @@ export default function PlayerPage() {
   const [range, setRange] = useState('2025 Season')
 
   const today = new Date()
-
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
 
   const applyDateRange = (range) => {
@@ -197,7 +196,14 @@ export default function PlayerPage() {
             <tbody>
               {players.map((p, i) => (
                 <tr key={i}>
-                  <td className="p-2 border text-left">{p.Name}</td>
+                  <td className="p-2 border text-left">
+                    <span>{p.Name}</span>
+                    {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
+                      <span className="ml-1 inline-block bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">
+                        {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
+                      </span>
+                    )}
+                  </td>
                   <td className="p-2 border">{p.Team}</td>
                   <td className="p-2 border">{(p.finalPosition || []).join(', ')}</td>
                   <td className="p-2 border">

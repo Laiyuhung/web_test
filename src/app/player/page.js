@@ -31,8 +31,8 @@ export default function PlayerPage() {
       if (!Array.isArray(statusData)) throw new Error('狀態資料錯誤')
 
       const filteredStatus = statusData.filter(p => {
-        if (type === 'Batter') return p.B_or_P === 'B'
-        if (type === 'Pitcher') return p.B_or_P === 'P'
+        if (type === 'Batter') return p.B_or_P === 'Batter'
+        if (type === 'Pitcher') return p.B_or_P === 'Pitcher'
         return true
       })
 

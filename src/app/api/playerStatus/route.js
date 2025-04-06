@@ -46,7 +46,9 @@ export async function GET() {
             status = 'Waiver'
             const offDate = new Date(dropTime)
             offDate.setDate(offDate.getDate() + 3)
-            offWaivers = offDate.toISOString()
+            const month = offDate.getMonth() + 1
+            const day = offDate.getDate()
+            offWaivers = `${month}/${day}`
           }
         }
       }

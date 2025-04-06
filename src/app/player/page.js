@@ -8,8 +8,54 @@ export default function PlayerPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [type, setType] = useState('Batter')
+  const [range, setRange] = useState('')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
+
+  const dateRanges = {
+    Today: () => {
+      const today = new Date()
+      return [today, today]
+    },
+    Yesterday: () => {
+      const y = new Date()
+      y.setDate(y.getDate() - 1)
+      return [y, y]
+    },
+    'Last 7 days': () => {
+      const end = new Date()
+      end.setDate(end.getDate() - 1)
+      const start = new Date()
+      start.setDate(end.getDate() - 6)
+      return [start, end]
+    },
+    'Last 14 days': () => {
+      const end = new Date()
+      end.setDate(end.getDate() - 1)
+      const start = new Date()
+      start.setDate(end.getDate() - 13)
+      return [start, end]
+    },
+    'Last 30 days': () => {
+      const end = new Date()
+      end.setDate(end.getDate() - 1)
+      const start = new Date()
+      start.setDate(end.getDate() - 29)
+      return [start, end]
+    },
+    '2025 Season': () => {
+      return [new Date('2025-03-28'), new Date('2025-11-30')]
+    },
+  }
+
+  const formatISO = (d) => d.toISOString().split('T')[0]
+
+  const handleRangeChange = (value) => {
+    setRange(value)
+    const [from, to] = dateRanges[value]()
+    setFromDate(formatISO(from))
+    setToDate(formatISO(to))
+  }
 
   const fetchStatsAndStatus = async () => {
     setLoading(true)
@@ -51,7 +97,7 @@ export default function PlayerPage() {
   const formatDate = (str) => {
     const d = new Date(str)
     if (isNaN(d)) return ''
-    return d.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })
+    return d.toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' })
   }
 
   const formatAvg = (val) => {
@@ -64,13 +110,17 @@ export default function PlayerPage() {
       <h1 className="text-xl font-bold mb-4">球員狀態與數據</h1>
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
-      <div className="flex gap-4 items-center mb-4">
+      <div className="flex gap-4 items-center mb-4 flex-wrap">
         <select value={type} onChange={e => setType(e.target.value)} className="border px-2 py-1 rounded">
           <option value="Batter">Batter</option>
           <option value="Pitcher">Pitcher</option>
         </select>
-        <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="border px-2 py-1 rounded" />
-        <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="border px-2 py-1 rounded" />
+        <select value={range} onChange={e => handleRangeChange(e.target.value)} className="border px-2 py-1 rounded">
+          <option value="">選擇區間</option>
+          {Object.keys(dateRanges).map(key => (
+            <option key={key} value={key}>{key}</option>
+          ))}
+        </select>
         <Button onClick={fetchStatsAndStatus}>查詢</Button>
       </div>
 
@@ -84,39 +134,6 @@ export default function PlayerPage() {
                 <th className="p-2 border">姓名</th>
                 <th className="p-2 border">球隊</th>
                 <th className="p-2 border">狀態</th>
-                {type === 'Batter' ? (
-                  <>
-                    <th className="p-2 border">AB</th>
-                    <th className="p-2 border">R</th>
-                    <th className="p-2 border">H</th>
-                    <th className="p-2 border">HR</th>
-                    <th className="p-2 border">RBI</th>
-                    <th className="p-2 border">SB</th>
-                    <th className="p-2 border">K</th>
-                    <th className="p-2 border">BB</th>
-                    <th className="p-2 border">GIDP</th>
-                    <th className="p-2 border">XBH</th>
-                    <th className="p-2 border">TB</th>
-                    <th className="p-2 border">AVG</th>
-                    <th className="p-2 border">OPS</th>
-                  </>
-                ) : (
-                  <>
-                    <th className="p-2 border">IP</th>
-                    <th className="p-2 border">W</th>
-                    <th className="p-2 border">L</th>
-                    <th className="p-2 border">HLD</th>
-                    <th className="p-2 border">SV</th>
-                    <th className="p-2 border">H</th>
-                    <th className="p-2 border">ER</th>
-                    <th className="p-2 border">K</th>
-                    <th className="p-2 border">BB</th>
-                    <th className="p-2 border">QS</th>
-                    <th className="p-2 border">OUT</th>
-                    <th className="p-2 border">ERA</th>
-                    <th className="p-2 border">WHIP</th>
-                  </>
-                )}
               </tr>
             </thead>
             <tbody>
@@ -128,39 +145,6 @@ export default function PlayerPage() {
                     {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` :
                       p.status === 'Waiver' && p.offWaivers ? `off waivers ${formatDate(p.offWaivers)}` : p.status}
                   </td>
-                  {type === 'Batter' ? (
-                    <>
-                      <td className="p-2 border">{p.AB || 0}</td>
-                      <td className="p-2 border">{p.R || 0}</td>
-                      <td className="p-2 border">{p.H || 0}</td>
-                      <td className="p-2 border">{p.HR || 0}</td>
-                      <td className="p-2 border">{p.RBI || 0}</td>
-                      <td className="p-2 border">{p.SB || 0}</td>
-                      <td className="p-2 border">{p.K || 0}</td>
-                      <td className="p-2 border">{p.BB || 0}</td>
-                      <td className="p-2 border">{p.GIDP || 0}</td>
-                      <td className="p-2 border">{p.XBH || 0}</td>
-                      <td className="p-2 border">{p.TB || 0}</td>
-                      <td className="p-2 border">{formatAvg(p.AVG)}</td>
-                      <td className="p-2 border">{formatAvg(p.OPS)}</td>
-                    </>
-                  ) : (
-                    <>
-                      <td className="p-2 border">{p.IP || 0}</td>
-                      <td className="p-2 border">{p.W || 0}</td>
-                      <td className="p-2 border">{p.L || 0}</td>
-                      <td className="p-2 border">{p.HLD || 0}</td>
-                      <td className="p-2 border">{p.SV || 0}</td>
-                      <td className="p-2 border">{p.H || 0}</td>
-                      <td className="p-2 border">{p.ER || 0}</td>
-                      <td className="p-2 border">{p.K || 0}</td>
-                      <td className="p-2 border">{p.BB || 0}</td>
-                      <td className="p-2 border">{p.QS || 0}</td>
-                      <td className="p-2 border">{p.OUT || 0}</td>
-                      <td className="p-2 border">{p.ERA || '0.00'}</td>
-                      <td className="p-2 border">{p.WHIP || '0.00'}</td>
-                    </>
-                  )}
                 </tr>
               ))}
             </tbody>

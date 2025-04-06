@@ -4,7 +4,6 @@ import supabase from '@/lib/supabase'
 export async function POST(req) {
   try {
     const { text, date, isMajor } = await req.json()
-
     if (!text || !date || typeof isMajor !== 'boolean') {
       return NextResponse.json({ error: '缺少必要欄位' }, { status: 400 })
     }
@@ -14,54 +13,37 @@ export async function POST(req) {
 
     const parseInnings = (str) => {
       if (str.includes('/')) {
-        // 支援格式 11/3、21/3 → 1.1、2.1
         const match = str.match(/^(\d+)(\d)\/3$/)
         if (match) {
           const whole = parseInt(match[1])
           const out = parseInt(match[2])
-          if (out === 1) return Math.floor(whole / 10) + 0.1
-          if (out === 2) return Math.floor(whole / 10) + 0.2
-          return Math.floor(whole / 10)
+          return Math.floor(whole / 10) + (out === 1 ? 0.1 : out === 2 ? 0.2 : 0)
         }
-
-        // 支援格式 1/3、2/3 → 0.1、0.2
         const [num, den] = str.split('/').map(Number)
         if (num === 1 && den === 3) return 0.1
         if (num === 2 && den === 3) return 0.2
         return 0
       }
-
       return parseFloat(str) || 0
-    }
-
-    const extractNameAndNote = (raw) => {
-      const match = raw.match(/^(.+?)\s*(?:\(([^)]+)\))?$/)
-      const note = match?.[2]?.split(',')[0].trim() || null
-      return {
-        name: match?.[1].trim() || '',
-        note
-      }
     }
 
     const parseLine = (line, index) => {
       const parts = line.trim().split(/\s+/)
+
       const sequence = parseInt(parts[0]) || 0
+      const name = parts[1] || ''
 
-      const inningIndex = parts.findIndex(p =>
-        /^(\d+\/3|\d+(\.\d)?)$/.test(p)
-      )
+      let record = null
+      let statStart = 2
 
-      if (inningIndex === -1) {
-        console.error(`❌ 第 ${index + 1} 行找不到投球局數欄位:`, line)
-        throw new Error('找不到投球局數欄位')
+      // 如果第三欄是括號格式 => 有 record
+      if (/^\(.*\)$/.test(parts[2])) {
+        record = parts[2].replace(/[()]/g, '').split(',')[0]
+        statStart = 3
       }
 
-      const nameRaw = parts.slice(1, inningIndex).join(' ')
-      const { name, note } = extractNameAndNote(nameRaw)
-
-      let stats = parts.slice(inningIndex).map(p => p.replace(/[（）]/g, ''))
-
-      if (stats.length > 17) stats = stats.slice(0, 17)
+      const stats = parts.slice(statStart).map(p => p.replace(/[（）]/g, ''))
+      if (stats.length > 17) stats.length = 17
       while (stats.length < 17) stats.push('0')
 
       const toInt = val => parseInt(val) || 0
@@ -70,7 +52,7 @@ export async function POST(req) {
       const parsed = {
         sequence,
         name,
-        record: note,
+        record,
         innings_pitched: parseInnings(stats[0]),
         batters_faced: toInt(stats[1]),
         pitches_thrown: toInt(stats[2]),

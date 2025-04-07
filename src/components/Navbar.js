@@ -1,3 +1,4 @@
+// Navbar.js
 'use client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -9,13 +10,10 @@ export default function Navbar() {
   const [userId, setUserId] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // 當使用者登入或登出時，更新 navbar 顯示
+  // 檢查 sessionStorage 是否有登入的 user_id
   useEffect(() => {
-    const cookie = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('user_id='))
-    if (cookie) {
-      const id = cookie.split('=')[1]
+    const id = sessionStorage.getItem('user_id') // 從 sessionStorage 取出 user_id
+    if (id) {
       setUserId(id)
 
       // 獲取使用者名稱
@@ -37,6 +35,7 @@ export default function Navbar() {
     // 在登出時清除 userId 並跳轉到登錄頁面
     setUserId('')  // 更新 userId
     setUserName('')  // 清空用戶名稱
+    sessionStorage.removeItem('user_id')  // 清除 sessionStorage 中的 user_id
     router.push('/login')
   }
 

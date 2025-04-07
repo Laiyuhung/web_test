@@ -100,11 +100,17 @@ export default function PlayerPage() {
         const position = positionData.find(pos => pos.name === p.Name)
         const finalPosition = position?.finalPosition || []
 
+        // 洋將判斷：假設 p.identity 若不存在就用 Team 判斷
+        const identityType = p.identity || (p.Team && p.Team.includes('統一') ? '本土' : '洋將')
+
+        console.log(`%c[${p.Name}] status=${p.status}｜register=${registerStatus}｜identity=${identityType}`, 'color:orange')
+
         return {
           ...p,
           ...(stat || {}),
           registerStatus,
-          finalPosition
+          finalPosition,
+          identity: identityType
         }
       })
 
@@ -115,7 +121,7 @@ export default function PlayerPage() {
         if (team !== 'All teams' && p.Team !== team) return false
         if (status !== 'All Players' && !(p.status || '').includes(status)) return false
         if (register !== '所有球員') {
-          if (register === '一軍' && p.registerStatus === '二軍') return false
+          if (register === '一軍' && ['二軍', '未註冊', '註銷'].includes(p.registerStatus)) return false
           if (register === '未註冊' && !['未註冊', '註銷'].includes(p.registerStatus)) return false
           if (register === '二軍' && p.registerStatus !== '二軍') return false
         }

@@ -334,25 +334,32 @@ export default function PlayerPage() {
     {players.map((p, i) => (
       <>
         <tr key={`info-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-          <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left whitespace-nowrap">
-            <div className="flex items-center gap-1 font-bold text-[#0155A0]">
-              {renderActionButton(p)}
-              <span>{p.Name}</span>
-              {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
-                <span className="inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
-                </span>
-              )}
-              {p.status && (
-                <span className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded-full ${p.owner && p.owner !== '-' ? 'bg-blue-100 text-blue-800' : p.status === 'Waiver' ? 'bg-red-600 text-white' : 'bg-green-100 text-green-800'}`}>
-                  {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` : p.status === 'Waiver' && p.offWaivers ? `off waivers ${formatDate(p.offWaivers)}` : p.status}
-                </span>
-              )}
-            </div>
-            <div className="text-xs text-gray-500 ml-8">
-              {p.Team} - {(p.finalPosition || []).join(', ')}
-            </div>
-          </td>
+        <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left whitespace-nowrap">
+          <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
+            {renderActionButton(p)}
+            <span>{p.Name}</span>
+            {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
+              <span className="inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
+              </span>
+            )}
+            {p.status && (
+              <>
+                {p.status === 'Free Agent' ? (
+                  <span className="ml-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded-full">FA</span>
+                ) : p.status === 'Waiver' && p.offWaivers ? (
+                  <span className="ml-2 bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">W {formatDate(p.offWaivers)}</span>
+                ) : p.owner && p.owner !== '-' ? (
+                  <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">- {p.owner}</span>
+                ) : null}
+              </>
+            )}
+          </div>
+          <div className="text-xs text-gray-500 ml-8">
+            {p.Team} - {(p.finalPosition || []).join(', ')}
+          </div>
+        </td>
+
         </tr>
         <tr key={`stat-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
           {type === 'Batter' ? (

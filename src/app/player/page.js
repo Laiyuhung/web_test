@@ -344,7 +344,11 @@ export default function PlayerPage() {
                   <td className="p-2 border text-left whitespace-nowrap font-bold text-[#0155A0]">{p.Name}</td>
                   <td className="p-2 border font-bold whitespace-nowrap">{p.Team}</td>
                   <td className="p-2 border font-bold whitespace-nowrap">{(p.finalPosition || []).join(', ')}</td>
-                  <td className="p-2 border font-bold whitespace-nowrap">{p.status}</td>
+                  <td className="p-2 border">
+                    {p.owner && p.owner !== '-' ? `On Team - ${p.owner}` :
+                      p.status === 'Waiver' && p.offWaivers ? `off waivers ${formatDate(p.offWaivers)}` : p.status}
+                  </td>
+
                   {type === 'Batter' ? (
                     <>
                       <td className="p-2 border font-bold whitespace-nowrap">{p.AB || 0}</td>

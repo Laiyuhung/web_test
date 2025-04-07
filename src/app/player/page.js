@@ -188,19 +188,17 @@ export default function PlayerPage() {
       const status = (p.status || '').toLowerCase()
       const ownerId = p.manager_id?.toString() || null
       const isOwner = ownerId === userId
-    
-      console.log(`[renderActionButton] ${p.Name}｜狀態=${p.status}｜owner=${p.owner}｜擁有者ID=${ownerId}｜登入者ID=${userId}`)
-    
+  
       if (status === 'free agent') {
-        return <button className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded">Add</button>
+        return <span className="text-green-600 font-bold">＋</span>
       }
       if (p.status?.includes('On Team') && p.owner && p.owner !== '-' && isOwner) {
-        return <button className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded">Drop</button>
+        return <span className="text-red-600 font-bold">－</span>
       }
       if (status.includes('waiver')) {
-        return <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded">Waiver claim</button>
+        return <span className="text-yellow-500 font-bold">＋</span>
       }
-      return <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">Trade discussion</button>
+      return <span className="text-blue-600 font-bold">⇄</span>
     }
     
     
@@ -295,9 +293,10 @@ export default function PlayerPage() {
 
       <Card>
         <CardContent className="overflow-auto p-4">
-          <table className="text-xs w-full text-center border">
+          <table className="text-sm w-full text-center border">
             <thead className="bg-gray-200 sticky top-0 z-10">
               <tr>
+                <th className="p-2 border"></th>
                 <th className="p-2 border">Name</th>
                 <th className="p-2 border">Team</th>
                 <th className="p-2 border">Position</th>
@@ -335,12 +334,13 @@ export default function PlayerPage() {
                     <th className="p-2 border">WHIP</th>
                   </>
                 )}
-                <th className="p-2 border">Action</th>
+                
               </tr>
             </thead>
             <tbody>
               {players.map((p, i) => (
                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <td className="p-2 border">{renderActionButton(p)}</td>
                   <td className="p-2 border text-left">
                     <span>{p.Name}</span>
                     {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (

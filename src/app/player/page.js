@@ -342,8 +342,10 @@ export default function PlayerPage() {
                   className="p-2 border text-left whitespace-nowrap sticky top-0 z-10 bg-white"
                 >
 
-                  <div className="flex items-center gap-1 font-bold text-[#0155A0] text-xl">
+                  <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
+                  <div className="text-xl">
                     {renderActionButton(p)}
+                  </div>
                     <span>{p.Name}</span>
                     <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
                     {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (

@@ -190,9 +190,8 @@ export default function PlayerPage() {
     
       // 從 players 中找出 team name 含有 fullTeamName 的球員 → 用來對應 manager_id
       const manager = fullTeamName && players.find(m => m.owner?.includes(fullTeamName))
-      const ownerId = p.manager_id?.toString() || null
+      const ownerId = status.includes('On Team') && manager ? manager.manager_id?.toString() : null
       const isOwner = ownerId === userId
-
     
       console.log(`[renderActionButton] ${p.Name}｜狀態=${p.status}｜owner=${p.owner}｜擁有者ID=${ownerId}｜登入者ID=${userId}`)
     

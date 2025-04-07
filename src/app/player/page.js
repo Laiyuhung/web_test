@@ -209,85 +209,88 @@ export default function PlayerPage() {
       <h1 className="text-xl font-bold mb-4">球員狀態與數據</h1>
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 items-center mb-4">
-        <div>
-          <label className="text-sm font-semibold">Batter/Pitcher</label>
-          <select value={type} onChange={e => setType(e.target.value)} className="border px-2 py-1 rounded w-full">
-            <option value="Batter">Batter</option>
-            <option value="Pitcher">Pitcher</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Identities</label>
-          <select value={identity} onChange={e => setIdentity(e.target.value)} className="border px-2 py-1 rounded w-full">
-            <option>All Identities</option>
-            <option>本土</option>
-            <option>洋將</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Teams</label>
-          <select value={team} onChange={e => setTeam(e.target.value)} className="border px-2 py-1 rounded w-full">
-            <option>All teams</option>
-            <option>統一獅</option>
-            <option>樂天桃猿</option>
-            <option>富邦悍將</option>
-            <option>味全龍</option>
-            <option>中信兄弟</option>
-            <option>台鋼雄鷹</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Status</label>
-          <select value={status} onChange={e => setStatus(e.target.value)} className="border px-2 py-1 rounded w-full">
-            <option>All Players</option>
-            <option>On Team</option>
-            <option>Free Agent</option>
-            <option>Waiver</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-semibold">升降</label>
-          <select value={register} onChange={e => setRegister(e.target.value)} className="border px-2 py-1 rounded w-full">
-            <option>所有球員</option>
-            <option>一軍</option>
-            <option>二軍</option>
-            <option>未註冊</option>
-            <option>註銷</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Position</label>
-          <select value={position} onChange={e => setPosition(e.target.value)} className="border px-2 py-1 rounded w-full">
-            {positionOptions.map(pos => <option key={pos}>{pos}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Stats Range</label>
-          <select value={range} onChange={e => setRange(e.target.value)} className="border px-2 py-1 rounded w-full">
-            <option>Today</option>
-            <option>Yesterday</option>
-            <option>Last 7 days</option>
-            <option>Last 14 days</option>
-            <option>Last 30 days</option>
-            <option>2025 Season</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Sort by</label>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="border px-2 py-1 rounded w-full">
-            {sortOptions.map(field => <option key={field}>{field}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Sort method</label>
-          <select value={sortMethod} onChange={e => setSortMethod(e.target.value)} className="border px-2 py-1 rounded w-full">
-            <option>Descending</option>
-            <option>Ascending</option>
-          </select>
+      <div className="overflow-x-auto w-full mb-4">
+        <div className="flex gap-4 items-end px-4 py-2 rounded-lg border bg-white w-max min-w-full">
+          <div>
+            <label className="text-sm font-semibold">Batter/Pitcher</label>
+            <select value={type} onChange={e => setType(e.target.value)} className="border px-2 py-1 rounded w-full">
+              <option value="Batter">Batter</option>
+              <option value="Pitcher">Pitcher</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Identities</label>
+            <select value={identity} onChange={e => setIdentity(e.target.value)} className="border px-2 py-1 rounded w-full">
+              <option>All Identities</option>
+              <option>本土</option>
+              <option>洋將</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Teams</label>
+            <select value={team} onChange={e => setTeam(e.target.value)} className="border px-2 py-1 rounded w-full">
+              <option>All teams</option>
+              <option>統一獅</option>
+              <option>樂天桃猿</option>
+              <option>富邦悍將</option>
+              <option>味全龍</option>
+              <option>中信兄弟</option>
+              <option>台鋼雄鷹</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Status</label>
+            <select value={status} onChange={e => setStatus(e.target.value)} className="border px-2 py-1 rounded w-full">
+              <option>All Players</option>
+              <option>On Team</option>
+              <option>Free Agent</option>
+              <option>Waiver</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-semibold">升降</label>
+            <select value={register} onChange={e => setRegister(e.target.value)} className="border px-2 py-1 rounded w-full">
+              <option>所有球員</option>
+              <option>一軍</option>
+              <option>二軍</option>
+              <option>未註冊</option>
+              <option>註銷</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Position</label>
+            <select value={position} onChange={e => setPosition(e.target.value)} className="border px-2 py-1 rounded w-full">
+              {positionOptions.map(pos => <option key={pos}>{pos}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Stats Range</label>
+            <select value={range} onChange={e => setRange(e.target.value)} className="border px-2 py-1 rounded w-full">
+              <option>Today</option>
+              <option>Yesterday</option>
+              <option>Last 7 days</option>
+              <option>Last 14 days</option>
+              <option>Last 30 days</option>
+              <option>2025 Season</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Sort by</label>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="border px-2 py-1 rounded w-full">
+              {sortOptions.map(field => <option key={field}>{field}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Sort method</label>
+            <select value={sortMethod} onChange={e => setSortMethod(e.target.value)} className="border px-2 py-1 rounded w-full">
+              <option>Descending</option>
+              <option>Ascending</option>
+            </select>
+          </div>
         </div>
       </div>
-      <span className="text-sm text-gray-600">查詢區間：{fromDate} ~ {toDate}</span>
+      
+      <span className="text-sm text-gray-600">數據區間：{fromDate} ~ {toDate}</span>
 
       {loading && <div className="mb-4">Loading...</div>}
       
@@ -339,7 +342,7 @@ export default function PlayerPage() {
                   className="p-2 border text-left whitespace-nowrap sticky top-0 z-10 bg-white"
                 >
 
-                  <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
+                  <div className="flex items-center gap-1 font-bold text-[#0155A0] text-xl">
                     {renderActionButton(p)}
                     <span>{p.Name}</span>
                     <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>

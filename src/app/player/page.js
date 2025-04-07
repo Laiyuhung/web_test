@@ -174,6 +174,21 @@ export default function PlayerPage() {
     ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
     : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
 
+    
+    const renderActionButton = (p) => {
+      const status = (p.status || '').toLowerCase()
+      if (status === 'free agent') {
+        return <button className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded">Add</button>
+      }
+      if (p.status?.includes('On Team') && p.owner && p.owner !== '-' && p.manager_id === userId) {
+        return <button className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded">Drop</button>
+      }
+      if (status.includes('waiver')) {
+        return <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded">Waiver claim</button>
+      }
+      return <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">Trade discussion</button>
+    }
+
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">球員狀態與數據</h1>
@@ -303,6 +318,7 @@ export default function PlayerPage() {
                     <th className="p-2 border">WHIP</th>
                   </>
                 )}
+                <td className="p-2 border">{renderActionButton(p)}</td>
               </tr>
             </thead>
             <tbody>

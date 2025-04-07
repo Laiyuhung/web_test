@@ -10,6 +10,10 @@ export default function PlayerPage() {
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [range, setRange] = useState('2025 Season')
+  const [identity, setIdentity] = useState('All Identities')
+  const [team, setTeam] = useState('All teams')
+  const [status, setStatus] = useState('All Players')
+  const [register, setRegister] = useState('所有球員')
 
   const today = new Date()
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
@@ -81,8 +85,12 @@ export default function PlayerPage() {
       ])
 
       const filteredStatus = statusData.filter(p => {
-        if (type === 'Batter') return p.B_or_P === 'Batter'
-        if (type === 'Pitcher') return p.B_or_P === 'Pitcher'
+        if (type === 'Batter' && p.B_or_P !== 'Batter') return false
+        if (type === 'Pitcher' && p.B_or_P !== 'Pitcher') return false
+        if (identity !== 'All Identities' && p.identity !== identity) return false
+        if (team !== 'All teams' && p.Team !== team) return false
+        if (status !== 'All Players' && p.status !== status) return false
+        if (register !== '所有球員' && p.registerStatus !== register) return false
         return true
       })
 
@@ -92,8 +100,6 @@ export default function PlayerPage() {
         const registerStatus = register?.status || '未知'
         const position = positionData.find(pos => pos.name === p.Name)
         const finalPosition = position?.finalPosition || []
-
-        console.log(`[${p.Name}] 登錄狀態：${registerStatus}｜守位：${finalPosition.join(', ')}`)
 
         return {
           ...p,
@@ -113,7 +119,7 @@ export default function PlayerPage() {
 
   useEffect(() => {
     fetchStatsAndStatus()
-  }, [type, fromDate, toDate])
+  }, [type, fromDate, toDate, identity, team, status, register])
 
   const formatDate = (str) => {
     const d = new Date(str)
@@ -143,6 +149,32 @@ export default function PlayerPage() {
           <option>Last 14 days</option>
           <option>Last 30 days</option>
           <option>2025 Season</option>
+        </select>
+        <select value={identity} onChange={e => setIdentity(e.target.value)} className="border px-2 py-1 rounded">
+          <option>All Identities</option>
+          <option>本土</option>
+          <option>洋將</option>
+        </select>
+        <select value={team} onChange={e => setTeam(e.target.value)} className="border px-2 py-1 rounded">
+          <option>All teams</option>
+          <option>統一獅</option>
+          <option>樂天桃猿</option>
+          <option>富邦悍將</option>
+          <option>味全龍</option>
+          <option>中信兄弟</option>
+          <option>台鋼雄鷹</option>
+        </select>
+        <select value={status} onChange={e => setStatus(e.target.value)} className="border px-2 py-1 rounded">
+          <option>All Players</option>
+          <option>On team</option>
+          <option>Free Agent</option>
+          <option>Waiver</option>
+        </select>
+        <select value={register} onChange={e => setRegister(e.target.value)} className="border px-2 py-1 rounded">
+          <option>所有球員</option>
+          <option>一軍</option>
+          <option>二軍</option>
+          <option>未註冊</option>
         </select>
         <span className="text-sm text-gray-600">查詢區間：{fromDate} ~ {toDate}</span>
       </div>

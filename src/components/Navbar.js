@@ -9,32 +9,39 @@ export default function Navbar() {
   const [userId, setUserId] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
 
+  // 當使用者登入或登出時，更新 navbar 顯示
   useEffect(() => {
     const cookie = document.cookie
       .split('; ')
       .find(row => row.startsWith('user_id='))
-    if (!cookie) return
-    const id = cookie.split('=')[1]
-    setUserId(id)
+    if (cookie) {
+      const id = cookie.split('=')[1]
+      setUserId(id)
 
-    fetch('/api/username', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: id }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.name) setUserName(data.name)
+      // 獲取使用者名稱
+      fetch('/api/username', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: id }),
       })
-      .catch(err => console.error('❌ username fetch 錯誤:', err))
+        .then(res => res.json())
+        .then(data => {
+          if (data.name) setUserName(data.name)
+        })
+        .catch(err => console.error('❌ username fetch 錯誤:', err))
+    }
   }, [])
 
   const handleLogout = async () => {
     await fetch('/api/logout', { method: 'POST' })
+    // 在登出時清除 userId 並跳轉到登錄頁面
+    setUserId('')  // 更新 userId
+    setUserName('')  // 清空用戶名稱
     router.push('/login')
   }
 
-  if (!userId) return null // 若未檢測到cookie中有user_id，則不顯示Navbar
+  // 如果沒有登入，則不顯示 navbar
+  if (!userId) return null
 
   return (
     <nav className="bg-[#003366] text-white px-6 py-3 flex items-center justify-between shadow-md">
@@ -68,7 +75,6 @@ export default function Navbar() {
       {menuOpen && (
         <div className="absolute top-0 right-0 w-1/2 bg-[#003366] text-white p-4 md:hidden">
           <div className="flex justify-between items-center mb-4">
-            <div className="text-sm font-semibold">歡迎 {userName}</div>
             <button
               onClick={() => setMenuOpen(false)}
               className="text-white text-xl"
@@ -81,12 +87,6 @@ export default function Navbar() {
           {userId === '2' && (
             <Link href="/bulk-insert" className="block py-2">資料登錄系統</Link>
           )}
-          <button
-            onClick={handleLogout}
-            className="block py-2 text-white hover:text-red-300"
-          >
-            登出
-          </button>
         </div>
       )}
 
@@ -101,7 +101,7 @@ export default function Navbar() {
           onClick={handleLogout}
           className="text-sm text-white hover:text-red-300"
         >
-          登出
+          Logout
         </button>
       </div>
     </nav>

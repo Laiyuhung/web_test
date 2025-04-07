@@ -15,6 +15,8 @@ export default function PlayerPage() {
   const [status, setStatus] = useState('All Players')
   const [register, setRegister] = useState('所有球員')
   const [position, setPosition] = useState('Util')
+  const [sortBy, setSortBy] = useState('AB')
+  const [sortMethod, setSortMethod] = useState('Descending')
 
   const today = new Date()
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
@@ -73,6 +75,7 @@ export default function PlayerPage() {
 
   useEffect(() => {
     setPosition(type === 'Batter' ? 'Util' : 'P')
+    setSortBy(type === 'Batter' ? 'AB' : 'IP')
   }, [type])
 
   const fetchStatsAndStatus = async () => {
@@ -106,8 +109,6 @@ export default function PlayerPage() {
         const finalPosition = posData?.finalPosition || []
         const identityType = p.identity || '未知'
 
-        console.log(`%c[${p.Name}] status=${p.status}｜register=${registerStatus}｜identity=${identityType}`, 'color:orange')
-
         return {
           ...p,
           ...(stat || {}),
@@ -136,7 +137,13 @@ export default function PlayerPage() {
         return true
       })
 
-      setPlayers(filtered)
+      const sorted = [...filtered].sort((a, b) => {
+        const aVal = parseFloat(a[sortBy] || 0)
+        const bVal = parseFloat(b[sortBy] || 0)
+        return sortMethod === 'Ascending' ? aVal - bVal : bVal - aVal
+      })
+
+      setPlayers(sorted)
     } catch (err) {
       console.error('統計錯誤:', err)
       setError('統計讀取失敗')
@@ -146,7 +153,7 @@ export default function PlayerPage() {
 
   useEffect(() => {
     fetchStatsAndStatus()
-  }, [type, fromDate, toDate, identity, team, status, register, position])
+  }, [type, fromDate, toDate, identity, team, status, register, position, sortBy, sortMethod])
 
   const formatDate = (str) => {
     const d = new Date(str)
@@ -162,6 +169,10 @@ export default function PlayerPage() {
   const positionOptions = type === 'Batter'
     ? ['Util', 'C', '1B', '2B', '3B', 'SS', 'OF']
     : ['P', 'SP', 'RP']
+
+  const sortOptions = type === 'Batter'
+    ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
+    : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
 
   return (
     <div className="p-6">
@@ -230,6 +241,19 @@ export default function PlayerPage() {
             <option>Last 14 days</option>
             <option>Last 30 days</option>
             <option>2025 Season</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-semibold">Sort by</label>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="border px-2 py-1 rounded w-full">
+            {sortOptions.map(field => <option key={field}>{field}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-semibold">Sort method</label>
+          <select value={sortMethod} onChange={e => setSortMethod(e.target.value)} className="border px-2 py-1 rounded w-full">
+            <option>Descending</option>
+            <option>Ascending</option>
           </select>
         </div>
       </div>

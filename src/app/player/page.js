@@ -14,6 +14,7 @@ export default function PlayerPage() {
   const [team, setTeam] = useState('All teams')
   const [status, setStatus] = useState('All Players')
   const [register, setRegister] = useState('所有球員')
+  const [position, setPosition] = useState('Util')
 
   const today = new Date()
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
@@ -70,6 +71,10 @@ export default function PlayerPage() {
     applyDateRange(range)
   }, [range])
 
+  useEffect(() => {
+    setPosition(type === 'Batter' ? 'Util' : 'P')
+  }, [type])
+
   const fetchStatsAndStatus = async () => {
     if (!fromDate || !toDate) return
     setLoading(true)
@@ -97,8 +102,8 @@ export default function PlayerPage() {
         const stat = statsData.find(s => s.name === p.Name)
         const register = registerData.find(r => r.name === p.Name)
         const registerStatus = register?.status || '未知'
-        const position = positionData.find(pos => pos.name === p.Name)
-        const finalPosition = position?.finalPosition || []
+        const posData = positionData.find(pos => pos.name === p.Name)
+        const finalPosition = posData?.finalPosition || []
         const identityType = p.identity || '未知'
 
         console.log(`%c[${p.Name}] status=${p.status}｜register=${registerStatus}｜identity=${identityType}`, 'color:orange')
@@ -125,6 +130,9 @@ export default function PlayerPage() {
           if (register === '二軍' && !['二軍', '註銷', '未註冊'].includes(p.registerStatus)) return false
           if (register === '註銷' && p.registerStatus !== '註銷') return false
         }
+        if (position !== 'Util' && position !== 'P') {
+          if (!(p.finalPosition || []).some(pos => pos.includes(position))) return false
+        }
         return true
       })
 
@@ -138,7 +146,7 @@ export default function PlayerPage() {
 
   useEffect(() => {
     fetchStatsAndStatus()
-  }, [type, fromDate, toDate, identity, team, status, register])
+  }, [type, fromDate, toDate, identity, team, status, register, position])
 
   const formatDate = (str) => {
     const d = new Date(str)
@@ -150,6 +158,10 @@ export default function PlayerPage() {
     const num = parseFloat(val)
     return isNaN(num) ? '.000' : num.toFixed(3).replace(/^0/, '')
   }
+
+  const positionOptions = type === 'Batter'
+    ? ['Util', 'C', '1B', '2B', '3B', 'SS', 'OF']
+    : ['P', 'SP', 'RP']
 
   return (
     <div className="p-6">

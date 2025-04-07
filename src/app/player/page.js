@@ -318,7 +318,7 @@ export default function PlayerPage() {
                     <th className="p-2 border">WHIP</th>
                   </>
                 )}
-                <td className="p-2 border">{renderActionButton(p)}</td>
+                <th className="p-2 border">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -371,6 +371,7 @@ export default function PlayerPage() {
                       <td className="p-2 border">{p.WHIP || '0.00'}</td>
                     </>
                   )}
+                  <td className="p-2 border">{renderActionButton(p)}</td>
                 </tr>
               ))}
             </tbody>

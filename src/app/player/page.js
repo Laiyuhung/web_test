@@ -186,20 +186,15 @@ export default function PlayerPage() {
     
     const renderActionButton = (p) => {
       const status = (p.status || '').toLowerCase()
-    
-      // 解析 On Team - 黃品熏's team 的 team name
       const fullTeamName = p.owner?.split(' - ')[1]?.trim() || null
     
-      // 從 players 中找出這個 owner 的 manager_id
-      const manager = fullTeamName && players.find(m => m.owner === `On Team - ${fullTeamName}`)
-      const ownerId = status.includes('on team') && manager ? manager.manager_id?.toString() : null
-    
+      // 從 players 中找出 team name 含有 fullTeamName 的球員 → 用來對應 manager_id
+      const manager = fullTeamName && players.find(m => m.owner?.includes(fullTeamName))
+      const ownerId = status.includes('On Team') && manager ? manager.manager_id?.toString() : null
       const isOwner = ownerId === userId
     
-      // 除錯用 console.log
       console.log(`[renderActionButton] ${p.Name}｜狀態=${p.status}｜owner=${p.owner}｜擁有者ID=${ownerId}｜登入者ID=${userId}`)
     
-      // 不同狀態下的按鈕
       if (status === 'free agent') {
         return <button className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded">Add</button>
       }
@@ -211,6 +206,7 @@ export default function PlayerPage() {
       }
       return <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">Trade discussion</button>
     }
+    
     
 
   return (

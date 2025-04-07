@@ -34,6 +34,8 @@ export default function Navbar() {
     router.push('/login')
   }
 
+  if (!userId) return null // 若未檢測到cookie中有user_id，則不顯示Navbar
+
   return (
     <nav className="bg-[#003366] text-white px-6 py-3 flex items-center justify-between shadow-md">
       {/* Logo Section */}
@@ -65,15 +67,30 @@ export default function Navbar() {
       {/* Dropdown Menu for small screens */}
       {menuOpen && (
         <div className="absolute top-0 right-0 w-1/2 bg-[#003366] text-white p-4 md:hidden">
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-sm font-semibold">歡迎 {userName}</div>
+            <button
+              onClick={() => setMenuOpen(false)}
+              className="text-white text-xl"
+            >
+              &times; {/* Close button */}
+            </button>
+          </div>
           <Link href="/home" className="block py-2">HOME</Link>
           <Link href="/player" className="block py-2">PLAYERS</Link>
           {userId === '2' && (
             <Link href="/bulk-insert" className="block py-2">資料登錄系統</Link>
           )}
+          <button
+            onClick={handleLogout}
+            className="block py-2 text-white hover:text-red-300"
+          >
+            登出
+          </button>
         </div>
       )}
 
-      {/* User and Logout Section */}
+      {/* User and Logout Section (For larger screens, will only show if user is logged in) */}
       <div className="flex items-center space-x-4">
         {userName && (
           <div className="flex items-center gap-1 text-sm">
@@ -84,7 +101,7 @@ export default function Navbar() {
           onClick={handleLogout}
           className="text-sm text-white hover:text-red-300"
         >
-          Logout
+          登出
         </button>
       </div>
     </nav>

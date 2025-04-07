@@ -212,7 +212,7 @@ export default function PlayerPage() {
       <h1 className="text-xl font-bold mb-4">PLAYERS</h1>
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
-      <div>
+      <div className="mb-4 max-w-sm">
         <label className="text-sm font-semibold">Search</label>
         <input
           type="text"

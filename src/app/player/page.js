@@ -203,6 +203,7 @@ export default function PlayerPage() {
             <option>一軍</option>
             <option>二軍</option>
             <option>未註冊</option>
+            <option>註銷</option>
           </select>
         </div>
         <div>

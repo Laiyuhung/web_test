@@ -297,7 +297,8 @@ export default function PlayerPage() {
         <CardContent className="overflow-auto p-4">
           <table className="text-xs w-full text-center border">
             <thead className="bg-gray-200 sticky top-0 z-10">
-              <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+              {players.map((p, i) => (
+                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                 <th className="p-2 border">Name</th>
                 <th className="p-2 border">Team</th>
                 <th className="p-2 border">Position</th>
@@ -334,13 +335,13 @@ export default function PlayerPage() {
                     <th className="p-2 border">ERA</th>
                     <th className="p-2 border">WHIP</th>
                   </>
-                )}
+                ))}
                 <th className="p-2 border">Action</th>
               </tr>
             </thead>
             <tbody>
               {players.map((p, i) => (
-                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                 <tr>
                   <td className="p-2 border text-left">
                     <span>{p.Name}</span>
                     {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (

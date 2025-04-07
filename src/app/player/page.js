@@ -297,35 +297,35 @@ export default function PlayerPage() {
             <tr>
               {type === 'Batter' ? (
                 <>
-                  <th className="p-2 border font-bold  sticky top-0 ">AB</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">R</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">H</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">HR</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">RBI</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">SB</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">K</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">BB</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">GIDP</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">XBH</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">TB</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">AVG</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">OPS</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">AB</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">R</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">H</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">HR</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">RBI</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">SB</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">K</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">BB</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">GIDP</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">XBH</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">TB</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">AVG</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">OPS</th>
                 </>
               ) : (
                 <>
-                  <th className="p-2 border font-bold  sticky top-0 ">IP</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">W</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">L</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">HLD</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">SV</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">H</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">ER</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">K</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">BB</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">QS</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">OUT</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">ERA</th>
-                  <th className="p-2 border font-bold  sticky top-0 ">WHIP</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">IP</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">W</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">L</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">HLD</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">SV</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">H</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">ER</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">K</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">BB</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">QS</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">OUT</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">ERA</th>
+                  <th className="p-2 border font-bold  sticky top-0 z-20">WHIP</th>
                 </>
               )}
             </tr>
@@ -334,7 +334,7 @@ export default function PlayerPage() {
             {players.map((p, i) => (
               <>
                 <tr key={`info-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left whitespace-nowrap  sticky top-[40px] z-10 bg-white">
+                <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left whitespace-nowrap">
                   <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
                     {renderActionButton(p)}
                     <span>{p.Name}</span>

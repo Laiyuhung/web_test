@@ -351,7 +351,7 @@ export default function PlayerPage() {
                 ) : p.status === 'Waiver' && p.offWaivers ? (
                   <span className="ml-2 bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">W {formatDate(p.offWaivers)}</span>
                 ) : p.owner && p.owner !== '-' ? (
-                  <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">- {p.owner}</span>
+                  <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">{p.owner}</span>
                 ) : null}
               </>
             )}
@@ -363,35 +363,35 @@ export default function PlayerPage() {
         <tr key={`stat-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
           {type === 'Batter' ? (
             <>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.AB || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.R || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.H || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.HR || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.RBI || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.SB || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.K || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.BB || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.GIDP || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.XBH || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.TB || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.AVG || '0.000'}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.OPS || '0.000'}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.AB || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.R || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.H || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.HR || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.RBI || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.SB || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.K || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.GIDP || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.XBH || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.TB || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.AVG || '0.000'}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.OPS || '0.000'}</td>
             </>
           ) : (
             <>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.IP || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.W || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.L || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.HLD || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.SV || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.H || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.ER || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.K || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.BB || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.QS || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.OUT || 0}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.ERA || '0.00'}</td>
-              <td className="p-2 border font-bold whitespace-nowrap text-xs">{p.WHIP || '0.00'}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.IP || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.W || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.L || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.HLD || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.SV || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.H || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.ER || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.K || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.QS || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.OUT || 0}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.ERA || '0.00'}</td>
+              <td className="p-2font-bold whitespace-nowrap text-s">{p.WHIP || '0.00'}</td>
             </>
           )}
         </tr>

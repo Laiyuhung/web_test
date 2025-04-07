@@ -291,8 +291,8 @@ export default function PlayerPage() {
 
       {loading && <div className="mb-4">Loading...</div>}
       
-      <div className="overflow-x-auto w-full">
-        <table className="text-sm w-full text-center border whitespace-nowrap">
+      <div className="overflow-auto max-h-[600px] w-full">
+        <table className="text-sm w-full text-center whitespace-nowrap">
           <thead className="bg-gray-200 sticky top-0 z-20">
             <tr>
               {type === 'Batter' ? (
@@ -313,19 +313,19 @@ export default function PlayerPage() {
                 </>
               ) : (
                 <>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">IP</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">W</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">L</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">HLD</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">SV</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">H</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">ER</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">K</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">BB</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">QS</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">OUT</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">ERA</th>
-                  <th className="p-2 border font-bold  sticky top-0 z-20">WHIP</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">IP</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">W</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">L</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">HLD</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">SV</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">H</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">ER</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">K</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">BB</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">QS</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">OUT</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">ERA</th>
+                  <th className="p-2 border font-bold sticky top-0 z-20">WHIP</th>
                 </>
               )}
             </tr>
@@ -334,7 +334,11 @@ export default function PlayerPage() {
             {players.map((p, i) => (
               <>
                 <tr key={`info-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left whitespace-nowrap">
+                <td
+                  colSpan={type === 'Batter' ? 13 : 13}
+                  className="p-2 border text-left whitespace-nowrap sticky top-0 z-10 bg-white"
+                >
+
                   <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
                     {renderActionButton(p)}
                     <span>{p.Name}</span>

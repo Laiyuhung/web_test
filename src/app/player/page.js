@@ -292,113 +292,113 @@ export default function PlayerPage() {
       {loading && <div className="mb-4">Loading...</div>}
       
       <div className="overflow-x-auto w-full">
-      <table className="text-sm w-full text-center border whitespace-nowrap">
-  <thead className="bg-gray-200 sticky top-0 z-20">
-    <tr>
-      {type === 'Batter' ? (
-        <>
-          <th className="p-2 border font-bold">AB</th>
-          <th className="p-2 border font-bold">R</th>
-          <th className="p-2 border font-bold">H</th>
-          <th className="p-2 border font-bold">HR</th>
-          <th className="p-2 border font-bold">RBI</th>
-          <th className="p-2 border font-bold">SB</th>
-          <th className="p-2 border font-bold">K</th>
-          <th className="p-2 border font-bold">BB</th>
-          <th className="p-2 border font-bold">GIDP</th>
-          <th className="p-2 border font-bold">XBH</th>
-          <th className="p-2 border font-bold">TB</th>
-          <th className="p-2 border font-bold">AVG</th>
-          <th className="p-2 border font-bold">OPS</th>
-        </>
-      ) : (
-        <>
-          <th className="p-2 border font-bold">IP</th>
-          <th className="p-2 border font-bold">W</th>
-          <th className="p-2 border font-bold">L</th>
-          <th className="p-2 border font-bold">HLD</th>
-          <th className="p-2 border font-bold">SV</th>
-          <th className="p-2 border font-bold">H</th>
-          <th className="p-2 border font-bold">ER</th>
-          <th className="p-2 border font-bold">K</th>
-          <th className="p-2 border font-bold">BB</th>
-          <th className="p-2 border font-bold">QS</th>
-          <th className="p-2 border font-bold">OUT</th>
-          <th className="p-2 border font-bold">ERA</th>
-          <th className="p-2 border font-bold">WHIP</th>
-        </>
-      )}
-    </tr>
-  </thead>
-  <tbody>
-    {players.map((p, i) => (
-      <>
-        <tr key={`info-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-        <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left whitespace-nowrap">
-          <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
-            {renderActionButton(p)}
-            <span>{p.Name}</span>
-            <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
-            {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
-              <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
-              </span>
-            )}
-            {p.status && (
+        <table className="text-sm w-full text-center border whitespace-nowrap">
+          <thead className="bg-gray-200 sticky top-0 z-20">
+            <tr>
+              {type === 'Batter' ? (
+                <>
+                  <th className="p-2 border font-bold  sticky top-0 ">AB</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">R</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">H</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">HR</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">RBI</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">SB</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">K</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">BB</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">GIDP</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">XBH</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">TB</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">AVG</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">OPS</th>
+                </>
+              ) : (
+                <>
+                  <th className="p-2 border font-bold  sticky top-0 ">IP</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">W</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">L</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">HLD</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">SV</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">H</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">ER</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">K</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">BB</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">QS</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">OUT</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">ERA</th>
+                  <th className="p-2 border font-bold  sticky top-0 ">WHIP</th>
+                </>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {players.map((p, i) => (
               <>
-                {p.status === 'Free Agent' ? (
-                  <span className="ml-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded-full">FA</span>
-                ) : p.status === 'Waiver' && p.offWaivers ? (
-                  <span className="ml-2 bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">W {formatDate(p.offWaivers)}</span>
-                ) : p.owner && p.owner !== '-' ? (
-                  <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">{p.owner}</span>
-                ) : null}
+                <tr key={`info-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left whitespace-nowrap">
+                  <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
+                    {renderActionButton(p)}
+                    <span>{p.Name}</span>
+                    <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
+                    {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
+                      <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
+                      </span>
+                    )}
+                    {p.status && (
+                      <>
+                        {p.status === 'Free Agent' ? (
+                          <span className="ml-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded-full">FA</span>
+                        ) : p.status === 'Waiver' && p.offWaivers ? (
+                          <span className="ml-2 bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">W {formatDate(p.offWaivers)}</span>
+                        ) : p.owner && p.owner !== '-' ? (
+                          <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">{p.owner}</span>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+                </td>
+
+
+                </tr>
+                <tr key={`stat-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  {type === 'Batter' ? (
+                    <>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.AB || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.R || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.H || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.HR || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.RBI || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.SB || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.K || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.GIDP || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.XBH || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.TB || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.AVG || '0.000'}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.OPS || '0.000'}</td>
+                    </> 
+                  ) : (
+                    <>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.IP || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.W || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.L || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.HLD || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.SV || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.H || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.ER || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.K || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.QS || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.OUT || 0}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.ERA || '0.00'}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.WHIP || '0.00'}</td>
+                    </>
+                  )}
+                </tr>
               </>
-            )}
-          </div>
-        </td>
-
-
-        </tr>
-        <tr key={`stat-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-          {type === 'Batter' ? (
-            <>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.AB || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.R || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.H || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.HR || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.RBI || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.SB || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.K || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.GIDP || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.XBH || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.TB || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.AVG || '0.000'}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.OPS || '0.000'}</td>
-            </>
-          ) : (
-            <>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.IP || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.W || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.L || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.HLD || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.SV || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.H || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.ER || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.K || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.QS || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.OUT || 0}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.ERA || '0.00'}</td>
-              <td className="p-2font-bold whitespace-nowrap text-s">{p.WHIP || '0.00'}</td>
-            </>
-          )}
-        </tr>
-      </>
-    ))}
-  </tbody>
-</table>
+            ))}
+          </tbody>
+        </table>
 
       </div>
     </div>

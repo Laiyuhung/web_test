@@ -75,7 +75,7 @@ export default function PlayerPage() {
     setLoading(true)
     setError('')
     try {
-      const [statusRes, statsRes, registerRes, positionRes] = await Promise.all([
+      const [statusRes, statsRes, registerRes, positionRes, playersListRes] = await Promise.all([
         fetch('/api/playerStatus'),
         fetch('/api/playerStats', {
           method: 'POST',
@@ -83,14 +83,16 @@ export default function PlayerPage() {
           body: JSON.stringify({ type: type.toLowerCase(), from: fromDate, to: toDate })
         }),
         fetch('/api/playerRegisterStatus'),
-        fetch('/api/playerPositionCaculate')
+        fetch('/api/playerPositionCaculate'),
+        fetch('/api/playerslist')
       ])
 
-      const [statusData, statsData, registerData, positionData] = await Promise.all([
+      const [statusData, statsData, registerData, positionData, playersList] = await Promise.all([
         statusRes.json(),
         statsRes.ok ? statsRes.json() : [],
         registerRes.ok ? registerRes.json() : [],
-        positionRes.ok ? positionRes.json() : []
+        positionRes.ok ? positionRes.json() : [],
+        playersListRes.ok ? playersListRes.json() : []
       ])
 
       const merged = statusData.map(p => {
@@ -99,9 +101,8 @@ export default function PlayerPage() {
         const registerStatus = register?.status || '未知'
         const position = positionData.find(pos => pos.name === p.Name)
         const finalPosition = position?.finalPosition || []
-
-        // 洋將判斷：假設 p.identity 若不存在就用 Team 判斷
-        const identityType = p.identity || (p.Team && p.Team.includes('統一') ? '本土' : '洋將')
+        const playerInfo = playersList.find(pl => pl.Name === p.Name)
+        const identityType = playerInfo?.identity || '未知'
 
         console.log(`%c[${p.Name}] status=${p.status}｜register=${registerStatus}｜identity=${identityType}`, 'color:orange')
 
@@ -119,11 +120,13 @@ export default function PlayerPage() {
         if (type === 'Pitcher' && p.B_or_P !== 'Pitcher') return false
         if (identity !== 'All Identities' && p.identity !== identity) return false
         if (team !== 'All teams' && p.Team !== team) return false
-        if (status !== 'All Players' && !(p.status || '').includes(status)) return false
+        const statusLower = (p.status || '').toLowerCase()
+        if (status !== 'All Players' && !statusLower.includes(status.toLowerCase())) return false
         if (register !== '所有球員') {
           if (register === '一軍' && ['二軍', '未註冊', '註銷'].includes(p.registerStatus)) return false
           if (register === '未註冊' && !['未註冊', '註銷'].includes(p.registerStatus)) return false
-          if (register === '二軍' && p.registerStatus !== '二軍') return false
+          if (register === '二軍' && !['二軍', '註銷', '未註冊'].includes(p.registerStatus)) return false
+          if (register === '註銷' && p.registerStatus !== '註銷') return false
         }
         return true
       })
@@ -188,7 +191,7 @@ export default function PlayerPage() {
           <label className="text-sm font-semibold">Status</label>
           <select value={status} onChange={e => setStatus(e.target.value)} className="border px-2 py-1 rounded w-full">
             <option>All Players</option>
-            <option>On team</option>
+            <option>On Team</option>
             <option>Free Agent</option>
             <option>Waiver</option>
           </select>

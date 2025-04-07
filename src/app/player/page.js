@@ -158,7 +158,7 @@ export default function PlayerPage() {
 
   useEffect(() => {
     fetchStatsAndStatus()
-  }, [type, fromDate, toDate, identity, team, status, register, position, sortBy, sortMethod])
+  }, [search, type, fromDate, toDate, identity, team, status, register, position, sortBy, sortMethod])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

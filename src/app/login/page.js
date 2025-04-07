@@ -9,12 +9,14 @@ export default function LoginPage() {
   const [elapsed, setElapsed] = useState(null)
   const router = useRouter()
 
+  // 使用 sessionStorage 確保登入成功後能馬上顯示 Navbar
   useEffect(() => {
-    // 自動檢查 cookie，有登入就導回首頁
-    if (document.cookie.includes('user_id=')) {
+    // 檢查是否已經有登入的 user_id，如果有，直接導向首頁
+    const userId = sessionStorage.getItem('user_id')
+    if (userId) {
       router.push('/home')
     }
-  }, [])
+  }, [router])
 
   const handleLogin = async () => {
     setError('')
@@ -33,7 +35,8 @@ export default function LoginPage() {
       if (!res.ok || result.error) {
         setError(result.error || '登入失敗')
       } else {
-        document.cookie = `user_id=${result.id}; path=/`
+        // 儲存 user_id 到 sessionStorage 並重新導向到首頁
+        sessionStorage.setItem('user_id', result.id)
         setElapsed(duration)
         router.push('/home')
       }
@@ -67,9 +70,6 @@ export default function LoginPage() {
         </button>
 
         {error && <div className="text-red-600 mt-4">⚠️ {error}</div>}
-        {elapsed !== null && (
-          <div className="text-green-600 mt-4">🕓 花費時間：{elapsed}ms</div>
-        )}
       </div>
     </div>
   )

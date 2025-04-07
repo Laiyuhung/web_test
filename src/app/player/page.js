@@ -216,6 +216,12 @@ export default function PlayerPage() {
           </select>
         </div>
         <div>
+          <label className="text-sm font-semibold">Position</label>
+          <select value={position} onChange={e => setPosition(e.target.value)} className="border px-2 py-1 rounded w-full">
+            {positionOptions.map(pos => <option key={pos}>{pos}</option>)}
+          </select>
+        </div>
+        <div>
           <label className="text-sm font-semibold">Stats Range</label>
           <select value={range} onChange={e => setRange(e.target.value)} className="border px-2 py-1 rounded w-full">
             <option>Today</option>

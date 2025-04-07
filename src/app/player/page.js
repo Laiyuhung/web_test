@@ -338,8 +338,9 @@ export default function PlayerPage() {
           <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
             {renderActionButton(p)}
             <span>{p.Name}</span>
+            <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
             {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
-              <span className="inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
                 {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
               </span>
             )}
@@ -355,10 +356,8 @@ export default function PlayerPage() {
               </>
             )}
           </div>
-          <div className="text-xs text-gray-500 ml-8">
-            {p.Team} - {(p.finalPosition || []).join(', ')}
-          </div>
         </td>
+
 
         </tr>
         <tr key={`stat-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>

@@ -155,6 +155,13 @@ export default function PlayerPage() {
     fetchStatsAndStatus()
   }, [type, fromDate, toDate, identity, team, status, register, position, sortBy, sortMethod])
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedId = document.cookie.split('; ').find(row => row.startsWith('user_id='))?.split('=')[1]
+      setUserId(storedId || null)
+    }
+  }, [])
+
   const formatDate = (str) => {
     const d = new Date(str)
     if (isNaN(d)) return ''
@@ -177,10 +184,13 @@ export default function PlayerPage() {
     
     const renderActionButton = (p) => {
       const status = (p.status || '').toLowerCase()
+      const isOwner = p.manager_id?.toString() === userId
+      console.log(`[${p.Name}] 狀態=${p.status}｜擁有者ID=${p.manager_id}｜登入者ID=${userId}`)
+  
       if (status === 'free agent') {
         return <button className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded">Add</button>
       }
-      if (p.status?.includes('On Team') && p.owner && p.owner !== '-' && p.manager_id === userId) {
+      if (p.status?.includes('On Team') && p.owner && p.owner !== '-' && isOwner) {
         return <button className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded">Drop</button>
       }
       if (status.includes('waiver')) {

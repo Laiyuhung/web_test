@@ -289,7 +289,7 @@ export default function PlayerPage() {
           </div>
         </div>
       </div>
-      
+
       <span className="text-sm text-gray-600">數據區間：{fromDate} ~ {toDate}</span>
 
       {loading && <div className="mb-4">Loading...</div>}
@@ -336,7 +336,7 @@ export default function PlayerPage() {
           <tbody>
             {players.map((p, i) => (
               <>
-                <tr key={`info-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <tr>
                 <td
                   colSpan={type === 'Batter' ? 13 : 13}
                   className="p-2 border text-left whitespace-nowrap sticky top-0 z-10 bg-white"
@@ -367,7 +367,7 @@ export default function PlayerPage() {
 
 
                 </tr>
-                <tr key={`stat-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <tr>
                   {type === 'Batter' ? (
                     <>
                       <td className="p-2 font-bold whitespace-nowrap text-s">{p.AB || 0}</td>

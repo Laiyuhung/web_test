@@ -5,6 +5,7 @@ export async function GET() {
     const { data: players, error: err1 } = await supabase
       .from('playerslist')
       .select('Player_no, Name, Team, identity, B_or_P')
+      .eq('Available', 'V')  // 只選擇 Available 為 V 的球員
     if (err1 || !Array.isArray(players)) throw new Error('playerslist error')
 
     const { data: transactions, error: err2 } = await supabase

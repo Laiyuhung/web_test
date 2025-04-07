@@ -10,9 +10,9 @@ export default function Navbar() {
   const [userId, setUserId] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // 檢查 sessionStorage 是否有登入的 user_id
+  // 當使用者登入或登出時，更新 navbar 顯示
   useEffect(() => {
-    const id = sessionStorage.getItem('user_id') // 從 sessionStorage 取出 user_id
+    const id = localStorage.getItem('user_id') // 改為從 localStorage 取出 user_id
     if (id) {
       setUserId(id)
 
@@ -35,7 +35,7 @@ export default function Navbar() {
     // 在登出時清除 userId 並跳轉到登錄頁面
     setUserId('')  // 更新 userId
     setUserName('')  // 清空用戶名稱
-    sessionStorage.removeItem('user_id')  // 清除 sessionStorage 中的 user_id
+    localStorage.removeItem('user_id')  // 清除 localStorage 中的 user_id
     router.push('/login')
   }
 

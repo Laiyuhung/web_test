@@ -1,3 +1,4 @@
+// LoginPage.js
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -9,10 +10,9 @@ export default function LoginPage() {
   const [elapsed, setElapsed] = useState(null)
   const router = useRouter()
 
-  // 使用 sessionStorage 確保登入成功後能馬上顯示 Navbar
   useEffect(() => {
-    // 檢查是否已經有登入的 user_id，如果有，直接導向首頁
-    const userId = sessionStorage.getItem('user_id')
+    // 自動檢查 localStorage，有登入就導回首頁
+    const userId = localStorage.getItem('user_id') // 改為從 localStorage 取出 user_id
     if (userId) {
       router.push('/home')
     }
@@ -35,8 +35,8 @@ export default function LoginPage() {
       if (!res.ok || result.error) {
         setError(result.error || '登入失敗')
       } else {
-        // 儲存 user_id 到 sessionStorage 並重新導向到首頁
-        sessionStorage.setItem('user_id', result.id)
+        // 儲存 user_id 到 localStorage（這樣即便關閉瀏覽器也能保持登入狀態）
+        localStorage.setItem('user_id', result.id)
         setElapsed(duration)
         router.push('/home')
       }

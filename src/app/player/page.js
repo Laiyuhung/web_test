@@ -186,8 +186,13 @@ export default function PlayerPage() {
     
     const renderActionButton = (p) => {
       const status = (p.status || '').toLowerCase()
+      const fullTeamName = p.owner?.split(' - ')[1]?.trim() || null
+    
+      // 從 players 中找出 team name 含有 fullTeamName 的球員 → 用來對應 manager_id
+      const manager = fullTeamName && players.find(m => m.owner?.includes(fullTeamName))
       const ownerId = p.manager_id?.toString() || null
       const isOwner = ownerId === userId
+
     
       console.log(`[renderActionButton] ${p.Name}｜狀態=${p.status}｜owner=${p.owner}｜擁有者ID=${ownerId}｜登入者ID=${userId}`)
     
@@ -202,7 +207,6 @@ export default function PlayerPage() {
       }
       return <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">Trade discussion</button>
     }
-    
     
     
 

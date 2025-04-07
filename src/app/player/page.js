@@ -294,10 +294,10 @@ export default function PlayerPage() {
       <Card>
         <CardContent className="overflow-auto max-h-[600px] p-4">
           <table className="text-sm w-full text-center border whitespace-nowrap">
-            <thead className="bg-gray-200 sticky top-0 z-10">
+            <thead className="bg-gray-200 sticky top-0 z-20">
               <tr>
                 <th className="p-2 border font-bold sticky left-0 z-20"></th>
-                <th className="p-2 border bg-gray-200 sticky left-0 z-20">Player</th>
+                <th className="p-2 border bg-gray-200 sticky left-0 z-20 text-left">Player</th>
                 <th className="p-2 border font-bold">Status</th>
                 {type === 'Batter' ? (
                   <>

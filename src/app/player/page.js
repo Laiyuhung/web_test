@@ -18,6 +18,8 @@ export default function PlayerPage() {
   const [sortBy, setSortBy] = useState('AB')
   const [sortMethod, setSortMethod] = useState('Descending')
   const [userId, setUserId] = useState(null)
+  const [search, setSearch] = useState('')
+
 
 
   const today = new Date()
@@ -121,6 +123,7 @@ export default function PlayerPage() {
       })
 
       const filtered = merged.filter(p => {
+        if (search && !p.Name.includes(search)) return false
         if (type === 'Batter' && p.B_or_P !== 'Batter') return false
         if (type === 'Pitcher' && p.B_or_P !== 'Pitcher') return false
         if (identity !== 'All Identities' && p.identity !== identity) return false
@@ -167,7 +170,7 @@ export default function PlayerPage() {
   const formatDate = (str) => {
     const d = new Date(str)
     if (isNaN(d)) return ''
-    return d.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })
+    return `${d.getMonth() + 1}/${d.getDate()}`
   }
 
   const formatAvg = (val) => {
@@ -206,8 +209,19 @@ export default function PlayerPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">球員狀態與數據</h1>
+      <h1 className="text-xl font-bold mb-4">PLAYERS</h1>
       {error && <div className="text-red-500 mb-4">{error}</div>}
+
+      <div>
+        <label className="text-sm font-semibold">Search</label>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Name"
+          className="border px-2 py-1 rounded w-full"
+        />
+      </div>
 
       <div className="overflow-x-auto w-full mb-4">
         <div className="flex gap-4 items-end px-4 py-2 rounded-lg border bg-white w-max min-w-full">
@@ -290,7 +304,7 @@ export default function PlayerPage() {
         </div>
       </div>
 
-      <span className="text-sm text-gray-600">數據區間：{fromDate} ~ {toDate}</span>
+      <span className="text-sm text-gray-600">Stats range：{fromDate} ~ {toDate}</span>
 
       {loading && <div className="mb-4">Loading...</div>}
       
@@ -383,8 +397,8 @@ export default function PlayerPage() {
                       <td className="p-2 font-bold whitespace-nowrap text-s">{p.GIDP || 0}</td>
                       <td className="p-2 font-bold whitespace-nowrap text-s">{p.XBH || 0}</td>
                       <td className="p-2 font-bold whitespace-nowrap text-s">{p.TB || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.AVG || '0.000'}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{p.OPS || '0.000'}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{formatAvg(p.AVG) || '.000'}</td>
+                      <td className="p-2 font-bold whitespace-nowrap text-s">{formatAvg(p.OPS) || '.000'}</td>
                     </> 
                   ) : (
                     <>

@@ -341,13 +341,13 @@ export default function PlayerPage() {
                   <td className="p-2 border text-lg font-bold whitespace-nowrap">{renderActionButton(p)}</td>
                   <td className="p-2 border text-left font-bold text-[#0155A0] whitespace-nowrap">
                     <span>{p.Name}</span>
+                    <span className="text-xs text-gray-500 ml-2">{p.Team}</span>
+                    <span className="text-xs text-gray-500 ml-1"> - {(p.finalPosition || []).join(', ')}</span>
                     {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
-                      <span className="ml-1 inline-block bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">
-                        {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
+                      <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
                       </span>
                     )}
-                    <span className="text-sm text-gray-500 ml-2">{p.Team}</span>
-                    <span className="text-gray-500 ml-1"> - {(p.finalPosition || []).join(', ')}</span>
                   </td>
                   <td className="p-2 border font-bold whitespace-nowrap">
                     {p.owner && p.owner !== '-' ? (

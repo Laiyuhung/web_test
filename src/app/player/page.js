@@ -296,8 +296,8 @@ export default function PlayerPage() {
       <Card>
         <CardContent className="overflow-auto p-4">
           <table className="text-xs w-full text-center border">
-            <thead className="bg-gray-100">
-              <tr>
+            <thead className="bg-gray-200 sticky top-0 z-10">
+              <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                 <th className="p-2 border">Name</th>
                 <th className="p-2 border">Team</th>
                 <th className="p-2 border">Position</th>

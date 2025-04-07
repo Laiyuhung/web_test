@@ -297,9 +297,7 @@ export default function PlayerPage() {
             <thead className="bg-gray-200 sticky top-0 z-10">
               <tr>
                 <th className="p-2 border font-bold"></th>
-                <th className="p-2 border font-bold">Name</th>
-                <th className="p-2 border font-bold">Team</th>
-                <th className="p-2 border font-bold">Position</th>
+                <th className="p-2 border font-bold">Player</th>
                 <th className="p-2 border font-bold">Status</th>
                 {type === 'Batter' ? (
                   <>
@@ -341,16 +339,16 @@ export default function PlayerPage() {
               {players.map((p, i) => (
                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                   <td className="p-2 border text-lg font-bold whitespace-nowrap">{renderActionButton(p)}</td>
-                  <td className="p-2 border text-left whitespace-nowrap font-bold text-[#0155A0]">
+                  <td className="p-2 border text-left font-bold text-[#0155A0] whitespace-nowrap">
                     <span>{p.Name}</span>
                     {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
                       <span className="ml-1 inline-block bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">
                         {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
                       </span>
                     )}
+                    <span className="text-sm text-gray-500 ml-2">{p.Team}</span>
+                    <span className="text-gray-500 ml-1"> - {(p.finalPosition || []).join(', ')}</span>
                   </td>
-                  <td className="p-2 border font-bold whitespace-nowrap">{p.Team}</td>
-                  <td className="p-2 border font-bold whitespace-nowrap">{(p.finalPosition || []).join(', ')}</td>
                   <td className="p-2 border font-bold whitespace-nowrap">
                     {p.owner && p.owner !== '-' ? (
                       <span className="text-blue-600 font-semibold">On Team - {p.owner}</span>

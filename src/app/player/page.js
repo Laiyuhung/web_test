@@ -17,6 +17,8 @@ export default function PlayerPage() {
   const [position, setPosition] = useState('Util')
   const [sortBy, setSortBy] = useState('AB')
   const [sortMethod, setSortMethod] = useState('Descending')
+  const [userId, setUserId] = useState(null)
+
 
   const today = new Date()
   const formatDateInput = (date) => date.toISOString().slice(0, 10)

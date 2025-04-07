@@ -358,10 +358,10 @@ export default function PlayerPage() {
 
                   <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
                   <img
-                    src={`../../../photo/players/${p.Name}.png`} // 根據球員名稱動態加載圖片
+                    src={`./public/${p.Name}.png`} // 根據球員名稱動態加載圖片
                     alt={`${p.Name} Avatar`}
                     className="w-8 h-8 rounded-full"
-                    onError={(e) => e.target.src = '../../../photo/defaultPlayer.png'} // 若無圖片，顯示預設圖片
+                    onError={(e) => e.target.src = './public/photo/defaultPlayer.png'} // 若無圖片，顯示預設圖片
                   />
                   <div className="text-xl">
                     {renderActionButton(p)}

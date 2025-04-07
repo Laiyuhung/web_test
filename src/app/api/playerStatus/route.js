@@ -25,6 +25,7 @@ export async function GET() {
       let status = 'Free Agent'
       let owner = '-'
       let offWaivers = null
+      let manager_id = null  // ✅ 這行要補上
 
       if (addCount - dropCount === 1) {
         const lastAdd = [...playerTx].reverse().find(t => t.type.includes('Add'))

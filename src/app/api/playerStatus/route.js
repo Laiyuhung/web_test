@@ -32,6 +32,7 @@ export async function GET() {
           status = 'On Team'
           const m = managers.find(m => m.id === lastAdd.manager_id)
           owner = m?.team_name || '-'
+          manager_id = m?.id || null  // ✅ 這裡加上 manager_id
         }
       } else if (addCount - dropCount === 0) {
         const lastDrop = [...playerTx].reverse().find(t => t.type.includes('Drop'))
@@ -61,7 +62,8 @@ export async function GET() {
         B_or_P: player.B_or_P,
         status,
         owner,
-        offWaivers
+        offWaivers,
+        manager_id  // ✅ 多回傳這欄
       }
     })
 

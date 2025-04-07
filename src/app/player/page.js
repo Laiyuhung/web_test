@@ -340,7 +340,7 @@ export default function PlayerPage() {
             </thead>
             <tbody>
               {players.map((p, i) => (
-                <tr key={i}>
+                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                   <td className="p-2 border text-left">
                     <span>{p.Name}</span>
                     {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (

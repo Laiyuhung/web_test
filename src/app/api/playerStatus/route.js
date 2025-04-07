@@ -57,7 +57,7 @@ export async function GET() {
         Player_no: player.Player_no,
         Name: player.Name,
         Team: player.Team,
-        Identity: player.identity,
+        identity: player.identity,
         B_or_P: player.B_or_P,
         status,
         owner,

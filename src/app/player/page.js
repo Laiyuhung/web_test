@@ -75,7 +75,7 @@ export default function PlayerPage() {
     setLoading(true)
     setError('')
     try {
-      const [statusRes, statsRes, registerRes, positionRes, playersListRes] = await Promise.all([
+      const [statusRes, statsRes, registerRes, positionRes] = await Promise.all([
         fetch('/api/playerStatus'),
         fetch('/api/playerStats', {
           method: 'POST',
@@ -83,16 +83,14 @@ export default function PlayerPage() {
           body: JSON.stringify({ type: type.toLowerCase(), from: fromDate, to: toDate })
         }),
         fetch('/api/playerRegisterStatus'),
-        fetch('/api/playerPositionCaculate'),
-        fetch('/api/playerslist')
+        fetch('/api/playerPositionCaculate')
       ])
 
-      const [statusData, statsData, registerData, positionData, playersList] = await Promise.all([
+      const [statusData, statsData, registerData, positionData] = await Promise.all([
         statusRes.json(),
         statsRes.ok ? statsRes.json() : [],
         registerRes.ok ? registerRes.json() : [],
-        positionRes.ok ? positionRes.json() : [],
-        playersListRes.ok ? playersListRes.json() : []
+        positionRes.ok ? positionRes.json() : []
       ])
 
       const merged = statusData.map(p => {
@@ -101,8 +99,7 @@ export default function PlayerPage() {
         const registerStatus = register?.status || '未知'
         const position = positionData.find(pos => pos.name === p.Name)
         const finalPosition = position?.finalPosition || []
-        const playerInfo = playersList.find(pl => pl.Name === p.Name)
-        const identityType = playerInfo?.identity || '未知'
+        const identityType = p.identity || '未知'
 
         console.log(`%c[${p.Name}] status=${p.status}｜register=${registerStatus}｜identity=${identityType}`, 'color:orange')
 

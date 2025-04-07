@@ -29,24 +29,33 @@ export default function PlayerPage() {
         d.setDate(d.getDate() - 1)
         from = to = formatDateInput(d)
         break
-      case 'Last 7 days':
+      case 'Last 7 days': {
         const last7 = new Date(today)
         last7.setDate(last7.getDate() - 7)
+        const yest = new Date(today)
+        yest.setDate(yest.getDate() - 1)
         from = formatDateInput(last7)
-        to = formatDateInput(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1))
+        to = formatDateInput(yest)
         break
-      case 'Last 14 days':
+      }
+      case 'Last 14 days': {
         const last14 = new Date(today)
         last14.setDate(last14.getDate() - 14)
+        const yest = new Date(today)
+        yest.setDate(yest.getDate() - 1)
         from = formatDateInput(last14)
-        to = formatDateInput(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1))
+        to = formatDateInput(yest)
         break
-      case 'Last 30 days':
+      }
+      case 'Last 30 days': {
         const last30 = new Date(today)
         last30.setDate(last30.getDate() - 30)
+        const yest = new Date(today)
+        yest.setDate(yest.getDate() - 1)
         from = formatDateInput(last30)
-        to = formatDateInput(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1))
+        to = formatDateInput(yest)
         break
+      }
       case '2025 Season':
       default:
         from = '2025-03-27'
@@ -84,17 +93,7 @@ export default function PlayerPage() {
         positionRes.ok ? positionRes.json() : []
       ])
 
-      const filteredStatus = statusData.filter(p => {
-        if (type === 'Batter' && p.B_or_P !== 'Batter') return false
-        if (type === 'Pitcher' && p.B_or_P !== 'Pitcher') return false
-        if (identity !== 'All Identities' && p.identity !== identity) return false
-        if (team !== 'All teams' && p.Team !== team) return false
-        if (status !== 'All Players' && p.status !== status) return false
-        if (register !== '所有球員' && p.registerStatus !== register) return false
-        return true
-      })
-
-      const merged = filteredStatus.map(p => {
+      const merged = statusData.map(p => {
         const stat = statsData.find(s => s.name === p.Name)
         const register = registerData.find(r => r.name === p.Name)
         const registerStatus = register?.status || '未知'
@@ -109,7 +108,21 @@ export default function PlayerPage() {
         }
       })
 
-      setPlayers(merged)
+      const filtered = merged.filter(p => {
+        if (type === 'Batter' && p.B_or_P !== 'Batter') return false
+        if (type === 'Pitcher' && p.B_or_P !== 'Pitcher') return false
+        if (identity !== 'All Identities' && p.identity !== identity) return false
+        if (team !== 'All teams' && p.Team !== team) return false
+        if (status !== 'All Players' && !(p.status || '').includes(status)) return false
+        if (register !== '所有球員') {
+          if (register === '一軍' && p.registerStatus === '二軍') return false
+          if (register === '未註冊' && !['未註冊', '註銷'].includes(p.registerStatus)) return false
+          if (register === '二軍' && p.registerStatus !== '二軍') return false
+        }
+        return true
+      })
+
+      setPlayers(filtered)
     } catch (err) {
       console.error('統計錯誤:', err)
       setError('統計讀取失敗')
@@ -137,47 +150,65 @@ export default function PlayerPage() {
       <h1 className="text-xl font-bold mb-4">球員狀態與數據</h1>
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
-      <div className="flex flex-wrap gap-4 items-center mb-4">
-        <select value={type} onChange={e => setType(e.target.value)} className="border px-2 py-1 rounded">
-          <option value="Batter">Batter</option>
-          <option value="Pitcher">Pitcher</option>
-        </select>
-        <select value={range} onChange={e => setRange(e.target.value)} className="border px-2 py-1 rounded">
-          <option>Today</option>
-          <option>Yesterday</option>
-          <option>Last 7 days</option>
-          <option>Last 14 days</option>
-          <option>Last 30 days</option>
-          <option>2025 Season</option>
-        </select>
-        <select value={identity} onChange={e => setIdentity(e.target.value)} className="border px-2 py-1 rounded">
-          <option>All Identities</option>
-          <option>本土</option>
-          <option>洋將</option>
-        </select>
-        <select value={team} onChange={e => setTeam(e.target.value)} className="border px-2 py-1 rounded">
-          <option>All teams</option>
-          <option>統一獅</option>
-          <option>樂天桃猿</option>
-          <option>富邦悍將</option>
-          <option>味全龍</option>
-          <option>中信兄弟</option>
-          <option>台鋼雄鷹</option>
-        </select>
-        <select value={status} onChange={e => setStatus(e.target.value)} className="border px-2 py-1 rounded">
-          <option>All Players</option>
-          <option>On team</option>
-          <option>Free Agent</option>
-          <option>Waiver</option>
-        </select>
-        <select value={register} onChange={e => setRegister(e.target.value)} className="border px-2 py-1 rounded">
-          <option>所有球員</option>
-          <option>一軍</option>
-          <option>二軍</option>
-          <option>未註冊</option>
-        </select>
-        <span className="text-sm text-gray-600">查詢區間：{fromDate} ~ {toDate}</span>
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 items-center mb-4">
+        <div>
+          <label className="text-sm font-semibold">Batter/Pitcher</label>
+          <select value={type} onChange={e => setType(e.target.value)} className="border px-2 py-1 rounded w-full">
+            <option value="Batter">Batter</option>
+            <option value="Pitcher">Pitcher</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-semibold">Identities</label>
+          <select value={identity} onChange={e => setIdentity(e.target.value)} className="border px-2 py-1 rounded w-full">
+            <option>All Identities</option>
+            <option>本土</option>
+            <option>洋將</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-semibold">Teams</label>
+          <select value={team} onChange={e => setTeam(e.target.value)} className="border px-2 py-1 rounded w-full">
+            <option>All teams</option>
+            <option>統一獅</option>
+            <option>樂天桃猿</option>
+            <option>富邦悍將</option>
+            <option>味全龍</option>
+            <option>中信兄弟</option>
+            <option>台鋼雄鷹</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-semibold">Status</label>
+          <select value={status} onChange={e => setStatus(e.target.value)} className="border px-2 py-1 rounded w-full">
+            <option>All Players</option>
+            <option>On team</option>
+            <option>Free Agent</option>
+            <option>Waiver</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-semibold">升降</label>
+          <select value={register} onChange={e => setRegister(e.target.value)} className="border px-2 py-1 rounded w-full">
+            <option>所有球員</option>
+            <option>一軍</option>
+            <option>二軍</option>
+            <option>未註冊</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-semibold">Stats Range</label>
+          <select value={range} onChange={e => setRange(e.target.value)} className="border px-2 py-1 rounded w-full">
+            <option>Today</option>
+            <option>Yesterday</option>
+            <option>Last 7 days</option>
+            <option>Last 14 days</option>
+            <option>Last 30 days</option>
+            <option>2025 Season</option>
+          </select>
+        </div>
       </div>
+      <span className="text-sm text-gray-600">查詢區間：{fromDate} ~ {toDate}</span>
 
       {loading && <div className="mb-4">Loading...</div>}
 

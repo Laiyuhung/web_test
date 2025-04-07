@@ -290,6 +290,8 @@ export default function PlayerPage() {
       <span className="text-sm text-gray-600">查詢區間：{fromDate} ~ {toDate}</span>
 
       {loading && <div className="mb-4">Loading...</div>}
+      
+      <div className="overflow-x-auto w-full">
         <table className="text-sm w-full text-center border whitespace-nowrap">
           <thead className="bg-gray-200 sticky top-0 z-20">
             <tr>
@@ -404,6 +406,7 @@ export default function PlayerPage() {
             ))}
           </tbody>
         </table>
+      </div>
     </div>
   )
 }

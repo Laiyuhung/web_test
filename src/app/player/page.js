@@ -341,7 +341,7 @@ export default function PlayerPage() {
               {players.map((p, i) => (
                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                   <td className="p-2 border text-lg font-bold whitespace-nowrap">{renderActionButton(p)}</td>
-                  <td className="p-2 border text-left font-bold text-indigo-600 whitespace-nowrap">{p.Name}</td>
+                  <td className="p-2 border text-left whitespace-nowrap font-bold text-[#0155A0]">{p.Name}</td>
                   <td className="p-2 border font-bold whitespace-nowrap">{p.Team}</td>
                   <td className="p-2 border font-bold whitespace-nowrap">{(p.finalPosition || []).join(', ')}</td>
                   <td className="p-2 border font-bold whitespace-nowrap">{p.status}</td>

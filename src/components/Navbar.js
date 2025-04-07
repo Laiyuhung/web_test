@@ -36,7 +36,7 @@ export default function Navbar() {
   return (
     <nav className="bg-[#003366] text-white px-6 py-3 flex items-center justify-between shadow-md">
       <div className="flex items-center space-x-8">
-        <div className="text-2xl font-bold tracking-wide">2025 CPBL FANTASY</div>
+        <div className="text-sm font-bold tracking-wide">2025 CPBL FANTASY</div>
         <Link href="/home" className="font-semibold hover:text-gray-300">
           HOME
         </Link>

@@ -292,12 +292,12 @@ export default function PlayerPage() {
       {loading && <div className="mb-4">Loading...</div>}
 
       <Card>
-        <CardContent className="overflow-auto p-4">
+        <CardContent className="overflow-auto max-h-[600px] p-4">
           <table className="text-sm w-full text-center border whitespace-nowrap">
             <thead className="bg-gray-200 sticky top-0 z-10">
               <tr>
-                <th className="p-2 border font-bold"></th>
-                <th className="p-2 border font-bold">Player</th>
+                <th className="p-2 border font-bold sticky left-0 z-20"></th>
+                <th className="p-2 border bg-gray-200 sticky left-0 z-20">Player</th>
                 <th className="p-2 border font-bold">Status</th>
                 {type === 'Batter' ? (
                   <>
@@ -338,13 +338,13 @@ export default function PlayerPage() {
             <tbody>
               {players.map((p, i) => (
                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="p-2 border text-lg font-bold whitespace-nowrap">{renderActionButton(p)}</td>
-                  <td className="p-2 border text-left font-bold text-[#0155A0] whitespace-nowrap">
+                  <td className="p-2 border sticky left-0 z-10  text-lg font-bold whitespace-nowrap">{renderActionButton(p)}</td>
+                  <td className="p-2 border sticky left-0 z-10  text-left font-bold text-[#0155A0] whitespace-nowrap">
                     <span>{p.Name}</span>
                     <span className="text-xs text-gray-500 ml-2">{p.Team}</span>
                     <span className="text-xs text-gray-500 ml-1"> - {(p.finalPosition || []).join(', ')}</span>
                     {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
-                      <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-xs font-bold px-2 py-0.5 rounded-full">
                       {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
                       </span>
                     )}

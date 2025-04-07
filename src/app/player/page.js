@@ -293,7 +293,7 @@ export default function PlayerPage() {
         <table className="text-sm w-full text-center border whitespace-nowrap">
           <thead className="bg-gray-200 sticky top-0 z-20">
             <tr>
-              <th className="p-2 border font-bold sticky left-0 z-20"></th>
+              <th className="p-2 border bg-gray-200 sticky top-0 left-0 z-30 text-left"></th>
               <th className="p-2 border bg-gray-200 sticky top-0 left-0 z-30 text-left">Player</th>
               <th className="p-2 border font-bold">Status</th>
               {type === 'Batter' ? (
@@ -335,19 +335,25 @@ export default function PlayerPage() {
           <tbody>
             {players.map((p, i) => (
               <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                <td className="p-2 border sticky left-0 z-20 bg-white text-lg font-bold whitespace-nowrap">
+                <td className="p-2 border sticky left-0 z-10 bg-white text-lg font-bold whitespace-nowrap">
                   {renderActionButton(p)}
                 </td>
-                <td className="p-2 border sticky left-10 z-10 bg-white text-left font-bold text-[#0155A0] whitespace-nowrapp">
-                  <span>{p.Name}</span>
-                  <span className="text-xs text-gray-500 ml-2">{p.Team}</span>
-                  <span className="text-xs text-gray-500 ml-1"> - {(p.finalPosition || []).join(', ')}</span>
-                  {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
-                    <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-xs font-bold px-2 py-0.5 rounded-full">
-                    {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
-                    </span>
-                  )}
+                <td className="p-2 border sticky left-10 z-10 bg-white text-left font-bold text-[#0155A0] whitespace-nowrap">
+                  <div className="leading-tight">
+                    <div className="flex items-center gap-1">
+                      <span>{p.Name}</span>
+                      {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
+                        <span className="inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {p.Team} - {(p.finalPosition || []).join(', ')}
+                    </div>
+                  </div>
                 </td>
+
                 <td className="p-2 border font-bold whitespace-nowrap">
                   {p.owner && p.owner !== '-' ? (
                     <span className="text-blue-600 font-semibold">On Team - {p.owner}</span>

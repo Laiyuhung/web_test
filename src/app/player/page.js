@@ -192,10 +192,30 @@ export default function PlayerPage() {
       const ownerId = p.manager_id?.toString() || null;
       const isOwner = ownerId === userId;
     
+      const handleAddClick = async () => {
+        try {
+          const res = await fetch('/api/transaction', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ playerName: p.Name }),  // 發送球員名稱給後端
+          });
+    
+          const data = await res.json();
+          if (res.ok) {
+            alert('成功新增交易');
+          } else {
+            alert(`錯誤: ${data.error}`);
+          }
+        } catch (error) {
+          console.error('交易處理錯誤:', error);
+        }
+      };
+    
       let borderColor = "border-gray-500"; // 預設灰色邊框
       let textColor = "text-gray-500"; // 預設文字顏色
     
-      // 根據不同狀態設定邊框與文字顏色
       if (status === "free agent") {
         borderColor = "border-green-600";
         textColor = "text-green-600";
@@ -212,7 +232,8 @@ export default function PlayerPage() {
     
       return (
         <div
-          className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center`}
+          className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
+          onClick={handleAddClick}  // 當按下按鈕時執行 handleAddClick
         >
           <span className={`${textColor} font-bold`}>
             {status === "free agent"
@@ -226,6 +247,7 @@ export default function PlayerPage() {
         </div>
       );
     };
+    
     
     
     

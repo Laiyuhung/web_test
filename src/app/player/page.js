@@ -23,7 +23,7 @@ export default function PlayerPage() {
   const [range, setRange] = useState('2025 Season')
   const [identity, setIdentity] = useState('All Identities')
   const [team, setTeam] = useState('All teams')
-  const [status, setStatus] = useState('All Players')
+  const [status, setStatus] = useState('Market')
   const [register, setRegister] = useState('所有球員')
   const [position, setPosition] = useState('Util')
   const [sortBy, setSortBy] = useState('AB')

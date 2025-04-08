@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 export default function RosterPage() {
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)
-  const [range, setRange] = useState('2025 Season')
+  const [range, setRange] = useState('Today')
   const [fromDate, setFromDate] = useState('2025-03-27')
   const [toDate, setToDate] = useState('2025-11-30')
   const [loading, setLoading] = useState(false)
@@ -25,21 +25,30 @@ export default function RosterPage() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const [statusRes, statsRes, positionRes] = await Promise.all([
+        const [statusRes, batterRes, pitcherRes, positionRes] = await Promise.all([
             fetch('/api/playerStatus'),
             fetch('/api/playerStats', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'all', from: fromDate, to: toDate })
+                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
             }),
-            fetch('/api/playerPositionCaculate') // 🔹 加這個
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
+            }),
+            fetch('/api/playerPositionCaculate')
         ])
 
-        const [statusData, statsData, positionData] = await Promise.all([
+        const [statusData, batterData, pitcherData, positionData] = await Promise.all([
             statusRes.json(),
-            statsRes.ok ? statsRes.json() : [],
+            batterRes.ok ? batterRes.json() : [],
+            pitcherRes.ok ? pitcherRes.json() : [],
             positionRes.ok ? positionRes.json() : []
         ])
+
+        
+        const statsData = [...batterData, ...pitcherData]
 
         const merged = statusData.map(p => {
           const stat = statsData.find(s => s.name === p.Name)

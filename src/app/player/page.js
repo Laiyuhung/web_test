@@ -191,10 +191,12 @@ export default function PlayerPage() {
   }, [])
 
   const formatDate = (str) => {
+    if (!str) return 'wrong'
     const d = new Date(str)
-    if (isNaN(d)) return ''
+    if (isNaN(d)) return 'wrong'
     return `${d.getMonth() + 1}/${d.getDate()}`
   }
+  
 
   const formatAvg = (val) => {
     const num = parseFloat(val)

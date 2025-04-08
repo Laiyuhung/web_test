@@ -209,13 +209,15 @@ export default function PlayerPage() {
   }
 
   const renderCell = (val) => {
-    const isGray = val === 0 || val === '0.00' || val === '.000'
+    const displayVal = (val ?? 0).toString()
+    const isGray = displayVal === '0' || displayVal === '0.00' || displayVal === '.000'
     return (
       <td className={`p-2 font-bold whitespace-nowrap text-s ${isGray ? 'text-gray-400' : ''}`}>
-      {val ?? 0}
+        {displayVal}
       </td>
     )
   }
+  
 
   const positionOptions = type === 'Batter'
     ? ['Util', 'C', '1B', '2B', '3B', 'SS', 'OF']

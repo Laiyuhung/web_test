@@ -18,8 +18,13 @@ export async function POST(req) {
   try {
     console.log('📥 收到 POST 請求，開始處理...')
 
-    const { playerName } = await req.json()
-    console.log('🎯 收到的 playerName:', playerName)
+    const { playerName, type } = await req.json()
+    console.log('🎯 收到的 playerName:', playerName, 'type:', type)
+
+    if (type !== 'Add' && type !== 'Drop') {
+      console.log('❌ 無效的交易類型:', type)
+      return NextResponse.json({ error: '交易類型錯誤' }, { status: 400 })
+    }
 
     const user_id_cookie = req.cookies.get('user_id')
     const user_id = user_id_cookie?.value
@@ -51,7 +56,7 @@ export async function POST(req) {
 
     const Player_no = playerData.Player_no
     const transaction_time = getUTCFormat()
-    const type = 'Add'
+    // const type = 'Add'
 
     console.log('🧾 準備插入的交易資料如下：')
     console.log({

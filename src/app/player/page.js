@@ -482,27 +482,44 @@ export default function PlayerPage() {
     <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>確定要加入這位球員嗎？</AlertDialogTitle>
-          <AlertDialogDescription>
-            您即將新增交易：{confirmPlayer?.Name}
-          </AlertDialogDescription>
+        <AlertDialogTitle>
+          {confirmPlayer?.status?.toLowerCase().includes('on team') &&
+          confirmPlayer?.manager_id?.toString() === userId
+            ? '確定要Drop嗎？'
+            : '確定要Add嗎？'}
+        </AlertDialogTitle>
+        <AlertDialogDescription>
+          您即將
+          {confirmPlayer?.status?.toLowerCase().includes('on team') &&
+          confirmPlayer?.manager_id?.toString() === userId
+            ? 'Drop'
+            : 'Add'}：{confirmPlayer?.Name}
+        </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
           <AlertDialogAction
             onClick={async () => {
               if (!confirmPlayer) return;
+            
+              const isOwner = confirmPlayer?.manager_id?.toString() === userId;
+              const type = isOwner ? 'Drop' : 'Add';
+            
               try {
                 const res = await fetch('/api/transaction', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({ playerName: confirmPlayer.Name }),
+                  body: JSON.stringify({
+                    playerName: confirmPlayer.Name,
+                    type, // 👉 加入交易類型
+                  }),
                 });
+            
                 const data = await res.json();
                 if (res.ok) {
-                  setSuccessMessage('✅ 成功新增交易');
+                  setSuccessMessage(`✅ 成功${type === 'Add' ? '加入' : '移除'}球員`);
                   setSuccessDialogOpen(true);
                 } else {
                   setSuccessMessage(`❌ 錯誤: ${data.error}`);
@@ -512,9 +529,11 @@ export default function PlayerPage() {
                 console.error('交易處理錯誤:', error);
                 alert('❌ 發生錯誤，請稍後再試');
               }
+            
               setDialogOpen(false);
               setConfirmPlayer(null);
             }}
+            
           >
             確定
           </AlertDialogAction>

@@ -145,7 +145,13 @@ export default function PlayerPage() {
         if (identity !== 'All Identities' && p.identity !== identity) return false
         if (team !== 'All teams' && p.Team !== team) return false
         const statusLower = (p.status || '').toLowerCase()
-        if (status !== 'All Players' && !statusLower.includes(status.toLowerCase())) return false
+        if (status !== 'All Players') {
+          if (status === 'Market') {
+            if (!(statusLower === 'free agent' || statusLower === 'waiver')) return false;
+          } else if (!statusLower.includes(status.toLowerCase())) {
+            return false;
+          }
+        }
         if (register !== '所有球員') {
           if (register === '一軍' && ['二軍', '未註冊', '註銷'].includes(p.registerStatus)) return false
           if (register === '未註冊' && !['未註冊', '註銷'].includes(p.registerStatus)) return false
@@ -306,6 +312,7 @@ export default function PlayerPage() {
               <option>On Team</option>
               <option>Free Agent</option>
               <option>Waiver</option>
+              <option>Market</option>
             </select>
           </div>
           <div>
@@ -521,6 +528,7 @@ export default function PlayerPage() {
                 if (res.ok) {
                   setSuccessMessage(`✅ 成功${type === 'Add' ? '加入' : '移除'}球員`);
                   setSuccessDialogOpen(true);
+                  await fetchStatsAndStatus(); // 🧩 加這行！
                 } else {
                   setSuccessMessage(`❌ 錯誤: ${data.error}`);
                   setSuccessDialogOpen(true);

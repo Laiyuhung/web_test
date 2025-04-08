@@ -8,6 +8,7 @@ export default function RosterPage() {
   const [range, setRange] = useState('2025 Season')
   const [fromDate, setFromDate] = useState('2025-03-27')
   const [toDate, setToDate] = useState('2025-11-30')
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -22,6 +23,7 @@ export default function RosterPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true)
       try {
         const [statusRes, statsRes, positionRes] = await Promise.all([
             fetch('/api/playerStatus'),
@@ -56,6 +58,7 @@ export default function RosterPage() {
       } catch (err) {
         console.error('讀取錯誤:', err)
       }
+      setLoading(false)
     }
 
     if (userId) fetchData()
@@ -237,7 +240,8 @@ export default function RosterPage() {
           <option>2025 Season</option>
       </select>
       </div>
-
+      
+      {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
       <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
 
       <section className="mb-8">

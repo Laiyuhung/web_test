@@ -129,6 +129,16 @@ export default function RosterPage() {
     return isNaN(num) ? '.000' : num.toFixed(3).replace(/^0/, '')
   }
 
+  const renderCell = (val) => {
+    const isGray = val === 0 || val === '0.00' || val === '.000'
+    return (
+      <td className={`p-2 font-bold whitespace-nowrap text-s ${isGray ? 'text-gray-400' : ''}`}>
+        {val ?? 0}
+      </td>
+    )
+  }
+  
+
   const batters = players.filter(p => p.B_or_P === 'Batter')
   const pitchers = players.filter(p => p.B_or_P === 'Pitcher')
 
@@ -192,35 +202,35 @@ export default function RosterPage() {
         <tr>
           {type === 'Batter' ? (
             <>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.AB || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.R || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.H || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.HR || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.RBI || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.SB || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.K || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.GIDP || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.XBH || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.TB || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{formatAvg(p.AVG)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{formatAvg(p.OPS)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.AB) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.R) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HR) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.RBI) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SB) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.GIDP) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.XBH) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.TB) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(formatAvg(p.AVG))}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(formatAvg(p.OPS))}</td>
             </>
           ) : (
             <>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.IP || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.W || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.L || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.HLD || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.SV || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.H || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.ER || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.K || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.QS || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.OUT || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.ERA || '0.00'}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{p.WHIP || '0.00'}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.IP) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.W) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.L) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HLD) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SV) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ER) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.QS) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.OUT) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ERA) || '0.00'}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.WHIP) || '0.00'}</td>
             </>
           )}
         </tr>
@@ -253,33 +263,35 @@ export default function RosterPage() {
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
       <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
 
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-2">Batters</h2>
-        <div className="overflow-auto">
-          <table className="w-full text-sm text-center">
-            <thead className="bg-gray-200 sticky top-0 z-10">{renderHeader('Batter')}</thead>
-            <tbody>
-              {batters.map((p, i) => (
-                <>{renderRow(p, 'Batter')}</>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <div className="overflow-auto max-h-[600px]">
+        <section className="mb-8">
+            <h2 className="text-lg font-semibold mb-2">Batters</h2>
 
-      <section>
-        <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
-        <div className="overflow-auto">
-          <table className="w-full text-sm text-center">
-            <thead className="bg-gray-200 sticky top-0 z-20">{renderHeader('Pitcher')}</thead>
-            <tbody>
-              {pitchers.map((p, i) => (
-                <>{renderRow(p, 'Pitcher')}</>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            <table className="w-full text-sm text-center">
+                <thead className="bg-gray-200 sticky top-0 z-40">{renderHeader('Batter')}</thead>
+                <tbody>
+                {batters.map((p, i) => (
+                    <>{renderRow(p, 'Batter')}</>
+                ))}
+                </tbody>
+            </table>
+
+        </section>
+
+        <section>
+            <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
+
+            <table className="w-full text-sm text-center">
+                <thead className="bg-gray-200 sticky top-0 z-50">{renderHeader('Pitcher')}</thead>
+                <tbody>
+                {pitchers.map((p, i) => (
+                    <>{renderRow(p, 'Pitcher')}</>
+                ))}
+                </tbody>
+            </table>
+
+        </section>
+      </div>
     </div>
   )
 }

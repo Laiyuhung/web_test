@@ -192,10 +192,15 @@ export default function PlayerPage() {
 
   const formatDate = (str) => {
     if (!str) return 'wrong1'
-    const d = new Date(str)
+  
+    // 把 "+00:00" 換成 "Z"
+    const fixedStr = str.replace('+00:00', 'Z')
+    const d = new Date(fixedStr)
+  
     if (isNaN(d)) return 'wrong2'
     return `${d.getMonth() + 1}/${d.getDate()}`
   }
+  
   
 
   const formatAvg = (val) => {

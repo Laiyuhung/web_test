@@ -268,21 +268,21 @@ export default function PlayerPage() {
 
       <div className="mb-4 max-w-sm">
         <label className="text-sm font-semibold">Search</label>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full max-w-sm">
           <input
-            type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="球員名稱"
-            className="border px-2 py-1 rounded w-full"
+            className="flex-grow border px-2 py-1 rounded"
           />
           <button
             onClick={() => setSearch(searchInput)}
-            className="bg-blue-600 text-white px-4 py-1 rounded"
+            className="bg-blue-600 text-white px-4 py-1 rounded whitespace-nowrap"
           >
             搜尋
           </button>
         </div>
+
 
       </div>
 

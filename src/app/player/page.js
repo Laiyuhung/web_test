@@ -188,39 +188,44 @@ export default function PlayerPage() {
 
     
     const renderActionButton = (p) => {
-      const status = (p.status || '').toLowerCase()
-      const ownerId = p.manager_id?.toString() || null
-      const isOwner = ownerId === userId
+      const status = (p.status || '').toLowerCase();
+      const ownerId = p.manager_id?.toString() || null;
+      const isOwner = ownerId === userId;
     
-      // 設定圓形邊框顏色
-      let borderColor = 'border-gray-500'; // 預設灰色
-      let textColor = 'text-gray-500'; // 預設文字顏色
+      let borderColor = "border-gray-500"; // 預設灰色邊框
+      let textColor = "text-gray-500"; // 預設文字顏色
     
-      if (status === 'free agent') {
-        borderColor = 'border-green-600';
-        textColor = 'text-green-600';
-      }
-      if (p.status?.includes('On Team') && p.owner && p.owner !== '-' && isOwner) {
-        borderColor = 'border-red-600';
-        textColor = 'text-red-600';
-      }
-      if (status.includes('waiver')) {
-        borderColor = 'border-yellow-500';
-        textColor = 'text-yellow-500';
-      }
-      if (!status || status === 'free agent') {
-        borderColor = 'border-blue-600';
-        textColor = 'text-blue-600';
+      // 根據不同狀態設定邊框與文字顏色
+      if (status === "free agent") {
+        borderColor = "border-green-600";
+        textColor = "text-green-600";
+      } else if (status.includes("on team") && p.owner && p.owner !== "-" && isOwner) {
+        borderColor = "border-red-600";
+        textColor = "text-red-600";
+      } else if (status.includes("waiver")) {
+        borderColor = "border-yellow-500";
+        textColor = "text-yellow-500";
+      } else {
+        borderColor = "border-blue-600";
+        textColor = "text-blue-600";
       }
     
       return (
-        <div className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center`}>
+        <div
+          className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center`}
+        >
           <span className={`${textColor} font-bold`}>
-            {status === 'free agent' ? '＋' : status.includes('On Team') ? '－' : status.includes('waiver') ? '＋' : '⇄'}
+            {status === "free agent"
+              ? "＋"
+              : status.includes("on team") && p.owner && p.owner !== "-" && isOwner
+              ? "－"
+              : status.includes("waiver")
+              ? "＋"
+              : "⇄"}
           </span>
         </div>
-      )
-    }
+      );
+    };
     
     
     

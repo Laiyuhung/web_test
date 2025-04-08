@@ -11,6 +11,8 @@ export async function POST(req) {
 
   try {
     // 🔍 先查詢是否已經存在相同申請
+    console.log('查詢條件：', { manager, add_player, off_waiver })
+
     const { data: existing, error: checkError } = await supabase
       .from('waiver')
       .select('id')

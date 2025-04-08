@@ -1,6 +1,17 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog"
 
 export default function PlayerPage() {
   const [players, setPlayers] = useState([])
@@ -19,6 +30,9 @@ export default function PlayerPage() {
   const [sortMethod, setSortMethod] = useState('Descending')
   const [userId, setUserId] = useState(null)
   const [search, setSearch] = useState('')
+  const [confirmPlayer, setConfirmPlayer] = useState(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
 
 
 
@@ -192,34 +206,13 @@ export default function PlayerPage() {
       const ownerId = p.manager_id?.toString() || null;
       const isOwner = ownerId === userId;
     
-      const handleAddClick = async () => {
-        const confirmAdd = window.confirm(`確定要將「${p.Name}」加入您的球隊嗎？`);
-        if (!confirmAdd) return;
-      
-        try {
-          const res = await fetch('/api/transaction', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ playerName: p.Name }),  // 發送球員名稱給後端
-          });
-      
-          const data = await res.json();
-          if (res.ok) {
-            alert('✅ 成功新增交易');
-          } else {
-            alert(`❌ 錯誤: ${data.error}`);
-          }
-        } catch (error) {
-          console.error('交易處理錯誤:', error);
-          alert('❌ 發生錯誤，請稍後再試');
-        }
+      const openConfirmDialog = () => {
+        setConfirmPlayer(p);
+        setDialogOpen(true);
       };
-      
     
-      let borderColor = "border-gray-500"; // 預設灰色邊框
-      let textColor = "text-gray-500"; // 預設文字顏色
+      let borderColor = "border-gray-500";
+      let textColor = "text-gray-500";
     
       if (status === "free agent") {
         borderColor = "border-green-600";
@@ -238,7 +231,7 @@ export default function PlayerPage() {
       return (
         <div
           className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
-          onClick={handleAddClick}  // 當按下按鈕時執行 handleAddClick
+          onClick={openConfirmDialog}
         >
           <span className={`${textColor} font-bold`}>
             {status === "free agent"
@@ -259,6 +252,7 @@ export default function PlayerPage() {
     
 
   return (
+    <>
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">PLAYERS</h1>
       {error && <div className="text-red-500 mb-4">{error}</div>}
@@ -483,5 +477,46 @@ export default function PlayerPage() {
 
       </div>
     </div>
+    <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>確定要加入這位球員嗎？</AlertDialogTitle>
+          <AlertDialogDescription>
+            您即將新增交易：{confirmPlayer?.Name}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={async () => {
+              if (!confirmPlayer) return;
+              try {
+                const res = await fetch('/api/transaction', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ playerName: confirmPlayer.Name }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                  alert('✅ 成功新增交易');
+                } else {
+                  alert(`❌ 錯誤: ${data.error}`);
+                }
+              } catch (error) {
+                console.error('交易處理錯誤:', error);
+                alert('❌ 發生錯誤，請稍後再試');
+              }
+              setDialogOpen(false);
+              setConfirmPlayer(null);
+            }}
+          >
+            確定
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }

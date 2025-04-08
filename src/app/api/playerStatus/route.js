@@ -39,22 +39,35 @@ export async function GET() {
       } else if (addCount - dropCount === 0) {
         const lastDrop = [...playerTx].reverse().find(t => t.type.includes('Drop'))
         if (lastDrop) {
-          const dropTime = new Date(lastDrop.transaction_time)
-          const now = new Date()
-          const daysSinceDrop = Math.floor((now - dropTime) / (1000 * 60 * 60 * 24))
-
-          if (daysSinceDrop >= 3) {
-            status = 'Free Agent'
+          const dropTimeUTC = new Date(lastDrop.transaction_time)
+          const taiwanOffsetMs = 8 * 60 * 60 * 1000
+          const dropTimeTWN = new Date(dropTimeUTC.getTime() + taiwanOffsetMs)
+          const nowTWN = new Date(Date.now() + taiwanOffsetMs)
+      
+          // 取得台灣當地的 yyyy-mm-dd 字串
+          const toDateStr = (d) => d.toISOString().split('T')[0]
+          const dropDateStr = toDateStr(dropTimeTWN)
+          const todayDateStr = toDateStr(nowTWN)
+      
+          if (dropDateStr === todayDateStr) {
+            status = 'Free Agent'  // 同一天不進 Waiver
           } else {
-            status = 'Waiver'
-            const offDate = new Date(dropTime)
-            offDate.setDate(offDate.getDate() + 3)
-            const month = offDate.getMonth() + 1
-            const day = offDate.getDate()
-            offWaivers = `${month}/${day}`
+            const msDiff = nowTWN.getTime() - dropTimeTWN.getTime()
+            const daysSinceDrop = Math.floor(msDiff / (1000 * 60 * 60 * 24))
+            if (daysSinceDrop >= 3) {
+              status = 'Free Agent'
+            } else {
+              status = 'Waiver'
+              const offDate = new Date(dropTimeTWN)
+              offDate.setDate(offDate.getDate() + 3)
+              const month = offDate.getMonth() + 1
+              const day = offDate.getDate()
+              offWaivers = `${month}/${day}`
+            }
           }
         }
       }
+      
 
       return {
         Player_no: player.Player_no,

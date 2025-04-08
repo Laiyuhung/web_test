@@ -62,7 +62,7 @@ export async function GET() {
               offDate.setDate(offDate.getDate() + 3)
               const month = offDate.getMonth() + 1
               const day = offDate.getDate()
-              offWaivers = `${month}/${day}`
+              offWaivers = offDate.toISOString()  // 例如：2025-04-10T00:00:00.000Z
             }
           }
         }

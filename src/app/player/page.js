@@ -191,9 +191,9 @@ export default function PlayerPage() {
   }, [])
 
   const formatDate = (str) => {
-    if (!str) return 'wrong'
+    if (!str) return 'wrong1'
     const d = new Date(str)
-    if (isNaN(d)) return 'wrong'
+    if (isNaN(d)) return 'wrong2'
     return `${d.getMonth() + 1}/${d.getDate()}`
   }
   

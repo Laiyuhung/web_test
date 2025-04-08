@@ -191,18 +191,37 @@ export default function PlayerPage() {
       const status = (p.status || '').toLowerCase()
       const ownerId = p.manager_id?.toString() || null
       const isOwner = ownerId === userId
-  
+    
+      // 設定圓形邊框顏色
+      let borderColor = 'border-gray-500'; // 預設灰色
+      let textColor = 'text-gray-500'; // 預設文字顏色
+    
       if (status === 'free agent') {
-        return <span className="text-green-600 font-bold">＋</span>
+        borderColor = 'border-green-600';
+        textColor = 'text-green-600';
       }
       if (p.status?.includes('On Team') && p.owner && p.owner !== '-' && isOwner) {
-        return <span className="text-red-600 font-bold">－</span>
+        borderColor = 'border-red-600';
+        textColor = 'text-red-600';
       }
       if (status.includes('waiver')) {
-        return <span className="text-yellow-500 font-bold">＋</span>
+        borderColor = 'border-yellow-500';
+        textColor = 'text-yellow-500';
       }
-      return <span className="text-blue-600 font-bold">⇄</span>
+      if (!status || status === 'free agent') {
+        borderColor = 'border-blue-600';
+        textColor = 'text-blue-600';
+      }
+    
+      return (
+        <div className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center`}>
+          <span className={`${textColor} font-bold`}>
+            {status === 'free agent' ? '＋' : status.includes('On Team') ? '－' : status.includes('waiver') ? '＋' : '⇄'}
+          </span>
+        </div>
+      )
     }
+    
     
     
     

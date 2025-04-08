@@ -71,7 +71,7 @@ export default function RosterPage() {
     }
 
     if (userId) fetchData()
-  }, [userId])
+  }, [userId, fromDate, toDate]) 
 
   const today = new Date()
     

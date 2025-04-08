@@ -38,35 +38,37 @@ export async function GET() {
         }
       } else if (addCount - dropCount === 0) {
         const lastDrop = [...playerTx].reverse().find(t => t.type.includes('Drop'))
-        if (lastDrop) {
-          const dropTimeUTC = new Date(lastDrop.transaction_time)
+        const lastAdd = [...playerTx].reverse().find(t => t.type.includes('Add'))
+      
+        if (lastDrop && lastAdd) {
+          const dropTime = new Date(lastDrop.transaction_time)
+          const addTime = new Date(lastAdd.transaction_time)
+      
+          // 台灣時區補正（+8 小時）
           const taiwanOffsetMs = 8 * 60 * 60 * 1000
-          const dropTimeTWN = new Date(dropTimeUTC.getTime() + taiwanOffsetMs)
-          const nowTWN = new Date(Date.now() + taiwanOffsetMs)
+          const dropDateStr = new Date(dropTime.getTime() + taiwanOffsetMs).toISOString().split('T')[0]
+          const addDateStr = new Date(addTime.getTime() + taiwanOffsetMs).toISOString().split('T')[0]
       
-          // 取得台灣當地的 yyyy-mm-dd 字串
-          const toDateStr = (d) => d.toISOString().split('T')[0]
-          const dropDateStr = toDateStr(dropTimeTWN)
-          const todayDateStr = toDateStr(nowTWN)
-      
-          if (dropDateStr === todayDateStr) {
-            status = 'Free Agent'  // 同一天不進 Waiver
+          if (dropDateStr === addDateStr) {
+            status = 'Free Agent'  // 同一天 Add + Drop，不進 Waiver
           } else {
-            const msDiff = nowTWN.getTime() - dropTimeTWN.getTime()
+            // 計算是否已滿 3 天（Drop -> Waiver）
+            const nowTWN = new Date(Date.now() + taiwanOffsetMs)
+            const msDiff = nowTWN.getTime() - (dropTime.getTime() + taiwanOffsetMs)
             const daysSinceDrop = Math.floor(msDiff / (1000 * 60 * 60 * 24))
+      
             if (daysSinceDrop >= 3) {
               status = 'Free Agent'
             } else {
               status = 'Waiver'
-              const offDate = new Date(dropTimeTWN)
+              const offDate = new Date(dropTime.getTime() + taiwanOffsetMs)
               offDate.setDate(offDate.getDate() + 3)
-              const month = offDate.getMonth() + 1
-              const day = offDate.getDate()
-              offWaivers = offDate.toISOString()  // 例如：2025-04-10T00:00:00.000Z
+              offWaivers = offDate.toISOString()  // 範例：2025-04-10T00:00:00.000Z
             }
           }
         }
       }
+      
       
 
       return {

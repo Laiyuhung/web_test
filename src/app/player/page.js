@@ -32,6 +32,8 @@ export default function PlayerPage() {
   const [search, setSearch] = useState('')
   const [confirmPlayer, setConfirmPlayer] = useState(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
 
 
@@ -500,9 +502,11 @@ export default function PlayerPage() {
                 });
                 const data = await res.json();
                 if (res.ok) {
-                  alert('✅ 成功新增交易');
+                  setSuccessMessage('✅ 成功新增交易');
+                  setSuccessDialogOpen(true);
                 } else {
-                  alert(`❌ 錯誤: ${data.error}`);
+                  setSuccessMessage(`❌ 錯誤: ${data.error}`);
+                  setSuccessDialogOpen(true);
                 }
               } catch (error) {
                 console.error('交易處理錯誤:', error);
@@ -517,6 +521,21 @@ export default function PlayerPage() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    <AlertDialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>交易結果</AlertDialogTitle>
+        <AlertDialogDescription>
+          {successMessage}
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogAction onClick={() => setSuccessDialogOpen(false)}>
+          關閉
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
     </>
   )
 }

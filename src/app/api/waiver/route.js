@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import supabase from '@/lib/supabaseServer' 
+import supabase from '@/lib/supabaseServer'
 
 export async function POST(req) {
   const body = await req.json()
@@ -10,12 +10,31 @@ export async function POST(req) {
   }
 
   try {
+    // 🔍 先查詢是否已經存在相同申請
+    const { data: existing, error: checkError } = await supabase
+      .from('waiver')
+      .select('id')
+      .eq('manager', manager)
+      .eq('add_player', add_player)
+      .eq('off_waiver', off_waiver)
+
+    if (checkError) {
+      console.error('查詢錯誤:', checkError)
+      return NextResponse.json({ error: '查詢失敗' }, { status: 500 })
+    }
+
+    if (existing && existing.length > 0) {
+      return NextResponse.json({ error: '已申請過相同的 Waiver' }, { status: 409 })
+    }
+
+    // ✅ 插入資料
     const { error } = await supabase.from('waiver').insert({
       apply_time,
       manager,
       add_player,
       off_waiver,
       drop_player: drop_player || null,
+      status: 'pending',
     })
 
     if (error) {

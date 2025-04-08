@@ -651,7 +651,9 @@ export default function PlayerPage() {
               setSuccessMessage('✅ Waiver 申請成功');
               setSuccessDialogOpen(true);
               await fetchStatsAndStatus(); // 重新刷新
-            } else {
+            } else if (data.error?.includes('已申請過')) {
+              setSuccessMessage('⚠️ 此球員您已申請過 Waiver，請勿重複申請');
+            }else {
               setSuccessMessage(`❌ 錯誤：${data.error}`);
               setSuccessDialogOpen(true);
             }

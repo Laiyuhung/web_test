@@ -8,8 +8,9 @@ export async function POST(req, res) {
     const { playerName } = await req.json();
     console.log('🎯 收到的 playerName:', playerName);
 
-    // 從 cookie 拿 user_id
-    const user_id = req.cookies.get('user_id');
+    // 從 cookie 拿 user_id（修正取值方式）
+    const user_id_cookie = req.cookies.get('user_id');
+    const user_id = user_id_cookie?.value;
     console.log('🍪 從 cookies 中獲得的 user_id:', user_id);
 
     if (!user_id) {
@@ -41,7 +42,7 @@ export async function POST(req, res) {
     const transaction_time = new Date().toISOString();
     const type = 'Add';
 
-    // ✅ 印出即將插入的資料內容
+    // ✅ 印出即將插入的交易資料內容
     console.log('🧾 準備插入的交易資料如下：');
     console.log({
       transaction_time,

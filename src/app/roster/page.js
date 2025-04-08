@@ -41,6 +41,7 @@ export default function RosterPage() {
 
         const merged = statusData.map(p => {
           const stat = statsData.find(s => s.name === p.Name)
+          const finalPosition = p.finalPosition || []
           return {
             ...p,
             ...(stat || {}),

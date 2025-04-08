@@ -38,6 +38,8 @@ export default function PlayerPage() {
 
   const [dropPlayer, setDropPlayer] = useState('');
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false);
+  const [myRosterPlayers, setMyRosterPlayers] = useState([])
+
 
 
   const today = new Date()
@@ -171,8 +173,12 @@ export default function PlayerPage() {
         const bVal = parseFloat(b[sortBy] || 0)
         return sortMethod === 'Ascending' ? aVal - bVal : bVal - aVal
       })
-
+      
       setPlayers(sorted)
+
+      const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
+      setMyRosterPlayers(myPlayers) 
+
     } catch (err) {
       console.error('統計錯誤:', err)
       setError('統計讀取失敗')

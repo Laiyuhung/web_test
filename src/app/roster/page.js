@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react'
 export default function RosterPage() {
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)
+  const [range, setRange] = useState('2025 Season')
+  const [fromDate, setFromDate] = useState('2025-03-27')
+  const [toDate, setToDate] = useState('2025-11-30')
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -14,6 +17,10 @@ export default function RosterPage() {
   }, [])
 
   useEffect(() => {
+    applyDateRange(range)
+  }, [range])
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const [statusRes, statsRes, positionRes] = await Promise.all([
@@ -21,7 +28,7 @@ export default function RosterPage() {
             fetch('/api/playerStats', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'all', from: '2025-03-27', to: '2025-11-30' })
+                body: JSON.stringify({ type: 'all', from: fromDate, to: toDate })
             }),
             fetch('/api/playerPositionCaculate') // 🔹 加這個
         ])
@@ -51,6 +58,57 @@ export default function RosterPage() {
 
     if (userId) fetchData()
   }, [userId])
+
+  const today = new Date()
+    
+  const formatDateInput = (date) => date.toISOString().slice(0, 10)
+
+    
+  const applyDateRange = (range) => {
+  const d = new Date(today)
+  let from = '', to = ''
+  switch (range) {
+      case 'Today':
+      from = to = formatDateInput(d)
+      break
+      case 'Yesterday':
+      d.setDate(d.getDate() - 1)
+      from = to = formatDateInput(d)
+      break
+      case 'Last 7 days':
+      const last7 = new Date(today)
+      last7.setDate(last7.getDate() - 7)
+      const yest7 = new Date(today)
+      yest7.setDate(yest7.getDate() - 1)
+      from = formatDateInput(last7)
+      to = formatDateInput(yest7)
+      break
+      case 'Last 14 days':
+      const last14 = new Date(today)
+      last14.setDate(last14.getDate() - 14)
+      const yest14 = new Date(today)
+      yest14.setDate(yest14.getDate() - 1)
+      from = formatDateInput(last14)
+      to = formatDateInput(yest14)
+      break
+      case 'Last 30 days':
+      const last30 = new Date(today)
+      last30.setDate(last30.getDate() - 30)
+      const yest30 = new Date(today)
+      yest30.setDate(yest30.getDate() - 1)
+      from = formatDateInput(last30)
+      to = formatDateInput(yest30)
+      break
+      case '2025 Season':
+      default:
+      from = '2025-03-27'
+      to = '2025-11-30'
+      break
+  }
+  setFromDate(from)
+  setToDate(to)
+  }
+
 
   const formatAvg = (val) => {
     const num = parseFloat(val)
@@ -157,7 +215,27 @@ export default function RosterPage() {
   }
 
   return (
-    <div className="p-6">
+
+
+    
+      <div className="p-6">
+
+      <div className="mb-4">
+      <label className="text-sm font-semibold">Stats Range</label>
+      <select
+          value={range}
+          onChange={e => setRange(e.target.value)}
+          className="border px-2 py-1 rounded ml-2"
+      >
+          <option>Today</option>
+          <option>Yesterday</option>
+          <option>Last 7 days</option>
+          <option>Last 14 days</option>
+          <option>Last 30 days</option>
+          <option>2025 Season</option>
+      </select>
+      </div>
+
       <h1 className="text-xl font-bold mb-6">我的 ROSTER</h1>
 
       <section className="mb-8">

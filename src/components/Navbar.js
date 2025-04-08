@@ -27,6 +27,8 @@ export default function Navbar() {
           if (data.name) setUserName(data.name)
         })
         .catch(err => console.error('❌ username fetch 錯誤:', err))
+    }else {
+      router.push('/login') // ✅ 沒登入就導向登入頁
     }
   }, [])
 
@@ -52,6 +54,7 @@ export default function Navbar() {
       {/* Menu for larger screens */}
       <div className="hidden md:flex items-center space-x-8">
         <Link href="/home" className="font-semibold hover:text-gray-300">HOME</Link>
+        <Link href="/roster" className="font-semibold hover:text-gray-300">ROSTER</Link>
         <Link href="/player" className="font-semibold hover:text-gray-300">PLAYERS</Link>
         {userId === '2' && (
           <Link href="/bulk-insert" className="font-semibold hover:text-yellow-300">資料登錄系統</Link>
@@ -82,6 +85,7 @@ export default function Navbar() {
             </button>
           </div>
           <Link href="/home" className="block py-2">HOME</Link>
+          <Link href="/roster" className="block py-2">ROSTER</Link>
           <Link href="/player" className="block py-2">PLAYERS</Link>
           {userId === '2' && (
             <Link href="/bulk-insert" className="block py-2">資料登錄系統</Link>

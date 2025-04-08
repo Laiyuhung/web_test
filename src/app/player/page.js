@@ -211,9 +211,9 @@ export default function PlayerPage() {
   const renderCell = (val) => {
     const isGray = val === 0 || val === '0.00' || val === '.000'
     return (
-      <span className={`${isGray ? 'text-gray-400' : ''}`}>
-        {val ?? 0}
-      </span>
+      <td className={`p-2 font-bold whitespace-nowrap text-s ${isGray ? 'text-gray-400' : ''}`}>
+      {val ?? 0}
+      </td>
     )
   }
 
@@ -473,35 +473,35 @@ export default function PlayerPage() {
                 <tr>
                   {type === 'Batter' ? (
                     <>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.AB) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.R) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HR) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.RBI) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SB) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.GIDP) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.XBH) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.TB) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(formatAvg(p.AVG)) || '.000'}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(formatAvg(p.OPS)) || '.000'}</td>
+                      {renderCell(p.AB)}
+                      {renderCell(p.R)}
+                      {renderCell(p.H)}
+                      {renderCell(p.HR)}
+                      {renderCell(p.RBI)}
+                      {renderCell(p.SB)}
+                      {renderCell(p.K)}
+                      {renderCell(p.BB)}
+                      {renderCell(p.GIDP)}
+                      {renderCell(p.XBH)}
+                      {renderCell(p.TB)}
+                      {renderCell(formatAvg(p.AVG))}
+                      {renderCell(formatAvg(p.OPS))}
                     </> 
                   ) : (
                     <>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.IP) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.W) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.L) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HLD) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SV) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ER) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.QS) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.OUT) || 0}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ERA) || '0.00'}</td>
-                      <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.WHIP) || '0.00'}</td>
+                      {renderCell(p.IP)}
+                      {renderCell(p.W)}
+                      {renderCell(p.L)}
+                      {renderCell(p.HLD)}
+                      {renderCell(p.SV)}
+                      {renderCell(p.H)}
+                      {renderCell(p.ER)}
+                      {renderCell(p.K)}
+                      {renderCell(p.BB)} 
+                      {renderCell(p.QS)}
+                      {renderCell(p.OUT)}
+                      {renderCell(p.ERA)}
+                      {renderCell(p.WHIP)}
                     </>
                   )}
                 </tr>

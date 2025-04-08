@@ -132,9 +132,9 @@ export default function RosterPage() {
   const renderCell = (val) => {
     const isGray = val === 0 || val === '0.00' || val === '.000'
     return (
-      <span className={`${isGray ? 'text-gray-400' : ''}`}>
+        <td className={`p-2 font-bold whitespace-nowrap text-s ${isGray ? 'text-gray-400' : ''}`}>
         {val ?? 0}
-      </span>
+        </td>
     )
   }
   
@@ -142,45 +142,25 @@ export default function RosterPage() {
   const batters = players.filter(p => p.B_or_P === 'Batter')
   const pitchers = players.filter(p => p.B_or_P === 'Pitcher')
 
-  const renderHeader = (type) => {
+  const renderHeader = (type, zIndex = 'z-40') => {
+    const labels = type === 'Batter'
+      ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
+      : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
+  
     return (
       <tr>
-        {type === 'Batter' ? (
-          <>
-            <th className="p-2 border">AB</th>
-            <th className="p-2 border">R</th>
-            <th className="p-2 border">H</th>
-            <th className="p-2 border">HR</th>
-            <th className="p-2 border">RBI</th>
-            <th className="p-2 border">SB</th>
-            <th className="p-2 border">K</th>
-            <th className="p-2 border">BB</th>
-            <th className="p-2 border">GIDP</th>
-            <th className="p-2 border">XBH</th>
-            <th className="p-2 border">TB</th>
-            <th className="p-2 border">AVG</th>
-            <th className="p-2 border">OPS</th>
-          </>
-        ) : (
-          <>
-            <th className="p-2 border">IP</th>
-            <th className="p-2 border">W</th>
-            <th className="p-2 border">L</th>
-            <th className="p-2 border">HLD</th>
-            <th className="p-2 border">SV</th>
-            <th className="p-2 border">H</th>
-            <th className="p-2 border">ER</th>
-            <th className="p-2 border">K</th>
-            <th className="p-2 border">BB</th>
-            <th className="p-2 border">QS</th>
-            <th className="p-2 border">OUT</th>
-            <th className="p-2 border">ERA</th>
-            <th className="p-2 border">WHIP</th>
-          </>
-        )}
+        {labels.map((label) => (
+          <th
+            key={label}
+            className={`p-2 border font-bold bg-gray-200 sticky top-0 ${zIndex}`}
+          >
+            {label}
+          </th>
+        ))}
       </tr>
     )
   }
+  
 
   const renderRow = (p, type) => {
     return (
@@ -202,35 +182,35 @@ export default function RosterPage() {
         <tr>
           {type === 'Batter' ? (
             <>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.AB)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.R)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HR)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.RBI)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SB)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.GIDP)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.XBH)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.TB)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(formatAvg(p.AVG))}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(formatAvg(p.OPS))}</td>
+                {renderCell(p.AB)}
+                {renderCell(p.R)}
+                {renderCell(p.H)}
+                {renderCell(p.HR)}
+                {renderCell(p.RBI)}
+                {renderCell(p.SB)}
+                {renderCell(p.K)}
+                {renderCell(p.BB)}
+                {renderCell(p.GIDP)}
+                {renderCell(p.XBH)}
+                {renderCell(p.TB)}
+                {renderCell(formatAvg(p.AVG))}
+                {renderCell(formatAvg(p.OPS))}
             </>
           ) : (
             <>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.IP)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.W)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.L)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HLD)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SV)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ER)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.QS)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.OUT)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ERA)}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.WHIP)}</td>
+                {renderCell(p.IP)}
+                {renderCell(p.W)}
+                {renderCell(p.L)}
+                {renderCell(p.HLD)}
+                {renderCell(p.SV)}
+                {renderCell(p.H)}
+                {renderCell(p.ER)}
+                {renderCell(p.K)}
+                {renderCell(p.BB)} 
+                {renderCell(p.QS)}
+                {renderCell(p.OUT)}
+                {renderCell(p.ERA)}
+                {renderCell(p.WHIP)}
             </>
           )}
         </tr>
@@ -268,7 +248,7 @@ export default function RosterPage() {
             <h2 className="text-lg font-semibold mb-2">Batters</h2>
 
             <table className="w-full text-sm text-center">
-                <thead className="bg-gray-200 sticky top-0 z-40">{renderHeader('Batter')}</thead>
+                <thead>{renderHeader('Batter', 'z-40')}</thead>
                 <tbody>
                 {batters.map((p, i) => (
                     <>{renderRow(p, 'Batter')}</>
@@ -282,7 +262,7 @@ export default function RosterPage() {
             <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
 
             <table className="w-full text-sm text-center">
-                <thead className="bg-gray-200 sticky top-0 z-50">{renderHeader('Pitcher')}</thead>
+                <thead>{renderHeader('Pitcher', 'z-50')}</thead>
                 <tbody>
                 {pitchers.map((p, i) => (
                     <>{renderRow(p, 'Pitcher')}</>

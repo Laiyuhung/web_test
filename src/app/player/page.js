@@ -433,7 +433,7 @@ export default function PlayerPage() {
                 <tr>
                 <td
                   colSpan={type === 'Batter' ? 13 : 13}
-                  className="p-2 border text-left whitespace-nowrap sticky top-0 z-10 bg-white"
+                  className="p-2 border text-left whitespace-nowrap"
                 >
 
                   <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">

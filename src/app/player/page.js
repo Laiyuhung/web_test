@@ -211,9 +211,9 @@ export default function PlayerPage() {
   const renderCell = (val) => {
     const isGray = val === 0 || val === '0.00' || val === '.000'
     return (
-      <td className={`p-2 font-bold whitespace-nowrap text-s ${isGray ? 'text-gray-400' : ''}`}>
+      <span className={`${isGray ? 'text-gray-400' : ''}`}>
         {val ?? 0}
-      </td>
+      </span>
     )
   }
 

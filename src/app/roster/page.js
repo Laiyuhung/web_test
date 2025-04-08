@@ -132,9 +132,9 @@ export default function RosterPage() {
   const renderCell = (val) => {
     const isGray = val === 0 || val === '0.00' || val === '.000'
     return (
-      <td className={`p-2 font-bold whitespace-nowrap text-s ${isGray ? 'text-gray-400' : ''}`}>
+      <span className={`${isGray ? 'text-gray-400' : ''}`}>
         {val ?? 0}
-      </td>
+      </span>
     )
   }
   
@@ -202,35 +202,35 @@ export default function RosterPage() {
         <tr>
           {type === 'Batter' ? (
             <>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.AB) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.R) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HR) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.RBI) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SB) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.GIDP) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.XBH) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.TB) || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.AB)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.R)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HR)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.RBI)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SB)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.GIDP)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.XBH)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.TB)}</td>
               <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(formatAvg(p.AVG))}</td>
               <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(formatAvg(p.OPS))}</td>
             </>
           ) : (
             <>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.IP) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.W) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.L) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HLD) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SV) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ER) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.QS) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.OUT) || 0}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ERA) || '0.00'}</td>
-              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.WHIP) || '0.00'}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.IP)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.W)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.L)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.HLD)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.SV)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.H)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ER)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.K)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.BB)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.QS)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.OUT)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.ERA)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{renderCell(p.WHIP)}</td>
             </>
           )}
         </tr>

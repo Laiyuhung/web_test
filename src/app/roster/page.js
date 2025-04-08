@@ -16,25 +16,28 @@ export default function RosterPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statusRes, statsRes] = await Promise.all([
-          fetch('/api/playerStatus'),
-          fetch('/api/playerStats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'all', from: '2025-03-27', to: '2025-11-30' })
-          })
+        const [statusRes, statsRes, positionRes] = await Promise.all([
+            fetch('/api/playerStatus'),
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'all', from: '2025-03-27', to: '2025-11-30' })
+            }),
+            fetch('/api/playerPositionCaculate') // 🔹 加這個
         ])
 
-        const [statusData, statsData] = await Promise.all([
-          statusRes.json(),
-          statsRes.ok ? statsRes.json() : []
+        const [statusData, statsData, positionData] = await Promise.all([
+            statusRes.json(),
+            statsRes.ok ? statsRes.json() : [],
+            positionRes.ok ? positionRes.json() : []
         ])
 
         const merged = statusData.map(p => {
           const stat = statsData.find(s => s.name === p.Name)
           return {
             ...p,
-            ...(stat || {})
+            ...(stat || {}),
+            finalPosition
           }
         })
 

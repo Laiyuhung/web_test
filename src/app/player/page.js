@@ -620,13 +620,13 @@ export default function PlayerPage() {
             onChange={e => setDropPlayer(e.target.value)}
           >
             <option value="">不選擇 Drop</option>
-            {players
-              .filter(p => p.manager_id?.toString() === userId && p.Name !== confirmPlayer?.Name)
+            {myRosterPlayers
+              .filter(p => p.Name !== confirmPlayer?.Name)
               .map(p => (
                 <option key={p.Name} value={p.Name}>
                   {p.Name}({(p.finalPosition || []).join(', ')})
                 </option>
-              ))}
+            ))}
           </select>
         </AlertDialogDescription>
       </AlertDialogHeader>

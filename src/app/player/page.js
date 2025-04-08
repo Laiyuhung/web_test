@@ -36,7 +36,8 @@ export default function PlayerPage() {
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-
+  const [dropPlayer, setDropPlayer] = useState('');
+  const [waiverDialogOpen, setWaiverDialogOpen] = useState(false);
 
 
   const today = new Date()
@@ -258,7 +259,15 @@ export default function PlayerPage() {
       return (
         <div
           className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
-          onClick={openConfirmDialog}
+          onClick={() => {
+            if (status === "waiver") {
+              setConfirmPlayer(p);
+              setDropPlayer('');
+              setWaiverDialogOpen(true); // 👈 打開 Waiver Dialog
+            } else {
+              openConfirmDialog();
+            }
+          }}
         >
           <span className={`${textColor} font-bold`}>
             {status === "free agent"
@@ -591,6 +600,66 @@ export default function PlayerPage() {
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
+
+  <AlertDialog open={waiverDialogOpen} onOpenChange={setWaiverDialogOpen}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>確定要申請 Waiver 嗎？</AlertDialogTitle>
+        <AlertDialogDescription>
+          加入球員：<b>{confirmPlayer?.Name}</b><br />
+          <span className="text-sm text-gray-500">選擇是否要同時 Drop 一位球員：</span>
+          <select
+            className="border rounded px-2 py-1 w-full mt-2"
+            value={dropPlayer}
+            onChange={e => setDropPlayer(e.target.value)}
+          >
+            <option value="">不選擇 Drop</option>
+            {players
+              .filter(p => p.manager_id?.toString() === userId && p.Name !== confirmPlayer?.Name)
+              .map(p => (
+                <option key={p.Name} value={p.Name}>
+                  {p.Name}({(p.finalPosition || []).join(', ')})
+                </option>
+              ))}
+          </select>
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>取消</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={async () => {
+            const res = await fetch('/api/waiver', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                apply_time: new Date().toISOString(),
+                manager: userId,
+                add_player: confirmPlayer?.Name,
+                off_waiver: confirmPlayer?.offWaivers,
+                drop_player: dropPlayer || null,
+              }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              setSuccessMessage('✅ Waiver 申請成功');
+              setSuccessDialogOpen(true);
+              await fetchStatsAndStatus(); // 重新刷新
+            } else {
+              setSuccessMessage(`❌ 錯誤：${data.error}`);
+              setSuccessDialogOpen(true);
+            }
+
+            setWaiverDialogOpen(false);
+            setConfirmPlayer(null);
+          }}
+        >
+          確定申請
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+
     </>
   )
 }

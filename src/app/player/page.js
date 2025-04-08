@@ -29,6 +29,7 @@ export default function PlayerPage() {
   const [sortBy, setSortBy] = useState('AB')
   const [sortMethod, setSortMethod] = useState('Descending')
   const [userId, setUserId] = useState(null)
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('')
   const [confirmPlayer, setConfirmPlayer] = useState(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -267,13 +268,22 @@ export default function PlayerPage() {
 
       <div className="mb-4 max-w-sm">
         <label className="text-sm font-semibold">Search</label>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Name"
-          className="border px-2 py-1 rounded w-full"
-        />
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="球員名稱"
+            className="border px-2 py-1 rounded w-full"
+          />
+          <button
+            onClick={() => setSearch(searchInput)}
+            className="bg-blue-600 text-white px-4 py-1 rounded"
+          >
+            搜尋
+          </button>
+        </div>
+
       </div>
 
       <div className="overflow-x-auto w-full mb-4">

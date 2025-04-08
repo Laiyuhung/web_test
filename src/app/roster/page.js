@@ -180,35 +180,35 @@ export default function RosterPage() {
         <tr>
           {type === 'Batter' ? (
             <>
-              <td className="p-2 border">{p.AB || 0}</td>
-              <td className="p-2 border">{p.R || 0}</td>
-              <td className="p-2 border">{p.H || 0}</td>
-              <td className="p-2 border">{p.HR || 0}</td>
-              <td className="p-2 border">{p.RBI || 0}</td>
-              <td className="p-2 border">{p.SB || 0}</td>
-              <td className="p-2 border">{p.K || 0}</td>
-              <td className="p-2 border">{p.BB || 0}</td>
-              <td className="p-2 border">{p.GIDP || 0}</td>
-              <td className="p-2 border">{p.XBH || 0}</td>
-              <td className="p-2 border">{p.TB || 0}</td>
-              <td className="p-2 border">{formatAvg(p.AVG)}</td>
-              <td className="p-2 border">{formatAvg(p.OPS)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.AB || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.R || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.H || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.HR || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.RBI || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.SB || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.K || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.GIDP || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.XBH || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.TB || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{formatAvg(p.AVG)}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{formatAvg(p.OPS)}</td>
             </>
           ) : (
             <>
-              <td className="p-2 border">{p.IP || 0}</td>
-              <td className="p-2 border">{p.W || 0}</td>
-              <td className="p-2 border">{p.L || 0}</td>
-              <td className="p-2 border">{p.HLD || 0}</td>
-              <td className="p-2 border">{p.SV || 0}</td>
-              <td className="p-2 border">{p.H || 0}</td>
-              <td className="p-2 border">{p.ER || 0}</td>
-              <td className="p-2 border">{p.K || 0}</td>
-              <td className="p-2 border">{p.BB || 0}</td>
-              <td className="p-2 border">{p.QS || 0}</td>
-              <td className="p-2 border">{p.OUT || 0}</td>
-              <td className="p-2 border">{p.ERA || '0.00'}</td>
-              <td className="p-2 border">{p.WHIP || '0.00'}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.IP || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.W || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.L || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.HLD || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.SV || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.H || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.ER || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.K || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.BB || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.QS || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.OUT || 0}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.ERA || '0.00'}</td>
+              <td className="p-2 font-bold whitespace-nowrap text-s">{p.WHIP || '0.00'}</td>
             </>
           )}
         </tr>
@@ -238,13 +238,13 @@ export default function RosterPage() {
       </select>
       </div>
 
-      <h1 className="text-xl font-bold mb-6">我的 ROSTER</h1>
+      <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
 
       <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-2">打者 Batters</h2>
+        <h2 className="text-lg font-semibold mb-2">Batters</h2>
         <div className="overflow-auto">
           <table className="w-full text-sm text-center">
-            <thead className="bg-gray-200">{renderHeader('Batter')}</thead>
+            <thead className="bg-gray-200 sticky top-0 z-10">{renderHeader('Batter')}</thead>
             <tbody>
               {batters.map((p, i) => (
                 <>{renderRow(p, 'Batter')}</>
@@ -255,10 +255,10 @@ export default function RosterPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-2">投手 Pitchers</h2>
+        <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
         <div className="overflow-auto">
           <table className="w-full text-sm text-center">
-            <thead className="bg-gray-200">{renderHeader('Pitcher')}</thead>
+            <thead className="bg-gray-200 sticky top-0 z-20">{renderHeader('Pitcher')}</thead>
             <tbody>
               {pitchers.map((p, i) => (
                 <>{renderRow(p, 'Pitcher')}</>

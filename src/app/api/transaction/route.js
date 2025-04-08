@@ -40,6 +40,7 @@ export async function POST(req) {
     const transaction_time = new Date().toISOString();
     const type = 'Add';
 
+    // 🧾 印出即將插入的資料
     console.log('🧾 準備插入的交易資料如下：');
     console.log({
       transaction_time,
@@ -48,8 +49,25 @@ export async function POST(req) {
       Player_no
     });
 
+    // ✅ 寫入資料庫
+    const { error: insertError } = await supabase
+      .from('transactions')
+      .insert([{
+        transaction_time,
+        manager_id,
+        type,
+        Player_no
+      }]);
+
+    if (insertError) {
+      console.log('❌ 插入交易記錄錯誤:', insertError);
+      return NextResponse.json({ error: '插入交易記錄錯誤' }, { status: 500 });
+    }
+
+    // ✅ 成功回應
+    console.log('🎉 交易成功，已插入新的交易記錄');
     return NextResponse.json({
-      message: '✅ 測試成功，以下為交易資料內容',
+      message: '交易成功',
       transaction: {
         transaction_time,
         manager_id,

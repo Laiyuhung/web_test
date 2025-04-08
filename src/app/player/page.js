@@ -193,6 +193,9 @@ export default function PlayerPage() {
       const isOwner = ownerId === userId;
     
       const handleAddClick = async () => {
+        const confirmAdd = window.confirm(`確定要將「${p.Name}」加入您的球隊嗎？`);
+        if (!confirmAdd) return;
+      
         try {
           const res = await fetch('/api/transaction', {
             method: 'POST',
@@ -201,17 +204,19 @@ export default function PlayerPage() {
             },
             body: JSON.stringify({ playerName: p.Name }),  // 發送球員名稱給後端
           });
-    
+      
           const data = await res.json();
           if (res.ok) {
-            alert('成功新增交易');
+            alert('✅ 成功新增交易');
           } else {
-            alert(`錯誤: ${data.error}`);
+            alert(`❌ 錯誤: ${data.error}`);
           }
         } catch (error) {
           console.error('交易處理錯誤:', error);
+          alert('❌ 發生錯誤，請稍後再試');
         }
       };
+      
     
       let borderColor = "border-gray-500"; // 預設灰色邊框
       let textColor = "text-gray-500"; // 預設文字顏色

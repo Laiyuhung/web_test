@@ -15,7 +15,7 @@ export async function POST(req) {
 
     const { data: existing, error: checkError } = await supabase
       .from('waiver')
-      .select('id')
+      .select('apply_no')
       .eq('manager', manager)
       .eq('add_player', add_player)
       .eq('off_waiver', off_waiver)

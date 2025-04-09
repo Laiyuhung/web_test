@@ -9,6 +9,8 @@ export default function RosterPage() {
   const [fromDate, setFromDate] = useState('2025-03-27')
   const [toDate, setToDate] = useState('2025-11-30')
   const [loading, setLoading] = useState(false)
+  const [assignedPositions, setAssignedPositions] = useState({})
+
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -123,7 +125,24 @@ export default function RosterPage() {
   setToDate(to)
   }
 
+  const renderAssignedPositionSelect = (p) => {
+    const isBatter = p.B_or_P === 'Batter';
+    const options = [...(p.finalPosition || []), isBatter ? 'Util' : 'P', 'BN'];
+    if (p.registerStatus === '一軍') options.push('NA');
+  
+    return (
+      <select
+        className="border px-1 py-0.5 rounded text-sm mr-2"
+        value={assignedPositions[p.Name] || ''}
+        onChange={e => setAssignedPositions(prev => ({ ...prev, [p.Name]: e.target.value }))}
+      >
+        <option value="">選擇位置</option>
+        {options.map(pos => <option key={pos} value={pos}>{pos}</option>)}
+      </select>
+    )
+  }
 
+  
   const formatAvg = (val) => {
     const num = parseFloat(val)
     return isNaN(num) ? '.000' : num.toFixed(3).replace(/^0/, '')
@@ -169,6 +188,7 @@ export default function RosterPage() {
       <>
         <tr>
           <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left bg-white">
+            {renderAssignedPositionSelect(p)}
             <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
               <img
                 src={`/photo/${p.Name}.png`}

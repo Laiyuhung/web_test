@@ -43,7 +43,7 @@ export default function RosterPage() {
             fetch('/api/playerRegisterStatus')
         ])
 
-        const [statusData, batterData, pitcherData, positionData] = await Promise.all([
+        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
             statusRes.json(),
             batterRes.ok ? batterRes.json() : [],
             pitcherRes.ok ? pitcherRes.json() : [],

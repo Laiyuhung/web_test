@@ -154,7 +154,10 @@ export default function RosterPage() {
   const openMoveModal = (player) => {
     console.log('🔁 可選位置:', player.finalPosition)
   
-    const allSlots = [...(player.finalPosition || []), player.B_or_P === 'Batter' ? 'Util' : 'P', 'BN']
+    const baseSlots = [...(player.finalPosition || []), player.B_or_P === 'Batter' ? 'Util' : 'P', 'BN']
+    const naSlot = player.registerStatus === '一軍' ? 'NA(備用)' : 'NA'
+    const allSlots = [...baseSlots, naSlot]
+  
     const slotLimit = {
       'C': 1,
       '1B': 1,
@@ -167,17 +170,34 @@ export default function RosterPage() {
       'RP': 5,
       'P': 3,
       'BN': 99,
-      'NA': 5
+      'NA': 5, // 統一限制 NA 類位置
     }
   
     const slotStatus = {}
   
     allSlots.forEach(pos => {
-      const assigned = players.filter(p => assignedPositions[p.Name] === pos)
-      slotStatus[pos] = {
-        count: assigned.length,
-        max: slotLimit[pos] || 99,
-        players: assigned
+      // 處理 NA 與 NA(備用) 為同一組
+      if (pos === 'NA' || pos === 'NA(備用)') {
+        const assigned = players.filter(p =>
+          assignedPositions[p.Name] === 'NA' || assignedPositions[p.Name] === 'NA(備用)'
+        )
+  
+        if (!slotStatus['NA']) {
+          slotStatus['NA'] = {
+            displayAs: naSlot, // 這裡保留目前要顯示的樣式（NA or NA(備用)）
+            count: assigned.length,
+            max: slotLimit['NA'],
+            players: assigned
+          }
+        }
+      } else {
+        const assigned = players.filter(p => assignedPositions[p.Name] === pos)
+        slotStatus[pos] = {
+          displayAs: pos,
+          count: assigned.length,
+          max: slotLimit[pos] || 99,
+          players: assigned
+        }
       }
     })
   
@@ -185,6 +205,7 @@ export default function RosterPage() {
   
     // TODO: 打開一個 modal，傳入 slotStatus 跟 player 本身
   }
+  
   
   
   const formatAvg = (val) => {

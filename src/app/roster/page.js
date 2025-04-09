@@ -14,6 +14,7 @@ export default function RosterPage() {
   const [moveSlots, setMoveSlots] = useState(null)   // 該球員可選 slot 狀態
   const batterPositionOrder = ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util', 'BN', 'NA', 'NA(備用)']
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
+  const [moveMessage, setMoveMessage] = useState('')
 
 
 
@@ -275,15 +276,19 @@ export default function RosterPage() {
     return (
       <>
         <tr>
-          <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left bg-white">
-            
+          <td
+            colSpan={type === 'Batter' ? 13 : 13}
+            className={`p-2 border text-left ${
+              ['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]) ? 'bg-gray-100' : 'bg-white'
+            }`}
+          >
             <div className="flex items-center gap-2 font-bold text-[#0155A0] text-base">
               {renderAssignedPositionSelect(p)}
               <img
                 src={`/photo/${p.Name}.png`}
                 alt={p.Name}
                 className="w-8 h-8 rounded-full"
-                onError={(e) => e.target.src = '/photo/defaultPlayer.png'}
+                onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
               />
               <span>{p.Name}</span>
               <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
@@ -292,10 +297,10 @@ export default function RosterPage() {
                   {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
                 </span>
               )}
-
             </div>
           </td>
         </tr>
+
         <tr>
           {type === 'Batter' ? (
             <>
@@ -340,6 +345,12 @@ export default function RosterPage() {
 
     
       <div className="p-6">
+
+      {moveMessage && (
+        <div className="mb-4 p-3 text-sm bg-blue-50 text-blue-800 border border-blue-300 rounded">
+          {moveMessage}
+        </div>
+      )}
 
       <div className="mb-4">
       <label className="text-sm font-semibold">Stats Range</label>
@@ -435,6 +446,10 @@ export default function RosterPage() {
                         updated[p.Name] = canReturn ? currentPos : fallback
                         return updated
                       })
+
+                      setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}，${p.Name} 被移動到 ${newPos}`)
+                      setTimeout(() => setMoveMessage(''), 2000)
+
                       setMoveTarget(null)
                       setMoveSlots(null)
                     }}
@@ -460,6 +475,10 @@ export default function RosterPage() {
                         ...prev,
                         [moveTarget.Name]: posKey
                       }))
+
+                      setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}`)
+                      setTimeout(() => setMoveMessage(''), 2000)
+
                       setMoveTarget(null)
                       setMoveSlots(null)
                     }}

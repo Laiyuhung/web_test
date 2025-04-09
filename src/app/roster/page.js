@@ -11,6 +11,8 @@ export default function RosterPage() {
   const [loading, setLoading] = useState(false)
   const [assignedPositions, setAssignedPositions] = useState({})
   const [selectedPlayer, setSelectedPlayer] = useState(null)
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [assignTarget, setAssignTarget] = useState(null); // 被點選要換位置的球員
 
   
 
@@ -194,25 +196,9 @@ export default function RosterPage() {
   setToDate(to)
   }
 
-  const handleAssignClick = (playerName) => {
-    if (!selectedPlayer) {
-      // 第一次點，設定為選中
-      setSelectedPlayer(playerName)
-    } else if (selectedPlayer === playerName) {
-      // 點兩次取消
-      setSelectedPlayer(null)
-    } else {
-      // 做交換：互換 assignedPositions
-      setAssignedPositions(prev => {
-        const newPositions = { ...prev }
-        const pos1 = newPositions[selectedPlayer]
-        const pos2 = newPositions[playerName]
-        newPositions[selectedPlayer] = pos2
-        newPositions[playerName] = pos1
-        return newPositions
-      })
-      setSelectedPlayer(null)
-    }
+  const handleAssignClick = (player) => {
+    setAssignTarget(player);           // 設定要移動的球員（整個 player 物件）
+    setAssignDialogOpen(true);         // 打開選擇視窗
   }
   
   const renderAssignedPositionSelect = (p) => {
@@ -362,64 +348,111 @@ export default function RosterPage() {
   }
 
   return (
-
-
-    
-    <div className="p-6">
-
-      <div className="mb-4">
-        <label className="text-sm font-semibold">Stats Range</label>
+    <>
+      <div className="p-6">
+        <div className="mb-4">
+          <label className="text-sm font-semibold">Stats Range</label>
           <select
-              value={range}
-              onChange={e => setRange(e.target.value)}
-              className="border px-2 py-1 rounded ml-2"
+            value={range}
+            onChange={e => setRange(e.target.value)}
+            className="border px-2 py-1 rounded ml-2"
           >
-              <option>Today</option>
-              <option>Yesterday</option>
-              <option>Last 7 days</option>
-              <option>Last 14 days</option>
-              <option>Last 30 days</option>
-              <option>2025 Season</option>
+            <option>Today</option>
+            <option>Yesterday</option>
+            <option>Last 7 days</option>
+            <option>Last 14 days</option>
+            <option>Last 30 days</option>
+            <option>2025 Season</option>
           </select>
-      </div>
-      
-      {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
-      
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-6">
-        {Object.keys(positionLimits).map(label => renderPositionSection(label))}
-      </div>
-
-      <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
-
-      <div className="overflow-auto max-h-[600px]">
-        <section className="mb-8">
+        </div>
+  
+        {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
+  
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-6">
+          {Object.keys(positionLimits).map(label => renderPositionSection(label))}
+        </div>
+  
+        <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
+  
+        <div className="overflow-auto max-h-[600px]">
+          <section className="mb-8">
             <h2 className="text-lg font-semibold mb-2">Batters</h2>
-
             <table className="w-full text-sm text-center">
-                <thead>{renderHeader('Batter', 'z-40')}</thead>
-                <tbody>
+              <thead>{renderHeader('Batter', 'z-40')}</thead>
+              <tbody>
                 {batters.map((p, i) => (
-                    <>{renderRow(p, 'Batter')}</>
+                  <>{renderRow(p, 'Batter')}</>
                 ))}
-                </tbody>
+              </tbody>
             </table>
-
-        </section>
-
-        <section>
+          </section>
+  
+          <section>
             <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
-
             <table className="w-full text-sm text-center">
-                <thead>{renderHeader('Pitcher', 'z-50')}</thead>
-                <tbody>
+              <thead>{renderHeader('Pitcher', 'z-50')}</thead>
+              <tbody>
                 {pitchers.map((p, i) => (
-                    <>{renderRow(p, 'Pitcher')}</>
+                  <>{renderRow(p, 'Pitcher')}</>
                 ))}
-                </tbody>
+              </tbody>
             </table>
-
-        </section>
+          </section>
+        </div>
       </div>
-    </div>
+  
+      {/* Assign Dialog */}
+      {assignDialogOpen && assignTarget && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-4 w-[90%] max-w-md">
+            <h2 className="text-lg font-bold mb-2">移動 {assignTarget.Name}</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              選擇新的位置或保留在 {assignedPositions[assignTarget.Name] || 'BN'} 位置
+            </p>
+  
+            <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
+              {Object.keys(positionLimits).map(pos => {
+                const count = getPositionCounts()[pos] || 0
+                const limit = positionLimits[pos]
+                const canAssign = count < limit || assignedPositions[assignTarget.Name] === pos
+  
+                return (
+                  <button
+                    key={pos}
+                    className={`rounded-full px-3 py-1 text-sm font-bold border 
+                      ${canAssign ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
+                    `}
+                    disabled={!canAssign}
+                    onClick={() => {
+                      setAssignedPositions(prev => ({
+                        ...prev,
+                        [assignTarget.Name]: pos
+                      }))
+                      setAssignDialogOpen(false)
+                      setAssignTarget(null)
+                    }}
+                  >
+                    {pos}
+                  </button>
+                )
+              })}
+            </div>
+  
+            <div className="mt-4 text-right">
+              <button
+                onClick={() => {
+                  setAssignDialogOpen(false)
+                  setAssignTarget(null)
+                }}
+                className="text-sm text-gray-600 hover:underline"
+              >
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
+  
 }

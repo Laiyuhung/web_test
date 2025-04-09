@@ -431,20 +431,28 @@ export default function RosterPage() {
 
                   {slot.count < slot.max && (
                     <button
-                      onClick={() => {
-                        console.log(`✅ 移動 ${moveTarget.Name} 到 ${posKey}`)
+                    onClick={() => {
+                      const currentPos = assignedPositions[moveTarget.Name]
+                      const canReturn = (p.finalPosition || []).includes(currentPos) ||
+                                        (p.B_or_P === 'Batter' && currentPos === 'Util') ||
+                                        (p.B_or_P === 'Pitcher' && currentPos === 'P') ||
+                                        currentPos === 'BN' ||
+                                        currentPos === 'NA' || currentPos === 'NA(備用)'
+                    
+                      const fallback = 'BN' // 如果不能回原位，送去 BN
+                    
+                      setAssignedPositions(prev => {
+                        const updated = { ...prev }
+                        updated[moveTarget.Name] = posKey
+                        updated[p.Name] = canReturn ? currentPos : fallback
+                        return updated
+                      })
+                      setMoveTarget(null)
+                      setMoveSlots(null)
+                    }}
+                    
+                    className="w-full flex items-center justify-center text-blue-600 font-semibold border-2 border-dashed border-blue-400 p-3 rounded bg-white hover:bg-blue-50"
 
-                        // ✅ 更新 assignedPositions
-                        setAssignedPositions(prev => ({
-                          ...prev,
-                          [moveTarget.Name]: posKey
-                        }))
-
-                        // ✅ 關閉 modal
-                        setMoveTarget(null)
-                        setMoveSlots(null)
-                      }}
-                      className="w-full text-left text-blue-600 font-semibold bg-blue-50 hover:bg-blue-100 p-2 rounded"
                     >
                       ➕ Empty
                     </button>

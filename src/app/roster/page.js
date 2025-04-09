@@ -399,53 +399,60 @@ export default function RosterPage() {
               <div key={posKey} className="mb-4">
                 <h3 className="font-semibold text-sm mb-1">{slot.displayAs}</h3>
                 <div className="space-y-1">
-                  {slot.players.map(p => (
-                    <button
-                      key={p.Name}
-                      onClick={() => {
-                        const currentPos = assignedPositions[moveTarget.Name]
-                        setAssignedPositions(prev => {
-                          const updated = { ...prev }
-                          updated[moveTarget.Name] = posKey
-                          updated[p.Name] = currentPos
-                          return updated
-                        })
-                        setMoveTarget(null)
-                        setMoveSlots(null)
-                      }}
-                      className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"
-                    >
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={`/photo/${p.Name}.png`}
-                          className="w-6 h-6 rounded-full"
-                          onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
-                        />
-                        <span className="text-sm font-medium">{p.Name}</span>
-                        <span className="text-xs text-gray-400">{p.Team}</span>
-                      </div>
-                      <span className="text-blue-500">↔</span>
-                    </button>
-                  ))}
+                {slot.players.map(p => (
+                  <button
+                    key={p.Name}
+                    onClick={() => {
+                      const currentPos = assignedPositions[moveTarget.Name]
+                      const canReturn = (p.finalPosition || []).includes(currentPos) ||
+                                        (p.B_or_P === 'Batter' && currentPos === 'Util') ||
+                                        (p.B_or_P === 'Pitcher' && currentPos === 'P') ||
+                                        currentPos === 'BN' ||
+                                        currentPos === 'NA' || currentPos === 'NA(備用)'
 
+                      const fallback = 'BN'
 
-                  {slot.count < slot.max && (
-                    <button
-                      onClick={() => {
-                        setAssignedPositions(prev => ({
-                          ...prev,
-                          [moveTarget.Name]: posKey
-                        }))
-                        setMoveTarget(null)
-                        setMoveSlots(null)
-                      }}
-                      className="w-full flex items-center justify-center text-blue-600 font-semibold border-2 border-dashed border-blue-400 p-3 rounded bg-white hover:bg-blue-50"
-                    >
-                      ➕ Empty
-                    </button>
-                  )}
+                      setAssignedPositions(prev => {
+                        const updated = { ...prev }
+                        updated[moveTarget.Name] = posKey
+                        updated[p.Name] = canReturn ? currentPos : fallback
+                        return updated
+                      })
+                      setMoveTarget(null)
+                      setMoveSlots(null)
+                    }}
+                    className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={`/photo/${p.Name}.png`}
+                        className="w-6 h-6 rounded-full"
+                        onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
+                      />
+                      <span className="text-sm font-medium">{p.Name}</span>
+                      <span className="text-xs text-gray-400">{p.Team}</span>
+                    </div>
+                    <span className="text-blue-500">↔</span>
+                  </button>
+                ))}
 
+                {slot.count < slot.max && (
+                  <button
+                    onClick={() => {
+                      setAssignedPositions(prev => ({
+                        ...prev,
+                        [moveTarget.Name]: posKey
+                      }))
+                      setMoveTarget(null)
+                      setMoveSlots(null)
+                    }}
+                    className="w-full flex items-center justify-center text-blue-600 font-semibold border-2 border-dashed border-blue-400 p-3 rounded bg-white hover:bg-blue-50"
+                  >
+                    ➕ Empty
+                  </button>
+                )}
 
+ 
                 </div>
               </div>
             ))}

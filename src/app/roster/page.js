@@ -301,7 +301,13 @@ export default function RosterPage() {
           </td>
         </tr>
 
-        <tr>
+        <tr
+          className={
+            ['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name])
+              ? 'bg-gray-100'
+              : 'bg-white'
+          }
+        >
           {type === 'Batter' ? (
             <>
                 {renderCell(p.AB)}

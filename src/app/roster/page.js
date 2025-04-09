@@ -148,17 +148,24 @@ export default function RosterPage() {
       options.push('NA');
     }
   
+    const currentValue = assignedPositions[p.Name] || 'BN';
+  
     return (
-      <select
-        className="border px-1 py-0.5 rounded text-sm mr-2"
-        value={assignedPositions[p.Name] || ''}
-        onChange={e => setAssignedPositions(prev => ({ ...prev, [p.Name]: e.target.value }))}
-      >
-        <option value="">選擇位置</option>
-        {options.map(pos => <option key={pos} value={pos}>{pos}</option>)}
-      </select>
-    )
+      <div className="relative">
+        <select
+          value={currentValue}
+          onChange={e => setAssignedPositions(prev => ({ ...prev, [p.Name]: e.target.value }))}
+          className="appearance-none bg-[#0155A0] text-white text-xs font-bold w-8 h-8 rounded-full text-center leading-8 focus:outline-none"
+          style={{ paddingLeft: '0.5rem' }}
+        >
+          {options.map(pos => (
+            <option key={pos} value={pos}>{pos}</option>
+          ))}
+        </select>
+      </div>
+    );
   }
+  
   
 
   

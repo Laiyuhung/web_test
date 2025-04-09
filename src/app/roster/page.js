@@ -58,6 +58,7 @@ export default function RosterPage() {
           const stat = statsData.find(s => s.name === p.Name)
           const pos = positionData.find(pos => pos.name === p.Name)
           const finalPosition = pos?.finalPosition || []
+          const reg = registerData.find(r => r.name === p.Name)
           const registerStatus = reg?.status || '未知'
           return {
             ...p,

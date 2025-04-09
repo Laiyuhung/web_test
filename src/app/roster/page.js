@@ -27,7 +27,7 @@ export default function RosterPage() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const [statusRes, batterRes, pitcherRes, positionRes] = await Promise.all([
+        const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
             fetch('/api/playerStatus'),
             fetch('/api/playerStats', {
                 method: 'POST',

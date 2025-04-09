@@ -415,7 +415,14 @@ export default function RosterPage() {
                     <button
                       onClick={() => {
                         console.log(`✅ 移動 ${moveTarget.Name} 到 ${posKey}`)
-                        // TODO: 實際更新 assignedPositions
+
+                        // ✅ 更新 assignedPositions
+                        setAssignedPositions(prev => ({
+                          ...prev,
+                          [moveTarget.Name]: posKey
+                        }))
+
+                        // ✅ 關閉 modal
                         setMoveTarget(null)
                         setMoveSlots(null)
                       }}
@@ -424,6 +431,7 @@ export default function RosterPage() {
                       ➕ Empty
                     </button>
                   )}
+
                 </div>
               </div>
             ))}

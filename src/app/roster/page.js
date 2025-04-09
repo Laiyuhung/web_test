@@ -420,24 +420,37 @@ export default function RosterPage() {
                 const count = getPositionCounts()[pos] || 0
                 const limit = positionLimits[pos]
                 const canAssign = count < limit || assignedPositions[assignTarget.Name] === pos
+                const positionMap = Object.entries(assignedPositions).reduce((acc, [name, pos]) => {
+                  const clean = pos === 'NA(備用)' ? 'NA' : pos;
+                  if (!acc[clean]) acc[clean] = []
+                  acc[clean].push(name)
+                  return acc
+                }, {})
   
                 return (
-                  <button
-                    key={pos}
-                    className={`rounded-full px-3 py-2 text-sm font-bold border text-white 
-                      ${canAssign ? 'bg-blue-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                    disabled={!canAssign}
-                    onClick={() => {
-                      setAssignedPositions(prev => ({
-                        ...prev,
-                        [assignTarget.Name]: pos
-                      }))
-                      setAssignDialogOpen(false)
-                      setAssignTarget(null)
-                    }}
-                  >
-                    {pos}
-                  </button>
+                  <div key={pos} className="rounded-lg border px-3 py-2 bg-white">
+                    <button
+                      className={`w-full rounded-full px-3 py-1 text-sm font-bold border 
+                        ${canAssign ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                      disabled={!canAssign}
+                      onClick={() => {
+                        setAssignedPositions(prev => ({
+                          ...prev,
+                          [assignTarget.Name]: pos
+                        }))
+                        setAssignDialogOpen(false)
+                        setAssignTarget(null)
+                      }}
+                    >
+                      {pos}
+                    </button>
+                    <div className="mt-1 text-xs text-gray-500">
+                      {(positionMap[pos] || []).length > 0
+                        ? positionMap[pos].join(', ')
+                        : <span className="italic text-blue-400">Empty</span>}
+                    </div>
+                  </div>
+
                 )
               })}
             </div>

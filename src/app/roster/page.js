@@ -39,14 +39,16 @@ export default function RosterPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
             }),
-            fetch('/api/playerPositionCaculate')
+            fetch('/api/playerPositionCaculate'),
+            fetch('/api/playerRegisterStatus')
         ])
 
         const [statusData, batterData, pitcherData, positionData] = await Promise.all([
             statusRes.json(),
             batterRes.ok ? batterRes.json() : [],
             pitcherRes.ok ? pitcherRes.json() : [],
-            positionRes.ok ? positionRes.json() : []
+            positionRes.ok ? positionRes.json() : [],
+            registerRes.ok ? registerRes.json() : []
         ])
 
         
@@ -59,7 +61,8 @@ export default function RosterPage() {
           return {
             ...p,
             ...(stat || {}),
-            finalPosition
+            finalPosition,
+            registerStatus
           }
         })
 
@@ -128,7 +131,12 @@ export default function RosterPage() {
   const renderAssignedPositionSelect = (p) => {
     const isBatter = p.B_or_P === 'Batter';
     const options = [...(p.finalPosition || []), isBatter ? 'Util' : 'P', 'BN'];
-    if (p.registerStatus === '一軍') options.push('NA');
+  
+    if (p.registerStatus === '一軍') {
+      options.push('NA(備用)');
+    } else {
+      options.push('NA');
+    }
   
     return (
       <select
@@ -141,6 +149,7 @@ export default function RosterPage() {
       </select>
     )
   }
+  
 
   
   const formatAvg = (val) => {
@@ -188,8 +197,9 @@ export default function RosterPage() {
       <>
         <tr>
           <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left bg-white">
-            {renderAssignedPositionSelect(p)}
+            
             <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
+              {renderAssignedPositionSelect(p)}
               <img
                 src={`/photo/${p.Name}.png`}
                 alt={p.Name}
@@ -198,6 +208,12 @@ export default function RosterPage() {
               />
               <span>{p.Name}</span>
               <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
+              {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
+                <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
+                </span>
+              )}
+
             </div>
           </td>
         </tr>

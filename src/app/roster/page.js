@@ -71,6 +71,13 @@ export default function RosterPage() {
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
 
         setPlayers(myPlayers)
+
+        const defaultAssigned = {}
+        myPlayers.forEach(p => {
+          defaultAssigned[p.Name] = 'BN'
+        })
+        setAssignedPositions(defaultAssigned)
+
       } catch (err) {
         console.error('讀取錯誤:', err)
       }

@@ -393,23 +393,41 @@ export default function RosterPage() {
               Select a new position for <strong>{moveTarget.Name}</strong>
             </p>
 
-            {Object.entries(moveSlots).map(([posKey, slot]) => (
+            {Object.entries(moveSlots)
+              .filter(([posKey]) => posKey !== assignedPositions[moveTarget.Name]) // ❌ 不顯示目前位置
+              .map(([posKey, slot]) => (
               <div key={posKey} className="mb-4">
                 <h3 className="font-semibold text-sm mb-1">{slot.displayAs}</h3>
                 <div className="space-y-1">
                   {slot.players.map(p => (
-                    <div
+                    <button
                       key={p.Name}
-                      className="flex items-center gap-2 bg-gray-100 p-2 rounded"
+                      onClick={() => {
+                        const currentPos = assignedPositions[moveTarget.Name]
+                        setAssignedPositions(prev => {
+                          const updated = { ...prev }
+                          updated[moveTarget.Name] = posKey
+                          updated[p.Name] = currentPos
+                          return updated
+                        })
+                        setMoveTarget(null)
+                        setMoveSlots(null)
+                      }}
+                      className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"
                     >
-                      <img
-                        src={`/photo/${p.Name}.png`}
-                        className="w-6 h-6 rounded-full"
-                        onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
-                      />
-                      <span className="text-sm font-medium">{p.Name}</span>
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={`/photo/${p.Name}.png`}
+                          className="w-6 h-6 rounded-full"
+                          onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
+                        />
+                        <span className="text-sm font-medium">{p.Name}</span>
+                        <span className="text-xs text-gray-400">{p.Team}</span>
+                      </div>
+                      <span className="text-blue-500">↔</span>
+                    </button>
                   ))}
+
 
                   {slot.count < slot.max && (
                     <button

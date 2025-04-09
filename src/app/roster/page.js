@@ -11,6 +11,16 @@ export default function RosterPage() {
   const [loading, setLoading] = useState(false)
   const [assignedPositions, setAssignedPositions] = useState({})
 
+  const getPositionCounts = () => {
+    const counts = {};
+    Object.values(assignedPositions).forEach(pos => {
+      const clean = pos === 'NA(備用)' ? 'NA' : pos
+      counts[clean] = (counts[clean] || 0) + 1
+    });
+    return counts;
+  };
+  
+
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -71,6 +81,13 @@ export default function RosterPage() {
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
 
         setPlayers(myPlayers)
+
+        const initialAssigned = {};
+        myPlayers.forEach(p => {
+          initialAssigned[p.Name] = 'BN';
+        });
+        setAssignedPositions(initialAssigned);
+
       } catch (err) {
         console.error('讀取錯誤:', err)
       }
@@ -80,6 +97,50 @@ export default function RosterPage() {
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 
 
+  const positionLimits = {
+    C: 1,
+    '1B': 1,
+    '2B': 1,
+    '3B': 1,
+    SS: 1,
+    OF: 3,
+    Util: 2,
+    SP: 5,
+    RP: 5,
+    P: 3,
+    'NA': 5, // 包含 NA(備用)
+    BN: Infinity, // 不限
+  }
+
+  const renderPositionSection = (label) => {
+    const counts = getPositionCounts()
+    const current = counts[label] || 0
+    const limit = positionLimits[label] || 0
+    const hasEmpty = current < limit
+  
+    return (
+      <div key={label} className="mb-2">
+        <div className="text-white bg-blue-800 font-bold rounded-t px-2 py-1">{label}</div>
+        <div className="border border-blue-800 rounded-b px-2 py-2 min-h-[40px] bg-white flex flex-wrap gap-2">
+          {Object.entries(assignedPositions).filter(([_, pos]) => {
+            const clean = pos === 'NA(備用)' ? 'NA' : pos
+            return clean === label
+          }).map(([name]) => (
+            <div key={name} className="bg-blue-600 text-white px-2 py-0.5 rounded-full text-sm font-semibold">
+              {name}
+            </div>
+          ))}
+          {hasEmpty && (
+            <div className="border border-dashed border-blue-400 text-blue-400 px-2 py-0.5 rounded-full text-sm">
+              Empty
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  
   const today = new Date()
     
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
@@ -174,6 +235,7 @@ export default function RosterPage() {
   const batters = players.filter(p => p.B_or_P === 'Batter')
   const pitchers = players.filter(p => p.B_or_P === 'Pitcher')
 
+  
   const renderHeader = (type, zIndex = 'z-40') => {
     const labels = type === 'Batter'
       ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
@@ -262,25 +324,30 @@ export default function RosterPage() {
 
 
     
-      <div className="p-6">
+    <div className="p-6">
 
       <div className="mb-4">
-      <label className="text-sm font-semibold">Stats Range</label>
-      <select
-          value={range}
-          onChange={e => setRange(e.target.value)}
-          className="border px-2 py-1 rounded ml-2"
-      >
-          <option>Today</option>
-          <option>Yesterday</option>
-          <option>Last 7 days</option>
-          <option>Last 14 days</option>
-          <option>Last 30 days</option>
-          <option>2025 Season</option>
-      </select>
+        <label className="text-sm font-semibold">Stats Range</label>
+          <select
+              value={range}
+              onChange={e => setRange(e.target.value)}
+              className="border px-2 py-1 rounded ml-2"
+          >
+              <option>Today</option>
+              <option>Yesterday</option>
+              <option>Last 7 days</option>
+              <option>Last 14 days</option>
+              <option>Last 30 days</option>
+              <option>2025 Season</option>
+          </select>
       </div>
       
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-6">
+        {Object.keys(positionLimits).map(label => renderPositionSection(label))}
+      </div>
+
       <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
 
       <div className="overflow-auto max-h-[600px]">

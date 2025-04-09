@@ -372,6 +372,65 @@ export default function RosterPage() {
 
         </section>
       </div>
+
+      {moveTarget && moveSlots && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white w-[90%] max-w-xl rounded-xl shadow-lg p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold">Move Player</h2>
+              <button
+                onClick={() => {
+                  setMoveTarget(null)
+                  setMoveSlots(null)
+                }}
+                className="text-gray-500 hover:text-black text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Select a new position for <strong>{moveTarget.Name}</strong>
+            </p>
+
+            {Object.entries(moveSlots).map(([posKey, slot]) => (
+              <div key={posKey} className="mb-4">
+                <h3 className="font-semibold text-sm mb-1">{slot.displayAs}</h3>
+                <div className="space-y-1">
+                  {slot.players.map(p => (
+                    <div
+                      key={p.Name}
+                      className="flex items-center gap-2 bg-gray-100 p-2 rounded"
+                    >
+                      <img
+                        src={`/photo/${p.Name}.png`}
+                        className="w-6 h-6 rounded-full"
+                        onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
+                      />
+                      <span className="text-sm font-medium">{p.Name}</span>
+                    </div>
+                  ))}
+
+                  {slot.count < slot.max && (
+                    <button
+                      onClick={() => {
+                        console.log(`✅ 移動 ${moveTarget.Name} 到 ${posKey}`)
+                        // TODO: 實際更新 assignedPositions
+                        setMoveTarget(null)
+                        setMoveSlots(null)
+                      }}
+                      className="w-full text-left text-blue-600 font-semibold bg-blue-50 hover:bg-blue-100 p-2 rounded"
+                    >
+                      ➕ Empty
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

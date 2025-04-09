@@ -10,6 +10,9 @@ export default function RosterPage() {
   const [toDate, setToDate] = useState('2025-11-30')
   const [loading, setLoading] = useState(false)
   const [assignedPositions, setAssignedPositions] = useState({})
+  const [selectedPlayer, setSelectedPlayer] = useState(null)
+
+  
 
   const getPositionCounts = () => {
     const counts = {};
@@ -191,27 +194,54 @@ export default function RosterPage() {
   setToDate(to)
   }
 
+  const handleAssignClick = (playerName) => {
+    if (!selectedPlayer) {
+      // 第一次點，設定為選中
+      setSelectedPlayer(playerName)
+    } else if (selectedPlayer === playerName) {
+      // 點兩次取消
+      setSelectedPlayer(null)
+    } else {
+      // 做交換：互換 assignedPositions
+      setAssignedPositions(prev => {
+        const newPositions = { ...prev }
+        const pos1 = newPositions[selectedPlayer]
+        const pos2 = newPositions[playerName]
+        newPositions[selectedPlayer] = pos2
+        newPositions[playerName] = pos1
+        return newPositions
+      })
+      setSelectedPlayer(null)
+    }
+  }
+  
   const renderAssignedPositionSelect = (p) => {
     const isBatter = p.B_or_P === 'Batter';
     const options = [...(p.finalPosition || []), isBatter ? 'Util' : 'P', 'BN'];
   
+    // 判斷要加入 NA / NA(備用)
     if (p.registerStatus === '一軍') {
       options.push('NA(備用)');
     } else {
       options.push('NA');
     }
   
+    const pos = assignedPositions[p.Name] || 'BN'
+    const isSelected = selectedPlayer === p.Name
+  
     return (
-      <select
-        className="border px-1 py-0.5 rounded text-sm mr-2"
-        value={assignedPositions[p.Name] || ''}
-        onChange={e => setAssignedPositions(prev => ({ ...prev, [p.Name]: e.target.value }))}
-      >
-        <option value="">選擇位置</option>
-        {options.map(pos => <option key={pos} value={pos}>{pos}</option>)}
-      </select>
+      <div className="flex items-center gap-1 mr-2">
+        <div
+          className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-white text-xs cursor-pointer 
+          ${isSelected ? 'bg-yellow-500' : 'bg-blue-600'}`}
+          onClick={() => handleAssignClick(p.Name)}
+        >
+          {pos}
+        </div>
+      </div>
     )
   }
+  
   
 
   
@@ -263,7 +293,18 @@ export default function RosterPage() {
           <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left bg-white">
             
             <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
-              {renderAssignedPositionSelect(p)}
+              <div className="flex items-center gap-1">
+                <div
+                  className={`w-6 h-6 flex items-center justify-center rounded-full cursor-pointer border-2 
+                    ${selectedPlayer === p.Name ? 'bg-blue-600 text-white border-blue-600' : 'text-blue-600 border-blue-600'}
+                  `}
+                  onClick={() => handleAssignClick(p.Name)}
+                >
+                  ⇄
+                </div>
+                {renderAssignedPositionSelect(p)}
+              </div>
+
               <img
                 src={`/photo/${p.Name}.png`}
                 alt={p.Name}

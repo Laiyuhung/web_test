@@ -411,7 +411,12 @@ export default function RosterPage() {
             </p>
   
             <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
-              {Object.keys(positionLimits).map(pos => {
+              {Object.keys(positionLimits).filter(pos => {
+                const isBatter = assignTarget.B_or_P === 'Batter'
+                const isPitcher = assignTarget.B_or_P === 'Pitcher'
+                const allowed = isBatter ? ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util', 'BN', 'NA'] : ['SP', 'RP', 'P', 'BN', 'NA']
+                return allowed.includes(pos)
+              }).map(pos => {
                 const count = getPositionCounts()[pos] || 0
                 const limit = positionLimits[pos]
                 const canAssign = count < limit || assignedPositions[assignTarget.Name] === pos
@@ -419,9 +424,8 @@ export default function RosterPage() {
                 return (
                   <button
                     key={pos}
-                    className={`rounded-full px-3 py-1 text-sm font-bold border 
-                      ${canAssign ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
-                    `}
+                    className={`rounded-full px-3 py-2 text-sm font-bold border text-white 
+                      ${canAssign ? 'bg-blue-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                     disabled={!canAssign}
                     onClick={() => {
                       setAssignedPositions(prev => ({
@@ -454,5 +458,6 @@ export default function RosterPage() {
       )}
     </>
   )
+  
   
 }

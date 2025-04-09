@@ -12,6 +12,9 @@ export default function RosterPage() {
   const [assignedPositions, setAssignedPositions] = useState({})
   const [moveTarget, setMoveTarget] = useState(null) // 被點的球員
   const [moveSlots, setMoveSlots] = useState(null)   // 該球員可選 slot 狀態
+  const batterPositionOrder = ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util', 'BN', 'NA', 'NA(備用)']
+  const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
+
 
 
 
@@ -231,8 +234,22 @@ export default function RosterPage() {
   
   
 
-  const batters = players.filter(p => p.B_or_P === 'Batter')
-  const pitchers = players.filter(p => p.B_or_P === 'Pitcher')
+  const batters = players
+  .filter(p => p.B_or_P === 'Batter')
+  .sort((a, b) => {
+    const posA = assignedPositions[a.Name] || 'BN'
+    const posB = assignedPositions[b.Name] || 'BN'
+    return batterPositionOrder.indexOf(posA) - batterPositionOrder.indexOf(posB)
+  })
+  
+  const pitchers = players
+  .filter(p => p.B_or_P === 'Pitcher')
+  .sort((a, b) => {
+    const posA = assignedPositions[a.Name] || 'BN'
+    const posB = assignedPositions[b.Name] || 'BN'
+    return pitcherPositionOrder.indexOf(posA) - pitcherPositionOrder.indexOf(posB)
+  })
+
 
   const renderHeader = (type, zIndex = 'z-40') => {
     const labels = type === 'Batter'

@@ -139,31 +139,53 @@ export default function RosterPage() {
   }
 
   const renderAssignedPositionSelect = (p) => {
-    const isBatter = p.B_or_P === 'Batter'
-    const options = [...(p.finalPosition || []), isBatter ? 'Util' : 'P', 'BN']
-  
-    if (p.registerStatus === '一軍') {
-      options.push('NA(備用)')
-    } else {
-      options.push('NA')
-    }
-  
     const currentValue = assignedPositions[p.Name] || 'BN'
   
     return (
-      <div className="relative">
-        <select
-          value={currentValue}
-          onChange={e => setAssignedPositions(prev => ({ ...prev, [p.Name]: e.target.value }))}
-          className="appearance-none bg-[#004AAD] hover:bg-[#003E7E] text-white text-xs font-bold w-9 h-9 rounded-full text-center flex items-center justify-center leading-none focus:outline-none focus:ring-2 focus:ring-blue-300"
-        >
-          {options.map(pos => (
-            <option key={pos} value={pos}>{pos}</option>
-          ))}
-        </select>
-      </div>
+      <button
+        onClick={() => openMoveModal(p)}
+        className="bg-[#004AAD] hover:bg-[#003E7E] text-white text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center"
+      >
+        {currentValue}
+      </button>
     )
   }
+  
+  const openMoveModal = (player) => {
+    console.log('🔁 可選位置:', player.finalPosition)
+  
+    const allSlots = [...(player.finalPosition || []), player.B_or_P === 'Batter' ? 'Util' : 'P', 'BN']
+    const slotLimit = {
+      'C': 1,
+      '1B': 1,
+      '2B': 1,
+      '3B': 1,
+      'SS': 1,
+      'OF': 3,
+      'Util': 2,
+      'SP': 5,
+      'RP': 5,
+      'P': 3,
+      'BN': 99,
+      'NA': 5
+    }
+  
+    const slotStatus = {}
+  
+    allSlots.forEach(pos => {
+      const assigned = players.filter(p => assignedPositions[p.Name] === pos)
+      slotStatus[pos] = {
+        count: assigned.length,
+        max: slotLimit[pos] || 99,
+        players: assigned
+      }
+    })
+  
+    console.log('🧩 各位置狀況:', slotStatus)
+  
+    // TODO: 打開一個 modal，傳入 slotStatus 跟 player 本身
+  }
+  
   
   const formatAvg = (val) => {
     const num = parseFloat(val)

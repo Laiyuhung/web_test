@@ -155,13 +155,13 @@ export default function RosterPage() {
         <select
           value={currentValue}
           onChange={e => setAssignedPositions(prev => ({ ...prev, [p.Name]: e.target.value }))}
-          className="appearance-none bg-[#0155A0] text-white text-xs font-bold w-8 h-8 rounded-full text-center leading-8 focus:outline-none"
-          style={{ paddingLeft: '0.5rem' }}
+          className="appearance-none bg-[#0155A0] text-white text-xs font-bold w-9 h-9 rounded-full text-center flex items-center justify-center leading-none focus:outline-none"
         >
           {options.map(pos => (
             <option key={pos} value={pos}>{pos}</option>
           ))}
         </select>
+
       </div>
     );
   }
@@ -215,7 +215,7 @@ export default function RosterPage() {
         <tr>
           <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left bg-white">
             
-            <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
+            <div className="flex items-center gap-2 font-bold text-[#0155A0] text-base">
               {renderAssignedPositionSelect(p)}
               <img
                 src={`/photo/${p.Name}.png`}

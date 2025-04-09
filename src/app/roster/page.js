@@ -139,35 +139,31 @@ export default function RosterPage() {
   }
 
   const renderAssignedPositionSelect = (p) => {
-    const isBatter = p.B_or_P === 'Batter';
-    const options = [...(p.finalPosition || []), isBatter ? 'Util' : 'P', 'BN'];
+    const isBatter = p.B_or_P === 'Batter'
+    const options = [...(p.finalPosition || []), isBatter ? 'Util' : 'P', 'BN']
   
     if (p.registerStatus === '一軍') {
-      options.push('NA(備用)');
+      options.push('NA(備用)')
     } else {
-      options.push('NA');
+      options.push('NA')
     }
   
-    const currentValue = assignedPositions[p.Name] || 'BN';
+    const currentValue = assignedPositions[p.Name] || 'BN'
   
     return (
       <div className="relative">
         <select
           value={currentValue}
           onChange={e => setAssignedPositions(prev => ({ ...prev, [p.Name]: e.target.value }))}
-          className="appearance-none bg-[#0155A0] text-white text-xs font-bold w-9 h-9 rounded-full text-center flex items-center justify-center leading-none focus:outline-none"
+          className="appearance-none bg-[#004AAD] hover:bg-[#003E7E] text-white text-xs font-bold w-9 h-9 rounded-full text-center flex items-center justify-center leading-none focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
           {options.map(pos => (
             <option key={pos} value={pos}>{pos}</option>
           ))}
         </select>
-
       </div>
-    );
+    )
   }
-  
-  
-
   
   const formatAvg = (val) => {
     const num = parseFloat(val)

@@ -198,12 +198,16 @@ export default function RosterPage() {
           }
         }
       } else {
-        const assigned = players.filter(p => assignedPositions[p.Name] === pos)
-        slotStatus[pos] = {
-          displayAs: pos,
-          count: assigned.length,
-          max: slotLimit[pos] || 99,
-          players: assigned
+        if (pos === 'BN') {
+          const assigned = players.filter(
+            p => assignedPositions[p.Name] === 'BN' && p.B_or_P === player.B_or_P
+          )
+          slotStatus[pos] = {
+            displayAs: pos,
+            count: assigned.length,
+            max: slotLimit[pos],
+            players: assigned
+          }
         }
       }
     })

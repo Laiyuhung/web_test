@@ -10,21 +10,6 @@ export default function RosterPage() {
   const [toDate, setToDate] = useState('2025-11-30')
   const [loading, setLoading] = useState(false)
   const [assignedPositions, setAssignedPositions] = useState({})
-  const [selectedPlayer, setSelectedPlayer] = useState(null)
-  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-  const [assignTarget, setAssignTarget] = useState(null); // 被點選要換位置的球員
-
-  
-
-  const getPositionCounts = () => {
-    const counts = {};
-    Object.values(assignedPositions).forEach(pos => {
-      const clean = pos === 'NA(備用)' ? 'NA' : pos
-      counts[clean] = (counts[clean] || 0) + 1
-    });
-    return counts;
-  };
-  
 
 
   useEffect(() => {
@@ -86,13 +71,6 @@ export default function RosterPage() {
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
 
         setPlayers(myPlayers)
-
-        const initialAssigned = {};
-        myPlayers.forEach(p => {
-          initialAssigned[p.Name] = 'BN';
-        });
-        setAssignedPositions(initialAssigned);
-
       } catch (err) {
         console.error('讀取錯誤:', err)
       }
@@ -101,49 +79,6 @@ export default function RosterPage() {
 
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 
-
-  const positionLimits = {
-    C: 1,
-    '1B': 1,
-    '2B': 1,
-    '3B': 1,
-    SS: 1,
-    OF: 3,
-    Util: 2,
-    SP: 5,
-    RP: 5,
-    P: 3,
-    'NA': 5, // 包含 NA(備用)
-    BN: Infinity, // 不限
-  }
-
-  const renderPositionSection = (label) => {
-    const counts = getPositionCounts()
-    const current = counts[label] || 0
-    const limit = positionLimits[label] || 0
-    const hasEmpty = current < limit
-  
-    return (
-      <div key={label} className="mb-2">
-        <div className="text-white bg-blue-800 font-bold rounded-t px-2 py-1">{label}</div>
-        <div className="border border-blue-800 rounded-b px-2 py-2 min-h-[40px] bg-white flex flex-wrap gap-2">
-          {Object.entries(assignedPositions).filter(([_, pos]) => {
-            const clean = pos === 'NA(備用)' ? 'NA' : pos
-            return clean === label
-          }).map(([name]) => (
-            <div key={name} className="bg-blue-600 text-white px-2 py-0.5 rounded-full text-sm font-semibold">
-              {name}
-            </div>
-          ))}
-          {hasEmpty && (
-            <div className="border border-dashed border-blue-400 text-blue-400 px-2 py-0.5 rounded-full text-sm">
-              Empty
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  }
 
   
   const today = new Date()
@@ -196,38 +131,27 @@ export default function RosterPage() {
   setToDate(to)
   }
 
-  const handleAssignClick = (player) => {
-    setAssignTarget(player);           // 設定要移動的球員（整個 player 物件）
-    setAssignDialogOpen(true);         // 打開選擇視窗
-  }
-  
   const renderAssignedPositionSelect = (p) => {
     const isBatter = p.B_or_P === 'Batter';
     const options = [...(p.finalPosition || []), isBatter ? 'Util' : 'P', 'BN'];
   
-    // 判斷要加入 NA / NA(備用)
     if (p.registerStatus === '一軍') {
       options.push('NA(備用)');
     } else {
       options.push('NA');
     }
   
-    const pos = assignedPositions[p.Name] || 'BN'
-    const isSelected = selectedPlayer === p.Name
-  
     return (
-      <div className="flex items-center gap-1 mr-2">
-        <div
-          className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-white text-xs cursor-pointer 
-          ${isSelected ? 'bg-yellow-500' : 'bg-blue-600'}`}
-          onClick={() => handleAssignClick(p.Name)}
-        >
-          {pos}
-        </div>
-      </div>
+      <select
+        className="border px-1 py-0.5 rounded text-sm mr-2"
+        value={assignedPositions[p.Name] || ''}
+        onChange={e => setAssignedPositions(prev => ({ ...prev, [p.Name]: e.target.value }))}
+      >
+        <option value="">選擇位置</option>
+        {options.map(pos => <option key={pos} value={pos}>{pos}</option>)}
+      </select>
     )
   }
-  
   
 
   
@@ -251,7 +175,6 @@ export default function RosterPage() {
   const batters = players.filter(p => p.B_or_P === 'Batter')
   const pitchers = players.filter(p => p.B_or_P === 'Pitcher')
 
-  
   const renderHeader = (type, zIndex = 'z-40') => {
     const labels = type === 'Batter'
       ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
@@ -279,18 +202,7 @@ export default function RosterPage() {
           <td colSpan={type === 'Batter' ? 13 : 13} className="p-2 border text-left bg-white">
             
             <div className="flex items-center gap-1 font-bold text-[#0155A0] text-base">
-              <div className="flex items-center gap-1">
-                <div
-                  className={`w-6 h-6 flex items-center justify-center rounded-full cursor-pointer border-2 
-                    ${selectedPlayer === p.Name ? 'bg-blue-600 text-white border-blue-600' : 'text-blue-600 border-blue-600'}
-                  `}
-                  onClick={() => handleAssignClick(p.Name)}
-                >
-                  ⇄
-                </div>
-                {renderAssignedPositionSelect(p)}
-              </div>
-
+              {renderAssignedPositionSelect(p)}
               <img
                 src={`/photo/${p.Name}.png`}
                 alt={p.Name}
@@ -348,129 +260,59 @@ export default function RosterPage() {
   }
 
   return (
-    <>
-      <div className="p-6">
-        <div className="mb-4">
-          <label className="text-sm font-semibold">Stats Range</label>
-          <select
-            value={range}
-            onChange={e => setRange(e.target.value)}
-            className="border px-2 py-1 rounded ml-2"
-          >
-            <option>Today</option>
-            <option>Yesterday</option>
-            <option>Last 7 days</option>
-            <option>Last 14 days</option>
-            <option>Last 30 days</option>
-            <option>2025 Season</option>
-          </select>
-        </div>
-  
-        {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
-  
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-6">
-          {Object.keys(positionLimits).map(label => renderPositionSection(label))}
-        </div>
-  
-        <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
-  
-        <div className="overflow-auto max-h-[600px]">
-          <section className="mb-8">
-            <h2 className="text-lg font-semibold mb-2">Batters</h2>
-            <table className="w-full text-sm text-center">
-              <thead>{renderHeader('Batter', 'z-40')}</thead>
-              <tbody>
-                {batters.map((p, i) => (
-                  <>{renderRow(p, 'Batter')}</>
-                ))}
-              </tbody>
-            </table>
-          </section>
-  
-          <section>
-            <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
-            <table className="w-full text-sm text-center">
-              <thead>{renderHeader('Pitcher', 'z-50')}</thead>
-              <tbody>
-                {pitchers.map((p, i) => (
-                  <>{renderRow(p, 'Pitcher')}</>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        </div>
-      </div>
-  
-      {/* Assign Dialog */}
-      {assignDialogOpen && assignTarget && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-4 w-[90%] max-w-md">
-            <h2 className="text-lg font-bold mb-2">移動 {assignTarget.Name}</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              選擇新的位置或保留在 {assignedPositions[assignTarget.Name] || 'BN'} 位置
-            </p>
-  
-            <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
-              {Object.keys(positionLimits).filter(pos => {
-                const isBatter = assignTarget.B_or_P === 'Batter'
-                const isPitcher = assignTarget.B_or_P === 'Pitcher'
-                const allowed = isBatter ? ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util', 'BN', 'NA'] : ['SP', 'RP', 'P', 'BN', 'NA']
-                return allowed.includes(pos)
-              }).map(pos => {
-                const count = getPositionCounts()[pos] || 0
-                const limit = positionLimits[pos]
-                const canAssign = count < limit || assignedPositions[assignTarget.Name] === pos
-                const positionMap = Object.entries(assignedPositions).reduce((acc, [name, pos]) => {
-                  const clean = pos === 'NA(備用)' ? 'NA' : pos;
-                  if (!acc[clean]) acc[clean] = []
-                  acc[clean].push(name)
-                  return acc
-                }, {})
-  
-                return (
-                  <div key={pos} className="rounded-lg border px-3 py-2 bg-white">
-                    <button
-                      className={`w-full rounded-full px-3 py-1 text-sm font-bold border 
-                        ${canAssign ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                      disabled={!canAssign}
-                      onClick={() => {
-                        setAssignedPositions(prev => ({
-                          ...prev,
-                          [assignTarget.Name]: pos
-                        }))
-                        setAssignDialogOpen(false)
-                        setAssignTarget(null)
-                      }}
-                    >
-                      {pos}
-                    </button>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {(positionMap[pos] || []).length > 0
-                        ? positionMap[pos].join(', ')
-                        : <span className="italic text-blue-400">Empty</span>}
-                    </div>
-                  </div>
 
-                )
-              })}
-            </div>
-  
-            <div className="mt-4 text-right">
-              <button
-                onClick={() => {
-                  setAssignDialogOpen(false)
-                  setAssignTarget(null)
-                }}
-                className="text-sm text-gray-600 hover:underline"
-              >
-                取消
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+
+    
+      <div className="p-6">
+
+      <div className="mb-4">
+      <label className="text-sm font-semibold">Stats Range</label>
+      <select
+          value={range}
+          onChange={e => setRange(e.target.value)}
+          className="border px-2 py-1 rounded ml-2"
+      >
+          <option>Today</option>
+          <option>Yesterday</option>
+          <option>Last 7 days</option>
+          <option>Last 14 days</option>
+          <option>Last 30 days</option>
+          <option>2025 Season</option>
+      </select>
+      </div>
+      
+      {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
+      <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
+
+      <div className="overflow-auto max-h-[600px]">
+        <section className="mb-8">
+            <h2 className="text-lg font-semibold mb-2">Batters</h2>
+
+            <table className="w-full text-sm text-center">
+                <thead>{renderHeader('Batter', 'z-40')}</thead>
+                <tbody>
+                {batters.map((p, i) => (
+                    <>{renderRow(p, 'Batter')}</>
+                ))}
+                </tbody>
+            </table>
+
+        </section>
+
+        <section>
+            <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
+
+            <table className="w-full text-sm text-center">
+                <thead>{renderHeader('Pitcher', 'z-50')}</thead>
+                <tbody>
+                {pitchers.map((p, i) => (
+                    <>{renderRow(p, 'Pitcher')}</>
+                ))}
+                </tbody>
+            </table>
+
+        </section>
+      </div>
+    </div>
   )
-  
-  
 }

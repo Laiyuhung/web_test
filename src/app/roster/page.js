@@ -443,22 +443,26 @@ export default function RosterPage() {
                                         (p.B_or_P === 'Pitcher' && currentPos === 'P') ||
                                         currentPos === 'BN' ||
                                         currentPos === 'NA' || currentPos === 'NA(備用)'
-
+                    
                       const fallback = 'BN'
-
+                      const newPos = canReturn ? currentPos : fallback
+                    
+                      // ✅ 先關掉 modal，避免 React state 延遲導致沒關
+                      setMoveTarget(null)
+                      setMoveSlots(null)
+                    
+                      // ✅ 再更新位置
                       setAssignedPositions(prev => {
                         const updated = { ...prev }
                         updated[moveTarget.Name] = posKey
-                        updated[p.Name] = canReturn ? currentPos : fallback
+                        updated[p.Name] = newPos
                         return updated
                       })
-
+                    
                       setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}，${p.Name} 被移動到 ${newPos}`)
-                      setTimeout(() => setMoveMessage(''), 2000)
-
-                      setMoveTarget(null)
-                      setMoveSlots(null)
+                      setTimeout(() => setMoveMessage(''), 3000)
                     }}
+                    
                     className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-2">

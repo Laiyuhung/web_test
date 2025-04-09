@@ -10,6 +10,9 @@ export default function RosterPage() {
   const [toDate, setToDate] = useState('2025-11-30')
   const [loading, setLoading] = useState(false)
   const [assignedPositions, setAssignedPositions] = useState({})
+  const [moveTarget, setMoveTarget] = useState(null) // 被點的球員
+  const [moveSlots, setMoveSlots] = useState(null)   // 該球員可選 slot 狀態
+
 
 
   useEffect(() => {
@@ -202,6 +205,9 @@ export default function RosterPage() {
     })
   
     console.log('🧩 各位置狀況:', slotStatus)
+
+    setMoveTarget(player)
+    setMoveSlots(slotStatus)
   
     // TODO: 打開一個 modal，傳入 slotStatus 跟 player 本身
   }

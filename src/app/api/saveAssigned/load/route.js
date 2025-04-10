@@ -22,7 +22,7 @@ export async function GET(req) {
     const date = taiwanDate.toISOString().slice(0, 10)
 
     const { data, error } = await supabase
-      .from('assigned_history')
+      .from('assigned_position_history')
       .select('player_name, position')
       .eq('manager_id', manager_id)
       .eq('date', date)

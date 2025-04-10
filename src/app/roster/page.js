@@ -143,7 +143,7 @@ export default function RosterPage() {
     return utcDate;
   }
   
-  const today = adjustToTaiwanTime(new Date());
+  const today = new Date();
   console.log("調整後的日期:", today);
     
   const formatDateInput = (date) => {

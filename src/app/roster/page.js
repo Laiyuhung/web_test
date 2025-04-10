@@ -33,6 +33,8 @@ export default function RosterPage() {
   useEffect(() => {
 
     const loadAssigned = async (playersList) => {
+      console.log('📦 載入 assigned，用的 playersList:', playersList)
+    
       try {
         const res = await fetch('/api/saveAssigned/load')
         const data = await res.json()
@@ -44,11 +46,14 @@ export default function RosterPage() {
           map[p.Name] = record?.position || 'BN'
         })
     
+        console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
+    
         setAssignedPositions(map)
       } catch (err) {
         console.error('❌ 載入 AssignedPositions 失敗:', err)
       }
     }
+    
     
 
     const fetchData = async () => {

@@ -106,12 +106,6 @@ export default function RosterPage() {
 
         await loadAssigned(myPlayers)
 
-        const defaultAssigned = {}
-        myPlayers.forEach(p => {
-          defaultAssigned[p.Name] = 'BN'
-        })
-        setAssignedPositions(defaultAssigned)
-
       } catch (err) {
         console.error('讀取錯誤:', err)
       }

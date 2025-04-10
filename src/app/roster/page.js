@@ -31,6 +31,26 @@ export default function RosterPage() {
   }, [range])
 
   useEffect(() => {
+
+    const loadAssigned = async (playersList) => {
+      try {
+        const res = await fetch('/api/saveAssigned/load')
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || '讀取失敗')
+    
+        const map = {}
+        playersList.forEach(p => {
+          const record = data.find(r => r.player_name === p.Name)
+          map[p.Name] = record?.position || 'BN'
+        })
+    
+        setAssignedPositions(map)
+      } catch (err) {
+        console.error('❌ 載入 AssignedPositions 失敗:', err)
+      }
+    }
+    
+
     const fetchData = async () => {
       setLoading(true)
       try {
@@ -78,6 +98,8 @@ export default function RosterPage() {
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
 
         setPlayers(myPlayers)
+
+        await loadAssigned(myPlayers)
 
         const defaultAssigned = {}
         myPlayers.forEach(p => {
@@ -225,6 +247,10 @@ const saveAssigned = async (updatedMap) => {
       body: JSON.stringify({ assignedPositions: updatedMap })
     })
     if (!res.ok) throw new Error('儲存失敗')
+
+    // 儲存後馬上載入最新
+    await loadAssigned(players)
+
   } catch (err) {
     console.error('❌ 自動儲存錯誤:', err)
     setMoveMessage('❌ 自動儲存失敗，請稍後再試')

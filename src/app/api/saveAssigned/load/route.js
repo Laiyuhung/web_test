@@ -3,12 +3,13 @@
 
 import { NextResponse } from 'next/server'
 import supabase from '@/lib/supabase'
+import { cookies } from 'next/headers' // 👈 加這行
 
 export async function GET(req) {
   try {
     console.log('📤 [loadAssigned] 收到 GET 請求')
 
-    const user_id_cookie = req.cookies.get('user_id')
+    const user_id_cookie = cookies().get('user_id')
     const user_id = user_id_cookie?.value
     const manager_id = parseInt(user_id, 10)
 

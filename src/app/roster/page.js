@@ -40,37 +40,35 @@ export default function RosterPage() {
   }, [range])
 
   useEffect(() => {
-
     const fetchData = async () => {
-      setLoading(true)
+      setLoading(true) // 開始加載時設定 loading 為 true
       try {
         const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
-            fetch('/api/playerStatus'),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerPositionCaculate'),
-            fetch('/api/playerRegisterStatus')
+          fetch('/api/playerStatus'),
+          fetch('/api/playerStats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
+          }),
+          fetch('/api/playerStats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
+          }),
+          fetch('/api/playerPositionCaculate'),
+          fetch('/api/playerRegisterStatus')
         ])
-
+  
         const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
-            statusRes.json(),
-            batterRes.ok ? batterRes.json() : [],
-            pitcherRes.ok ? pitcherRes.json() : [],
-            positionRes.ok ? positionRes.json() : [],
-            registerRes.ok ? registerRes.json() : []
+          statusRes.json(),
+          batterRes.ok ? batterRes.json() : [],
+          pitcherRes.ok ? pitcherRes.json() : [],
+          positionRes.ok ? positionRes.json() : [],
+          registerRes.ok ? registerRes.json() : []
         ])
-
-        
+  
+        // 整合所有資料並設定 players
         const statsData = [...batterData, ...pitcherData]
-
         const merged = statusData.map(p => {
           const stat = statsData.find(s => s.name === p.Name)
           const pos = positionData.find(pos => pos.name === p.Name)
@@ -84,22 +82,21 @@ export default function RosterPage() {
             registerStatus
           }
         })
-
+  
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
-
+  
         setPlayers(myPlayers)
-
+  
         await loadAssigned(myPlayers)
-        setPositionsLoaded(true)
-
+        setPositionsLoaded(true) // 資料加載完後設置 positionsLoaded 為 true
       } catch (err) {
         console.error('讀取錯誤:', err)
       }
-      setLoading(false)
+      setLoading(false) // 加載完成後將 loading 設為 false
     }
-
+  
     if (userId) fetchData()
-  }, [userId, fromDate, toDate]) 
+  }, [userId, fromDate, toDate])
 
   
   const formatDisplayDate = (date) => date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })
@@ -259,7 +256,7 @@ export default function RosterPage() {
     console.log('📦 載入 assigned，用的 playersList:', playersList)
   
     const date = formatDateInput(currentDate)
-    const past = isPastDate(currentDate)
+    const past = isPastDate(currentDate)  // 判斷是否為過去日期
   
     const url = past
       ? `/api/saveAssigned/history?date=${date}&manager_id=${userId}` // 撈歷史
@@ -268,8 +265,16 @@ export default function RosterPage() {
     try {
       const res = await fetch(url)
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || '讀取失敗')
   
+      if (!res.ok) throw new Error(data.error || '讀取失敗')
+
+      // 如果是過去日期且資料不存在
+      if (past && data.length === 0) {
+        setMoveMessage('❌ 昨日無資料')  // 顯示無資料訊息
+        setAssignedPositions({})  // 清空已指派的位置
+        return  // 不處理資料，直接返回
+      }
+
       const map = {}
       playersList.forEach(p => {
         const record = data.find(r => r.player_name === p.Name)
@@ -282,7 +287,13 @@ export default function RosterPage() {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
   }
-  
+
+
+  const renderNoData = () => (
+    <tr>
+      <td colSpan={13} className="p-4 text-center text-gray-500">無資料</td>
+    </tr>
+  )
 
   // ✅ 加入這段：
   const saveAssigned = async (updatedMap) => {
@@ -502,32 +513,29 @@ export default function RosterPage() {
       {positionsLoaded && (
         <div className="overflow-auto max-h-[600px]">
           <section className="mb-8">
-              <h2 className="text-lg font-semibold mb-2">Batters</h2>
-
+            <h2 className="text-lg font-semibold mb-2">Batters</h2>
+            {batters.length === 0 ? (
+              renderNoData()  // 顯示無資料提示
+            ) : (
               <table className="w-full text-sm text-center">
-                  <thead>{renderHeader('Batter', 'z-40')}</thead>
-                  <tbody>
-                  {batters.map((p, i) => (
-                      <>{renderRow(p, 'Batter')}</>
-                  ))}
-                  </tbody>
+                <thead>{renderHeader('Batter', 'z-40')}</thead>
+                <tbody>{batters.map((p) => renderRow(p, 'Batter'))}</tbody>
               </table>
-
+            )}
           </section>
 
           <section>
-              <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
-
+            <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
+            {pitchers.length === 0 ? (
+              renderNoData()  // 顯示無資料提示
+            ) : (
               <table className="w-full text-sm text-center">
-                  <thead>{renderHeader('Pitcher', 'z-50')}</thead>
-                  <tbody>
-                  {pitchers.map((p, i) => (
-                      <>{renderRow(p, 'Pitcher')}</>
-                  ))}
-                  </tbody>
+                <thead>{renderHeader('Pitcher', 'z-50')}</thead>
+                <tbody>{pitchers.map((p) => renderRow(p, 'Pitcher'))}</tbody>
               </table>
-
+            )}
           </section>
+
         </div>
       )}
 

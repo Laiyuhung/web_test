@@ -294,7 +294,7 @@ export default function RosterPage() {
     const isToday = formatDateInput(currentDate) === formatDateInput(new Date()); // 判斷是否為今天
     
     // 打印當前的日期與檢查日期是否為今天
-    console.log('📅 當前日期:', currentDate);
+    console.log('📅 當前日期:', currentDate.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }));
     console.log('📅 當前選擇的日期是否為今天:', isToday);
     
     // 如果是今天，撈取今日的資料；如果是過去日期，撈取歷史資料

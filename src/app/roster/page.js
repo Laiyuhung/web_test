@@ -15,6 +15,7 @@ export default function RosterPage() {
   const batterPositionOrder = ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util', 'BN', 'NA', 'NA(備用)']
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
   const [moveMessage, setMoveMessage] = useState('')
+  const [positionsLoaded, setPositionsLoaded] = useState(false)
 
 
 
@@ -105,6 +106,7 @@ export default function RosterPage() {
         setPlayers(myPlayers)
 
         await loadAssigned(myPlayers)
+        setPositionsLoaded(true)
 
       } catch (err) {
         console.error('讀取錯誤:', err)
@@ -416,35 +418,37 @@ const saveAssigned = async (updatedMap) => {
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
       <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
 
-      <div className="overflow-auto max-h-[600px]">
-        <section className="mb-8">
-            <h2 className="text-lg font-semibold mb-2">Batters</h2>
+      {positionsLoaded && (
+        <div className="overflow-auto max-h-[600px]">
+          <section className="mb-8">
+              <h2 className="text-lg font-semibold mb-2">Batters</h2>
 
-            <table className="w-full text-sm text-center">
-                <thead>{renderHeader('Batter', 'z-40')}</thead>
-                <tbody>
-                {batters.map((p, i) => (
-                    <>{renderRow(p, 'Batter')}</>
-                ))}
-                </tbody>
-            </table>
+              <table className="w-full text-sm text-center">
+                  <thead>{renderHeader('Batter', 'z-40')}</thead>
+                  <tbody>
+                  {batters.map((p, i) => (
+                      <>{renderRow(p, 'Batter')}</>
+                  ))}
+                  </tbody>
+              </table>
 
-        </section>
+          </section>
 
-        <section>
-            <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
+          <section>
+              <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
 
-            <table className="w-full text-sm text-center">
-                <thead>{renderHeader('Pitcher', 'z-50')}</thead>
-                <tbody>
-                {pitchers.map((p, i) => (
-                    <>{renderRow(p, 'Pitcher')}</>
-                ))}
-                </tbody>
-            </table>
+              <table className="w-full text-sm text-center">
+                  <thead>{renderHeader('Pitcher', 'z-50')}</thead>
+                  <tbody>
+                  {pitchers.map((p, i) => (
+                      <>{renderRow(p, 'Pitcher')}</>
+                  ))}
+                  </tbody>
+              </table>
 
-        </section>
-      </div>
+          </section>
+        </div>
+      )}
 
       {moveTarget && moveSlots && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

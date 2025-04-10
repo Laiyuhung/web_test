@@ -39,64 +39,6 @@ export default function RosterPage() {
     applyDateRange(range)
   }, [range])
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true) // 開始加載時設定 loading 為 true
-      try {
-        const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
-          fetch('/api/playerStatus'),
-          fetch('/api/playerStats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-          }),
-          fetch('/api/playerStats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-          }),
-          fetch('/api/playerPositionCaculate'),
-          fetch('/api/playerRegisterStatus')
-        ])
-  
-        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
-          statusRes.json(),
-          batterRes.ok ? batterRes.json() : [],
-          pitcherRes.ok ? pitcherRes.json() : [],
-          positionRes.ok ? positionRes.json() : [],
-          registerRes.ok ? registerRes.json() : []
-        ])
-  
-        // 整合所有資料並設定 players
-        const statsData = [...batterData, ...pitcherData]
-        const merged = statusData.map(p => {
-          const stat = statsData.find(s => s.name === p.Name)
-          const pos = positionData.find(pos => pos.name === p.Name)
-          const finalPosition = pos?.finalPosition || []
-          const reg = registerData.find(r => r.name === p.Name)
-          const registerStatus = reg?.status || '未知'
-          return {
-            ...p,
-            ...(stat || {}),
-            finalPosition,
-            registerStatus
-          }
-        })
-  
-        const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
-  
-        setPlayers(myPlayers)
-  
-        await loadAssigned(myPlayers)
-        setPositionsLoaded(true) // 資料加載完後設置 positionsLoaded 為 true
-      } catch (err) {
-        console.error('讀取錯誤:', err)
-      }
-      setLoading(false) // 加載完成後將 loading 設為 false
-    }
-  
-    if (userId) fetchData()
-  }, [userId, fromDate, toDate])
 
   useEffect(() => {
     if (userId) {
@@ -106,6 +48,61 @@ export default function RosterPage() {
   }, [userId, fromDate, toDate]) // 確保根據 `fromDate` 和 `toDate` 變動而更新數據
   
 
+  const fetchData = async () => {
+    setLoading(true); // 開始加載時設定 loading 為 true
+    try {
+      const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
+        fetch('/api/playerStatus'),
+        fetch('/api/playerStats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate }),
+        }),
+        fetch('/api/playerStats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate }),
+        }),
+        fetch('/api/playerPositionCaculate'),
+        fetch('/api/playerRegisterStatus'),
+      ]);
+  
+      const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
+        statusRes.json(),
+        batterRes.ok ? batterRes.json() : [],
+        pitcherRes.ok ? pitcherRes.json() : [],
+        positionRes.ok ? positionRes.json() : [],
+        registerRes.ok ? registerRes.json() : [],
+      ]);
+  
+      // 整合所有資料並設定 players
+      const statsData = [...batterData, ...pitcherData];
+      const merged = statusData.map((p) => {
+        const stat = statsData.find((s) => s.name === p.Name);
+        const pos = positionData.find((pos) => pos.name === p.Name);
+        const finalPosition = pos?.finalPosition || [];
+        const reg = registerData.find((r) => r.name === p.Name);
+        const registerStatus = reg?.status || '未知';
+        return {
+          ...p,
+          ...(stat || {}),
+          finalPosition,
+          registerStatus,
+        };
+      });
+  
+      const myPlayers = merged.filter((p) => p.manager_id?.toString() === userId);
+  
+      setPlayers(myPlayers);
+  
+      await loadAssigned(myPlayers);
+      setPositionsLoaded(true); // 資料加載完後設置 positionsLoaded 為 true
+    } catch (err) {
+      console.error('讀取錯誤:', err);
+    }
+    setLoading(false); // 加載完成後將 loading 設為 false
+  };
+  
   
   const formatDisplayDate = (date) => date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })
 

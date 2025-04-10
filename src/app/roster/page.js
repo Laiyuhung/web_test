@@ -98,6 +98,14 @@ export default function RosterPage() {
     if (userId) fetchData()
   }, [userId, fromDate, toDate])
 
+  useEffect(() => {
+    if (userId) {
+      setLoading(true) // 開始加載時設定 loading 為 true
+      fetchData() // 呼叫數據加載函數
+    }
+  }, [userId, fromDate, toDate]) // 確保根據 `fromDate` 和 `toDate` 變動而更新數據
+  
+
   
   const formatDisplayDate = (date) => date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })
 
@@ -132,49 +140,52 @@ export default function RosterPage() {
 
     
   const applyDateRange = (range) => {
-  const d = new Date(today)
-  let from = '', to = ''
-  switch (range) {
+    const d = new Date(today)
+    let from = '', to = ''
+    
+    switch (range) {
       case 'Today':
-      from = to = formatDateInput(d)
-      break
+        from = to = formatDateInput(d)
+        break
       case 'Yesterday':
-      d.setDate(d.getDate() - 1)
-      from = to = formatDateInput(d)
-      break
+        d.setDate(d.getDate() - 1)
+        from = to = formatDateInput(d)
+        break
       case 'Last 7 days':
-      const last7 = new Date(today)
-      last7.setDate(last7.getDate() - 7)
-      const yest7 = new Date(today)
-      yest7.setDate(yest7.getDate() - 1)
-      from = formatDateInput(last7)
-      to = formatDateInput(yest7)
-      break
+        const last7 = new Date(today)
+        last7.setDate(last7.getDate() - 7)
+        const yest7 = new Date(today)
+        yest7.setDate(yest7.getDate() - 1)
+        from = formatDateInput(last7)
+        to = formatDateInput(yest7)
+        break
       case 'Last 14 days':
-      const last14 = new Date(today)
-      last14.setDate(last14.getDate() - 14)
-      const yest14 = new Date(today)
-      yest14.setDate(yest14.getDate() - 1)
-      from = formatDateInput(last14)
-      to = formatDateInput(yest14)
-      break
+        const last14 = new Date(today)
+        last14.setDate(last14.getDate() - 14)
+        const yest14 = new Date(today)
+        yest14.setDate(yest14.getDate() - 1)
+        from = formatDateInput(last14)
+        to = formatDateInput(yest14)
+        break
       case 'Last 30 days':
-      const last30 = new Date(today)
-      last30.setDate(last30.getDate() - 30)
-      const yest30 = new Date(today)
-      yest30.setDate(yest30.getDate() - 1)
-      from = formatDateInput(last30)
-      to = formatDateInput(yest30)
-      break
+        const last30 = new Date(today)
+        last30.setDate(last30.getDate() - 30)
+        const yest30 = new Date(today)
+        yest30.setDate(yest30.getDate() - 1)
+        from = formatDateInput(last30)
+        to = formatDateInput(yest30)
+        break
       case '2025 Season':
       default:
-      from = '2025-03-27'
-      to = '2025-11-30'
-      break
+        from = '2025-03-27'
+        to = '2025-11-30'
+        break
+    }
+    
+    setFromDate(from)
+    setToDate(to)
   }
-  setFromDate(from)
-  setToDate(to)
-  }
+  
 
   const renderAssignedPositionSelect = (p) => {
     const currentValue = assignedPositions[p.Name] || 'BN'
@@ -267,14 +278,16 @@ export default function RosterPage() {
       const data = await res.json()
   
       if (!res.ok) throw new Error(data.error || '讀取失敗')
-
+  
       // 如果是過去日期且資料不存在
-      if (past && data.length === 0) {
-        setMoveMessage('❌ 昨日無資料')  // 顯示無資料訊息
-        setAssignedPositions({})  // 清空已指派的位置
+      if (data.length === 0) {
+        // 清空已指派的資料
+        setAssignedPositions({})
+        setMoveMessage('❌ 該日期範圍無資料')  // 顯示無資料訊息
         return  // 不處理資料，直接返回
       }
-
+  
+      // 如果有資料，進行處理
       const map = {}
       playersList.forEach(p => {
         const record = data.find(r => r.player_name === p.Name)
@@ -283,10 +296,12 @@ export default function RosterPage() {
   
       console.log('📋 載入完成的球員位置對應:', map)
       setAssignedPositions(map)
+  
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
   }
+  
 
 
   const renderNoData = () => (
@@ -501,8 +516,13 @@ export default function RosterPage() {
         </div>
       </div>
 
+      <div className="mb-4">
+      <p className="text-sm text-gray-700">
+        數據區間：{formatDisplayDate(new Date(fromDate))} - {formatDisplayDate(new Date(toDate))}
+      </p>
+    </div>
             
-      {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
+    {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
       
       {moveMessage && (
         <div className="mb-4 p-3 text-sm bg-blue-50 text-blue-800 border border-blue-300 rounded">

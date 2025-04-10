@@ -60,7 +60,17 @@ export default function RosterPage() {
             assignedRes.ok ? assignedRes.json() : []
         ])
 
-        const assignedHistory = assignedRes.ok ? await assignedRes.json() : []
+        let assignedHistory = []
+        if (assignedRes.ok) {
+          try {
+            assignedHistory = await assignedRes.json()
+          } catch (err) {
+            console.error('❌ assignedRes json() 解析錯誤:', err)
+          }
+        } else {
+          console.warn('⚠️ assignedRes 回傳失敗:', assignedRes.status)
+        }
+
 
         const statsData = [...batterData, ...pitcherData]
 

@@ -61,7 +61,8 @@ export async function POST(req) {
     }
 
     console.log(`✅ 已儲存 ${rows.length} 筆陣容紀錄`)
-    return NextResponse.json({ message: '儲存成功', count: rows.length })
+    return NextResponse.json({ message: '儲存成功', count: rows.length }, { status: 200 })
+
   } catch (err) {
     console.error('❌ API 發生錯誤:', err)
     return NextResponse.json({ error: '內部伺服器錯誤' }, { status: 500 })

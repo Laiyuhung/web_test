@@ -16,7 +16,7 @@ export default function RosterPage() {
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
   const [moveMessage, setMoveMessage] = useState('')
   const [positionsLoaded, setPositionsLoaded] = useState(false)
-  const [currentDate, setCurrentDate] = useState(() => new Date())  // 預設今天
+  const [currentDate, setCurrentDate] = useState(() => adjustToTaiwanTime(new Date())); // 確保初始化時使用台灣時間
 
 
   useEffect(() => {

@@ -141,51 +141,61 @@ export default function RosterPage() {
 
     
   const applyDateRange = (range) => {
-    const d = new Date(today)
-    let from = '', to = ''
+    const d = new Date(today);
+    let from = '', to = '';
     
+    console.log('🔍 選擇的日期範圍:', range);  // 顯示選擇的範圍
+  
     switch (range) {
       case 'Today':
-        from = to = formatDateInput(d)
-        break
+        from = to = formatDateInput(d);
+        console.log('🔍 Today 範圍設定: from = to =', from); // 顯示設定的日期
+        break;
       case 'Yesterday':
-        d.setDate(d.getDate() - 1)
-        from = to = formatDateInput(d)
-        break
+        d.setDate(d.getDate() - 1);
+        from = to = formatDateInput(d);
+        console.log('🔍 Yesterday 範圍設定: from = to =', from); // 顯示設定的日期
+        break;
       case 'Last 7 days':
-        const last7 = new Date(today)
-        last7.setDate(last7.getDate() - 7)
-        const yest7 = new Date(today)
-        yest7.setDate(yest7.getDate() - 1)
-        from = formatDateInput(last7)
-        to = formatDateInput(yest7)
-        break
+        const last7 = new Date(today);
+        last7.setDate(last7.getDate() - 7);
+        const yest7 = new Date(today);
+        yest7.setDate(yest7.getDate() - 1);
+        from = formatDateInput(last7);
+        to = formatDateInput(yest7);
+        console.log('🔍 Last 7 days 範圍設定: from =', from, 'to =', to); // 顯示設定的日期
+        break;
       case 'Last 14 days':
-        const last14 = new Date(today)
-        last14.setDate(last14.getDate() - 14)
-        const yest14 = new Date(today)
-        yest14.setDate(yest14.getDate() - 1)
-        from = formatDateInput(last14)
-        to = formatDateInput(yest14)
-        break
+        const last14 = new Date(today);
+        last14.setDate(last14.getDate() - 14);
+        const yest14 = new Date(today);
+        yest14.setDate(yest14.getDate() - 1);
+        from = formatDateInput(last14);
+        to = formatDateInput(yest14);
+        console.log('🔍 Last 14 days 範圍設定: from =', from, 'to =', to); // 顯示設定的日期
+        break;
       case 'Last 30 days':
-        const last30 = new Date(today)
-        last30.setDate(last30.getDate() - 30)
-        const yest30 = new Date(today)
-        yest30.setDate(yest30.getDate() - 1)
-        from = formatDateInput(last30)
-        to = formatDateInput(yest30)
-        break
+        const last30 = new Date(today);
+        last30.setDate(last30.getDate() - 30);
+        const yest30 = new Date(today);
+        yest30.setDate(yest30.getDate() - 1);
+        from = formatDateInput(last30);
+        to = formatDateInput(yest30);
+        console.log('🔍 Last 30 days 範圍設定: from =', from, 'to =', to); // 顯示設定的日期
+        break;
       case '2025 Season':
       default:
-        from = '2025-03-27'
-        to = '2025-11-30'
-        break
+        from = '2025-03-27';
+        to = '2025-11-30';
+        console.log('🔍 2025 Season 範圍設定: from =', from, 'to =', to); // 顯示設定的日期
+        break;
     }
-    
-    setFromDate(from)
-    setToDate(to)
+  
+    setFromDate(from);
+    setToDate(to);
+    console.log('🔍 最終範圍設定: from =', from, 'to =', to); // 顯示最終設定的日期
   }
+  
   
 
   const renderAssignedPositionSelect = (p) => {
@@ -266,21 +276,30 @@ export default function RosterPage() {
 
   const loadAssigned = async (playersList) => {
     console.log('📦 載入 assigned，用的 playersList:', playersList);
-  
+    
     const date = formatDateInput(currentDate);
     const isToday = formatDateInput(currentDate) === formatDateInput(new Date()); // 判斷是否為今天
-  
+    
+    // 打印當前的日期與檢查日期是否為今天
+    console.log('📅 當前日期:', currentDate);
+    console.log('📅 當前選擇的日期是否為今天:', isToday);
+    
     // 如果是今天，撈取今日的資料；如果是過去日期，撈取歷史資料
     const url = isToday
       ? '/api/saveAssigned/load'  // 撈今日資料
       : `/api/saveAssigned/history?date=${date}&manager_id=${userId}`; // 撈歷史資料
-  
+    
+    console.log('📥 傳送的 API URL:', url);  // 輸出 API URL 方便檢查
+    
     try {
       const res = await fetch(url);
       const data = await res.json();
-  
+      
+      // 印出返回的數據
+      console.log('🔍 從後端獲取的資料:', data);
+      
       if (!res.ok) throw new Error(data.error || '讀取失敗');
-  
+      
       // 如果是過去日期且資料不存在
       if (data.length === 0) {
         setAssignedPositions({});
@@ -294,7 +313,7 @@ export default function RosterPage() {
         const record = data.find((r) => r.player_name === p.Name);
         map[p.Name] = record?.position || 'BN'; // 預設位置為 'BN'
       });
-  
+      
       console.log('📋 載入完成的球員位置對應:', map);
       setAssignedPositions(map);
   
@@ -302,6 +321,7 @@ export default function RosterPage() {
       console.error('❌ 載入 AssignedPositions 失敗:', err);
     }
   };
+  
   
   
 

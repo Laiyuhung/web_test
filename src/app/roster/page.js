@@ -137,7 +137,11 @@ export default function RosterPage() {
 
   const today = new Date()
     
-  const formatDateInput = (date) => date.toISOString().slice(0, 10)
+  const formatDateInput = (date) => {
+    // 使用台灣時間（UTC+8），先將時間設為 UTC，然後調整到台灣時間
+    date.setHours(date.getHours() + 8);
+    return date.toISOString().slice(0, 10); // 只取日期部分
+  }
 
     
   const applyDateRange = (range) => {

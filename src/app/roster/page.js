@@ -135,7 +135,16 @@ export default function RosterPage() {
 
 
 
-  const today = new Date()
+  const adjustToTaiwanTime = (date) => {
+    // 將時間調整為台灣時間（UTC+8）
+    const timezoneOffset = 8 * 60; // 台灣時間的時區偏移為 UTC+8
+    const utcDate = new Date(date);
+    utcDate.setMinutes(utcDate.getMinutes() + timezoneOffset);  // 調整到台灣時間
+    return utcDate;
+  }
+  
+  const today = adjustToTaiwanTime(new Date());
+  console.log("調整後的日期:", today);
     
   const formatDateInput = (date) => {
     // 使用台灣時間（UTC+8），先將時間設為 UTC，然後調整到台灣時間

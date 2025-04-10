@@ -260,83 +260,44 @@ export default function RosterPage() {
   }
   
 
-  const loadAssigned = async () => {
-    console.log('📦 載入 assigned，抓取所有球員及其位置')
+  const loadAssigned = async (playersList) => {
+    console.log('📦 載入 assigned，用的 playersList:', playersList)
   
-    const date = formatDateInput(currentDate)  // 轉換成 YYYY-MM-DD 格式
+    const date = formatDateInput(currentDate)
     const past = isPastDate(currentDate)  // 判斷是否為過去日期
   
-    // 根據日期是否為過去日期，決定 API 路徑
     const url = past
       ? `/api/saveAssigned/history?date=${date}&manager_id=${userId}` // 撈歷史
       : '/api/saveAssigned/load' // 撈今日
   
     try {
-      // 先抓取所有球員的 assigned position
       const res = await fetch(url)
       const data = await res.json()
   
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
+      // 如果是過去日期且資料不存在
       if (data.length === 0) {
-        // 如果沒有資料，顯示無資料
+        // 清空已指派的資料
         setAssignedPositions({})
-        setMoveMessage(`❌ 該日期範圍無資料：${formatDisplayDate(new Date(fromDate))} - ${formatDisplayDate(new Date(toDate))}`)
+        setMoveMessage('❌ 該日期範圍無資料')  // 顯示無資料訊息
         return  // 不處理資料，直接返回
       }
   
-      // 取得球員和其 assigned position
-      const playerPositions = data.map(record => ({
-        playerName: record.player_name,
-        position: record.position
-      }))
-      console.log('📋 已獲取的球員與位置:', playerPositions)
-  
-      // 根據球員名稱查詢對應的成績
-      const statsRes = await Promise.all([
-        fetch('/api/playerStats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-        }),
-        fetch('/api/playerStats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-        })
-      ])
-  
-      const [batterData, pitcherData] = await Promise.all([
-        statsRes[0].json(),
-        statsRes[1].json()
-      ])
-  
-      // 整合所有資料並設定 players
-      const statsData = [...batterData, ...pitcherData]
-      const merged = playerPositions.map(p => {
-        const stat = statsData.find(s => s.name === p.playerName)
-        return {
-          playerName: p.playerName,
-          position: p.position,
-          ...(stat || {})
-        }
+      // 如果有資料，進行處理
+      const map = {}
+      playersList.forEach(p => {
+        const record = data.find(r => r.player_name === p.Name)
+        map[p.Name] = record?.position || 'BN'
       })
   
-      // 根據 manager_id 過濾出屬於該管理員的球員
-      const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
-  
-      setPlayers(myPlayers)
-      setAssignedPositions(myPlayers.reduce((acc, player) => {
-        acc[player.playerName] = player.position || 'BN'
-        return acc
-      }, {}))
-      setPositionsLoaded(true)
+      console.log('📋 載入完成的球員位置對應:', map)
+      setAssignedPositions(map)
   
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
   }
-  
   
 
 

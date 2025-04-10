@@ -19,7 +19,13 @@ export default function RosterPage() {
   const [currentDate, setCurrentDate] = useState(() => new Date())  // 預設今天
 
 
-
+  useEffect(() => {
+    if (isPastDate(currentDate)) {
+      setRange('Today') // 強制套用 Today 當日數據
+    } else {
+      applyDateRange(range)
+    }
+  }, [range, currentDate])
 
 
   useEffect(() => {
@@ -116,7 +122,10 @@ export default function RosterPage() {
     setToDate(formatDateInput(newDate))
   }
 
-
+  const isPastDate = (date) => {
+    const todayStr = formatDateInput(new Date())
+    return formatDateInput(date) < todayStr
+  }
 
 
 
@@ -172,16 +181,20 @@ export default function RosterPage() {
 
   const renderAssignedPositionSelect = (p) => {
     const currentValue = assignedPositions[p.Name] || 'BN'
+    const disabled = isPastDate(currentDate)
   
     return (
       <button
-        onClick={() => openMoveModal(p)}
-        className="bg-[#004AAD] hover:bg-[#003E7E] text-white text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center"
+        onClick={() => !disabled && openMoveModal(p)}
+        disabled={disabled}
+        className={`bg-[#004AAD] hover:bg-[#003E7E] text-white text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center
+          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {currentValue}
       </button>
     )
   }
+  
   
   const openMoveModal = (player) => {
     console.log('🔁 可選位置:', player.finalPosition)
@@ -245,8 +258,15 @@ export default function RosterPage() {
   const loadAssigned = async (playersList) => {
     console.log('📦 載入 assigned，用的 playersList:', playersList)
   
+    const date = formatDateInput(currentDate)
+    const past = isPastDate(currentDate)
+  
+    const url = past
+      ? `/api/saveAssigned/history?date=${date}&manager_id=${userId}` // 撈歷史
+      : '/api/saveAssigned/load' // 撈今日
+  
     try {
-      const res = await fetch('/api/saveAssigned/load')
+      const res = await fetch(url)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
@@ -256,13 +276,13 @@ export default function RosterPage() {
         map[p.Name] = record?.position || 'BN'
       })
   
-      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
-  
+      console.log('📋 載入完成的球員位置對應:', map)
       setAssignedPositions(map)
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
   }
+  
 
   // ✅ 加入這段：
   const saveAssigned = async (updatedMap) => {
@@ -458,6 +478,7 @@ export default function RosterPage() {
             value={range}
             onChange={e => setRange(e.target.value)}
             className="border px-2 py-1 rounded"
+            disabled={isPastDate(currentDate)}
           >
             <option>Today</option>
             <option>Yesterday</option>

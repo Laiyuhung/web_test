@@ -47,18 +47,21 @@ export default function RosterPage() {
                 body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
             }),
             fetch('/api/playerPositionCaculate'),
-            fetch('/api/playerRegisterStatus')
+            fetch('/api/playerRegisterStatus'),
+            fetch('/api/saveAssigned/load')
         ])
 
-        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
+        const [statusData, batterData, pitcherData, positionData, registerData, assignedRes] = await Promise.all([
             statusRes.json(),
             batterRes.ok ? batterRes.json() : [],
             pitcherRes.ok ? pitcherRes.json() : [],
             positionRes.ok ? positionRes.json() : [],
-            registerRes.ok ? registerRes.json() : []
+            registerRes.ok ? registerRes.json() : [],
+            assignedRes.ok ? assignedRes.json() : []
         ])
 
-        
+        const assignedHistory = assignedRes.ok ? await assignedRes.json() : []
+
         const statsData = [...batterData, ...pitcherData]
 
         const merged = statusData.map(p => {
@@ -79,11 +82,13 @@ export default function RosterPage() {
 
         setPlayers(myPlayers)
 
-        const defaultAssigned = {}
+        const assignedMap = {}
         myPlayers.forEach(p => {
-          defaultAssigned[p.Name] = 'BN'
+          const record = assignedHistory.find(r => r.player_name === p.Name)
+          assignedMap[p.Name] = record?.position || 'BN'
         })
-        setAssignedPositions(defaultAssigned)
+        setAssignedPositions(assignedMap)
+
 
       } catch (err) {
         console.error('讀取錯誤:', err)
@@ -456,6 +461,14 @@ export default function RosterPage() {
                         const updated = { ...prev }
                         updated[moveTarget.Name] = posKey
                         updated[p.Name] = newPos
+
+                        // ⬇️ 自動送出更新
+                        fetch('/api/saveAssigned/post', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ assignedPositions: updated })
+                        })
+
                         return updated
                       })
                     
@@ -481,10 +494,21 @@ export default function RosterPage() {
                 {slot.count < slot.max && (
                   <button
                     onClick={() => {
-                      setAssignedPositions(prev => ({
-                        ...prev,
-                        [moveTarget.Name]: posKey
-                      }))
+                      setAssignedPositions(prev => {
+                        const updated = {
+                          ...prev,
+                          [moveTarget.Name]: posKey
+                        }
+                      
+                        // ⬇️ 自動送出更新
+                        fetch('/api/saveAssigned/post', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ assignedPositions: updated })
+                        })
+                      
+                        return updated
+                      })
 
                       setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}`)
                       setTimeout(() => setMoveMessage(''), 2000)

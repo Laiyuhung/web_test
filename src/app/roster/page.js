@@ -15,17 +15,8 @@ export default function RosterPage() {
   const batterPositionOrder = ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util', 'BN', 'NA', 'NA(備用)']
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
   const [moveMessage, setMoveMessage] = useState('')
-  const [positionsLoaded, setPositionsLoaded] = useState(false)
-  const [currentDate, setCurrentDate] = useState(() => adjustToTaiwanTime(new Date())); // 確保初始化時使用台灣時間
 
 
-  useEffect(() => {
-    if (isPastDate(currentDate)) {
-      setRange('Today') // 強制套用 Today 當日數據
-    } else {
-      applyDateRange(range)
-    }
-  }, [range, currentDate])
 
 
   useEffect(() => {
@@ -39,194 +30,160 @@ export default function RosterPage() {
     applyDateRange(range)
   }, [range])
 
-
   useEffect(() => {
-    if (userId) {
-      setLoading(true); // 開始加載時設定 loading 為 true
-      fetchData(); // 呼叫數據加載函數
-    }
-  }, [userId, fromDate, toDate, currentDate]); // 當日期變動時重新加載
-  
-  
 
-  const fetchData = async () => {
-    setLoading(true); // 開始加載時設定 loading 為 true
-    try {
-      const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
-        fetch('/api/playerStatus'),
-        fetch('/api/playerStats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate }),
-        }),
-        fetch('/api/playerStats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate }),
-        }),
-        fetch('/api/playerPositionCaculate'),
-        fetch('/api/playerRegisterStatus'),
-      ]);
-  
-      const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
-        statusRes.json(),
-        batterRes.ok ? batterRes.json() : [],
-        pitcherRes.ok ? pitcherRes.json() : [],
-        positionRes.ok ? positionRes.json() : [],
-        registerRes.ok ? registerRes.json() : [],
-      ]);
-  
-      // 整合所有資料並設定 players
-      const statsData = [...batterData, ...pitcherData];
-      const merged = statusData.map((p) => {
-        const stat = statsData.find((s) => s.name === p.Name);
-        const pos = positionData.find((pos) => pos.name === p.Name);
-        const finalPosition = pos?.finalPosition || [];
-        const reg = registerData.find((r) => r.name === p.Name);
-        const registerStatus = reg?.status || '未知';
-        return {
-          ...p,
-          ...(stat || {}),
-          finalPosition,
-          registerStatus,
-        };
-      });
-  
-      const myPlayers = merged.filter((p) => p.manager_id?.toString() === userId);
-      setPlayers(myPlayers);
-  
-      // 今日資料需要獨立處理
-      await loadAssigned(myPlayers);
-  
-      setPositionsLoaded(true); // 資料加載完後設置 positionsLoaded 為 true
-    } catch (err) {
-      console.error('讀取錯誤:', err);
-    }
-    setLoading(false); // 加載完成後將 loading 設為 false
-  };
-  
-  
-  
-  const formatDisplayDate = (date) => date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })
-
-  const handlePrevDate = () => {
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() - 1);
-    setCurrentDate(newDate);
-    setRange('Custom'); // 手動選擇自定義日期
-    setFromDate(formatDateInput(newDate));
-    setToDate(formatDateInput(newDate));
-  };
-  
-  const handleNextDate = () => {
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + 1);
-    setCurrentDate(newDate);
-    setRange('Custom'); // 手動選擇自定義日期
-    setFromDate(formatDateInput(newDate));
-    setToDate(formatDateInput(newDate));
-  };
-  
-
-  const isPastDate = (date) => {
-    const todayStr = formatDateInput(new Date())
-    return formatDateInput(date) < todayStr
-  }
-
-
-
-  const adjustToTaiwanTime = (date) => {
-    // 將時間調整為台灣時間（UTC+8）
-    const timezoneOffset = 8 * 60; // 台灣時間的時區偏移為 UTC+8
-    const utcDate = new Date(date);
-    utcDate.setMinutes(utcDate.getMinutes() + timezoneOffset);  // 調整到台灣時間
-    return utcDate;
-  }
-  
-  const today = new Date();
-  console.log("調整後的日期:", today);
+    const loadAssigned = async (playersList) => {
+      console.log('📦 載入 assigned，用的 playersList:', playersList)
     
-  const formatDateInput = (date) => {
-    // 使用台灣時間（UTC+8），先將時間設為 UTC，然後調整到台灣時間
-    date.setHours(date.getHours() + 8);
-    return date.toISOString().slice(0, 10); // 只取日期部分
-  }
+      try {
+        const res = await fetch('/api/saveAssigned/load')
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || '讀取失敗')
+    
+        const map = {}
+        playersList.forEach(p => {
+          const record = data.find(r => r.player_name === p.Name)
+          map[p.Name] = record?.position || 'BN'
+        })
+    
+        console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
+    
+        setAssignedPositions(map)
+      } catch (err) {
+        console.error('❌ 載入 AssignedPositions 失敗:', err)
+      }
+    }
+    
+    
+
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
+            fetch('/api/playerStatus'),
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
+            }),
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
+            }),
+            fetch('/api/playerPositionCaculate'),
+            fetch('/api/playerRegisterStatus')
+        ])
+
+        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
+            statusRes.json(),
+            batterRes.ok ? batterRes.json() : [],
+            pitcherRes.ok ? pitcherRes.json() : [],
+            positionRes.ok ? positionRes.json() : [],
+            registerRes.ok ? registerRes.json() : []
+        ])
+
+        
+        const statsData = [...batterData, ...pitcherData]
+
+        const merged = statusData.map(p => {
+          const stat = statsData.find(s => s.name === p.Name)
+          const pos = positionData.find(pos => pos.name === p.Name)
+          const finalPosition = pos?.finalPosition || []
+          const reg = registerData.find(r => r.name === p.Name)
+          const registerStatus = reg?.status || '未知'
+          return {
+            ...p,
+            ...(stat || {}),
+            finalPosition,
+            registerStatus
+          }
+        })
+
+        const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
+
+        setPlayers(myPlayers)
+
+        await loadAssigned(myPlayers)
+
+        const defaultAssigned = {}
+        myPlayers.forEach(p => {
+          defaultAssigned[p.Name] = 'BN'
+        })
+        setAssignedPositions(defaultAssigned)
+
+      } catch (err) {
+        console.error('讀取錯誤:', err)
+      }
+      setLoading(false)
+    }
+
+    if (userId) fetchData()
+  }, [userId, fromDate, toDate]) 
+
+  
+  const today = new Date()
+    
+  const formatDateInput = (date) => date.toISOString().slice(0, 10)
 
     
   const applyDateRange = (range) => {
-    const d = new Date(today);
-    let from = '', to = '';
-    
-    console.log('🔍 選擇的日期範圍:', range);  // 顯示選擇的範圍
-  
-    switch (range) {
+  const d = new Date(today)
+  let from = '', to = ''
+  switch (range) {
       case 'Today':
-        from = to = formatDateInput(d);
-        console.log('🔍 Today 範圍設定: from = to =', from); // 顯示設定的日期
-        break;
+      from = to = formatDateInput(d)
+      break
       case 'Yesterday':
-        d.setDate(d.getDate() - 1);
-        from = to = formatDateInput(d);
-        console.log('🔍 Yesterday 範圍設定: from = to =', from); // 顯示設定的日期
-        break;
+      d.setDate(d.getDate() - 1)
+      from = to = formatDateInput(d)
+      break
       case 'Last 7 days':
-        const last7 = new Date(today);
-        last7.setDate(last7.getDate() - 7);
-        const yest7 = new Date(today);
-        yest7.setDate(yest7.getDate() - 1);
-        from = formatDateInput(last7);
-        to = formatDateInput(yest7);
-        console.log('🔍 Last 7 days 範圍設定: from =', from, 'to =', to); // 顯示設定的日期
-        break;
+      const last7 = new Date(today)
+      last7.setDate(last7.getDate() - 7)
+      const yest7 = new Date(today)
+      yest7.setDate(yest7.getDate() - 1)
+      from = formatDateInput(last7)
+      to = formatDateInput(yest7)
+      break
       case 'Last 14 days':
-        const last14 = new Date(today);
-        last14.setDate(last14.getDate() - 14);
-        const yest14 = new Date(today);
-        yest14.setDate(yest14.getDate() - 1);
-        from = formatDateInput(last14);
-        to = formatDateInput(yest14);
-        console.log('🔍 Last 14 days 範圍設定: from =', from, 'to =', to); // 顯示設定的日期
-        break;
+      const last14 = new Date(today)
+      last14.setDate(last14.getDate() - 14)
+      const yest14 = new Date(today)
+      yest14.setDate(yest14.getDate() - 1)
+      from = formatDateInput(last14)
+      to = formatDateInput(yest14)
+      break
       case 'Last 30 days':
-        const last30 = new Date(today);
-        last30.setDate(last30.getDate() - 30);
-        const yest30 = new Date(today);
-        yest30.setDate(yest30.getDate() - 1);
-        from = formatDateInput(last30);
-        to = formatDateInput(yest30);
-        console.log('🔍 Last 30 days 範圍設定: from =', from, 'to =', to); // 顯示設定的日期
-        break;
+      const last30 = new Date(today)
+      last30.setDate(last30.getDate() - 30)
+      const yest30 = new Date(today)
+      yest30.setDate(yest30.getDate() - 1)
+      from = formatDateInput(last30)
+      to = formatDateInput(yest30)
+      break
       case '2025 Season':
       default:
-        from = '2025-03-27';
-        to = '2025-11-30';
-        console.log('🔍 2025 Season 範圍設定: from =', from, 'to =', to); // 顯示設定的日期
-        break;
-    }
-  
-    setFromDate(from);
-    setToDate(to);
-    console.log('🔍 最終範圍設定: from =', from, 'to =', to); // 顯示最終設定的日期
+      from = '2025-03-27'
+      to = '2025-11-30'
+      break
   }
-  
-  
+  setFromDate(from)
+  setToDate(to)
+  }
 
   const renderAssignedPositionSelect = (p) => {
     const currentValue = assignedPositions[p.Name] || 'BN'
-    const disabled = isPastDate(currentDate)
   
     return (
       <button
-        onClick={() => !disabled && openMoveModal(p)}
-        disabled={disabled}
-        className={`bg-[#004AAD] hover:bg-[#003E7E] text-white text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center
-          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        onClick={() => openMoveModal(p)}
+        className="bg-[#004AAD] hover:bg-[#003E7E] text-white text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center"
       >
         {currentValue}
       </button>
     )
   }
-  
   
   const openMoveModal = (player) => {
     console.log('🔁 可選位置:', player.finalPosition)
@@ -286,99 +243,25 @@ export default function RosterPage() {
     // TODO: 打開一個 modal，傳入 slotStatus 跟 player 本身
   }
   
-
-  const loadAssigned = async (playersList) => {
-    console.log('📦 載入 assigned，用的 playersList:', playersList);
-    
-    const date = formatDateInput(currentDate);
-    const isToday = formatDateInput(currentDate) === formatDateInput(new Date()); // 判斷是否為今天
-    
-    // 打印當前的日期與檢查日期是否為今天
-    console.log('📅 當前日期:', currentDate.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }));
-    console.log('📅 當前選擇的日期是否為今天:', isToday);
-    
-    // 如果是今天，撈取今日的資料；如果是過去日期，撈取歷史資料
-    const url = isToday
-      ? '/api/saveAssigned/load'  // 撈今日資料
-      : `/api/saveAssigned/history?date=${date}&manager_id=${userId}`; // 撈歷史資料
-    
-    console.log('📥 傳送的 API URL:', url);  // 輸出 API URL 方便檢查
-    
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      
-      // 印出返回的數據
-      console.log('🔍 從後端獲取的資料:', data);
-      
-      if (!res.ok) throw new Error(data.error || '讀取失敗');
-      
-      // 如果是過去日期且資料不存在
-      if (data.length === 0) {
-        setAssignedPositions({});
-        setMoveMessage('❌ 該日期範圍無資料');
-        return;
-      }
-  
-      // 如果有資料，進行處理
-      const map = {};
-      playersList.forEach((p) => {
-        const record = data.find((r) => r.player_name === p.Name);
-        map[p.Name] = record?.position || 'BN'; // 預設位置為 'BN'
-      });
-      
-      console.log('📋 載入完成的球員位置對應:', map);
-      setAssignedPositions(map);
-  
-    } catch (err) {
-      console.error('❌ 載入 AssignedPositions 失敗:', err);
-    }
-  };
-  
-  
-  
-
-
-  const renderNoData = () => (
-    <tr>
-      <td colSpan={13} className="p-4 text-center text-gray-500">無資料</td>
-    </tr>
-  )
-
   // ✅ 加入這段：
-  const saveAssigned = async (updatedMap) => {
-    try {
-      const res = await fetch('/api/saveAssigned/post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assignedPositions: updatedMap }),
-      })
-  
-      let data = {}
-      try {
-        data = await res.json()  // 👈 包起來避免 json() 本身錯誤
-      } catch (jsonErr) {
-        throw new Error('無法解析後端回應')
-      }
-  
-      if (!res.ok) {
-        console.error('❌ 儲存 API 錯誤:', data)
-        throw new Error(data.error || '儲存失敗')
-      }
-  
-      console.log('✅ 儲存成功:', data)
-      setMoveMessage('✅ 自動儲存成功')
-      setTimeout(() => setMoveMessage(''), 2000)
-  
-      await loadAssigned(players)
-    } catch (err) {
-      console.error('❌ 自動儲存錯誤:', err.message)
-      setMoveMessage('❌ 自動儲存失敗，請稍後再試')
-      setTimeout(() => setMoveMessage(''), 3000)
-    }
+const saveAssigned = async (updatedMap) => {
+  try {
+    const res = await fetch('/api/saveAssigned/post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ assignedPositions: updatedMap })
+    })
+    if (!res.ok) throw new Error('儲存失敗')
+
+    // 儲存後馬上載入最新
+    await loadAssigned(players)
+
+  } catch (err) {
+    console.error('❌ 自動儲存錯誤:', err)
+    setMoveMessage('❌ 自動儲存失敗，請稍後再試')
+    setTimeout(() => setMoveMessage(''), 3000)
   }
-  
-  
+}
   
   const formatAvg = (val) => {
     const num = parseFloat(val)
@@ -512,87 +395,62 @@ export default function RosterPage() {
 
 
     
-    <div className="p-6">
+      <div className="p-6">
 
-      <div className="flex flex-wrap items-center justify-between mb-4">
-        <h1 className="text-xl font-bold mr-4 mb-2">MY ROSTER</h1>
-
-        <div className="flex items-center space-x-2 mb-2">
-          <button
-            onClick={handlePrevDate}
-            className="px-2 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
-          >
-            ←
-          </button>
-          <span className="text-sm font-semibold">{formatDisplayDate(currentDate)}</span>
-          <button
-            onClick={handleNextDate}
-            className="px-2 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
-          >
-            →
-          </button>
-        </div>
-
-        <div className="flex items-center mb-2">
-          <label className="text-sm font-semibold mr-2">Stats Range</label>
-          <select
-            value={range}
-            onChange={e => setRange(e.target.value)}
-            className="border px-2 py-1 rounded"
-            disabled={isPastDate(currentDate)}
-          >
-            <option>Today</option>
-            <option>Yesterday</option>
-            <option>Last 7 days</option>
-            <option>Last 14 days</option>
-            <option>Last 30 days</option>
-            <option>2025 Season</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="mb-4">
-      <p className="text-sm text-gray-700">
-        數據區間：{formatDisplayDate(new Date(fromDate))} - {formatDisplayDate(new Date(toDate))}
-      </p>
-    </div>
-            
-    {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
-      
       {moveMessage && (
         <div className="mb-4 p-3 text-sm bg-blue-50 text-blue-800 border border-blue-300 rounded">
           {moveMessage}
         </div>
       )}
 
-      {positionsLoaded && (
-        <div className="overflow-auto max-h-[600px]">
-          <section className="mb-8">
+      <div className="mb-4">
+      <label className="text-sm font-semibold">Stats Range</label>
+      <select
+          value={range}
+          onChange={e => setRange(e.target.value)}
+          className="border px-2 py-1 rounded ml-2"
+      >
+          <option>Today</option>
+          <option>Yesterday</option>
+          <option>Last 7 days</option>
+          <option>Last 14 days</option>
+          <option>Last 30 days</option>
+          <option>2025 Season</option>
+      </select>
+      </div>
+      
+      {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
+      <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
+
+      <div className="overflow-auto max-h-[600px]">
+        <section className="mb-8">
             <h2 className="text-lg font-semibold mb-2">Batters</h2>
-            {batters.length === 0 ? (
-              renderNoData()  // 顯示無資料提示
-            ) : (
-              <table className="w-full text-sm text-center">
+
+            <table className="w-full text-sm text-center">
                 <thead>{renderHeader('Batter', 'z-40')}</thead>
-                <tbody>{batters.map((p) => renderRow(p, 'Batter'))}</tbody>
-              </table>
-            )}
-          </section>
+                <tbody>
+                {batters.map((p, i) => (
+                    <>{renderRow(p, 'Batter')}</>
+                ))}
+                </tbody>
+            </table>
 
-          <section>
+        </section>
+
+        <section>
             <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
-            {pitchers.length === 0 ? (
-              renderNoData()  // 顯示無資料提示
-            ) : (
-              <table className="w-full text-sm text-center">
-                <thead>{renderHeader('Pitcher', 'z-50')}</thead>
-                <tbody>{pitchers.map((p) => renderRow(p, 'Pitcher'))}</tbody>
-              </table>
-            )}
-          </section>
 
-        </div>
-      )}
+            <table className="w-full text-sm text-center">
+                <thead>{renderHeader('Pitcher', 'z-50')}</thead>
+                <tbody>
+                {pitchers.map((p, i) => (
+                    <>{renderRow(p, 'Pitcher')}</>
+                ))}
+                </tbody>
+            </table>
+
+        </section>
+      </div>
 
       {moveTarget && moveSlots && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

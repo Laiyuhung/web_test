@@ -15,6 +15,7 @@ export default function RosterPage() {
   const batterPositionOrder = ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util', 'BN', 'NA', 'NA(備用)']
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
   const [moveMessage, setMoveMessage] = useState('')
+  const [positionsLoaded, setPositionsLoaded] = useState(false)
 
 
 
@@ -31,30 +32,6 @@ export default function RosterPage() {
   }, [range])
 
   useEffect(() => {
-
-    const loadAssigned = async (playersList) => {
-      console.log('📦 載入 assigned，用的 playersList:', playersList)
-    
-      try {
-        const res = await fetch('/api/saveAssigned/load')
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || '讀取失敗')
-    
-        const map = {}
-        playersList.forEach(p => {
-          const record = data.find(r => r.player_name === p.Name)
-          map[p.Name] = record?.position || 'BN'
-        })
-    
-        console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
-    
-        setAssignedPositions(map)
-      } catch (err) {
-        console.error('❌ 載入 AssignedPositions 失敗:', err)
-      }
-    }
-    
-    
 
     const fetchData = async () => {
       setLoading(true)
@@ -105,12 +82,7 @@ export default function RosterPage() {
         setPlayers(myPlayers)
 
         await loadAssigned(myPlayers)
-
-        const defaultAssigned = {}
-        myPlayers.forEach(p => {
-          defaultAssigned[p.Name] = 'BN'
-        })
-        setAssignedPositions(defaultAssigned)
+        setPositionsLoaded(true)
 
       } catch (err) {
         console.error('讀取錯誤:', err)
@@ -243,25 +215,63 @@ export default function RosterPage() {
     // TODO: 打開一個 modal，傳入 slotStatus 跟 player 本身
   }
   
-  // ✅ 加入這段：
-const saveAssigned = async (updatedMap) => {
-  try {
-    const res = await fetch('/api/saveAssigned/post', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ assignedPositions: updatedMap })
-    })
-    if (!res.ok) throw new Error('儲存失敗')
 
-    // 儲存後馬上載入最新
-    await loadAssigned(players)
-
-  } catch (err) {
-    console.error('❌ 自動儲存錯誤:', err)
-    setMoveMessage('❌ 自動儲存失敗，請稍後再試')
-    setTimeout(() => setMoveMessage(''), 3000)
+  const loadAssigned = async (playersList) => {
+    console.log('📦 載入 assigned，用的 playersList:', playersList)
+  
+    try {
+      const res = await fetch('/api/saveAssigned/load')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || '讀取失敗')
+  
+      const map = {}
+      playersList.forEach(p => {
+        const record = data.find(r => r.player_name === p.Name)
+        map[p.Name] = record?.position || 'BN'
+      })
+  
+      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
+  
+      setAssignedPositions(map)
+    } catch (err) {
+      console.error('❌ 載入 AssignedPositions 失敗:', err)
+    }
   }
-}
+
+  // ✅ 加入這段：
+  const saveAssigned = async (updatedMap) => {
+    try {
+      const res = await fetch('/api/saveAssigned/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignedPositions: updatedMap }),
+      })
+  
+      let data = {}
+      try {
+        data = await res.json()  // 👈 包起來避免 json() 本身錯誤
+      } catch (jsonErr) {
+        throw new Error('無法解析後端回應')
+      }
+  
+      if (!res.ok) {
+        console.error('❌ 儲存 API 錯誤:', data)
+        throw new Error(data.error || '儲存失敗')
+      }
+  
+      console.log('✅ 儲存成功:', data)
+      setMoveMessage('✅ 自動儲存成功')
+      setTimeout(() => setMoveMessage(''), 2000)
+  
+      await loadAssigned(players)
+    } catch (err) {
+      console.error('❌ 自動儲存錯誤:', err.message)
+      setMoveMessage('❌ 自動儲存失敗，請稍後再試')
+      setTimeout(() => setMoveMessage(''), 3000)
+    }
+  }
+  
+  
   
   const formatAvg = (val) => {
     const num = parseFloat(val)
@@ -422,35 +432,37 @@ const saveAssigned = async (updatedMap) => {
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
       <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
 
-      <div className="overflow-auto max-h-[600px]">
-        <section className="mb-8">
-            <h2 className="text-lg font-semibold mb-2">Batters</h2>
+      {positionsLoaded && (
+        <div className="overflow-auto max-h-[600px]">
+          <section className="mb-8">
+              <h2 className="text-lg font-semibold mb-2">Batters</h2>
 
-            <table className="w-full text-sm text-center">
-                <thead>{renderHeader('Batter', 'z-40')}</thead>
-                <tbody>
-                {batters.map((p, i) => (
-                    <>{renderRow(p, 'Batter')}</>
-                ))}
-                </tbody>
-            </table>
+              <table className="w-full text-sm text-center">
+                  <thead>{renderHeader('Batter', 'z-40')}</thead>
+                  <tbody>
+                  {batters.map((p, i) => (
+                      <>{renderRow(p, 'Batter')}</>
+                  ))}
+                  </tbody>
+              </table>
 
-        </section>
+          </section>
 
-        <section>
-            <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
+          <section>
+              <h2 className="text-lg font-semibold mb-2">Pitchers</h2>
 
-            <table className="w-full text-sm text-center">
-                <thead>{renderHeader('Pitcher', 'z-50')}</thead>
-                <tbody>
-                {pitchers.map((p, i) => (
-                    <>{renderRow(p, 'Pitcher')}</>
-                ))}
-                </tbody>
-            </table>
+              <table className="w-full text-sm text-center">
+                  <thead>{renderHeader('Pitcher', 'z-50')}</thead>
+                  <tbody>
+                  {pitchers.map((p, i) => (
+                      <>{renderRow(p, 'Pitcher')}</>
+                  ))}
+                  </tbody>
+              </table>
 
-        </section>
-      </div>
+          </section>
+        </div>
+      )}
 
       {moveTarget && moveSlots && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

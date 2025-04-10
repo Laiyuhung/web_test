@@ -28,7 +28,7 @@ export async function POST(req) {
 
     // 查詢目前紀錄（避免全設 BN）
     const { data: existingData, error: fetchError } = await supabase
-      .from('assigned_history')
+      .from('assigned_position_history')
       .select('player_name, position')
       .eq('manager_id', manager_id)
       .eq('date', date)

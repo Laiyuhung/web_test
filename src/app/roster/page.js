@@ -42,10 +42,11 @@ export default function RosterPage() {
 
   useEffect(() => {
     if (userId) {
-      setLoading(true) // 開始加載時設定 loading 為 true
-      fetchData() // 呼叫數據加載函數
+      setLoading(true); // 開始加載時設定 loading 為 true
+      fetchData(); // 呼叫數據加載函數
     }
-  }, [userId, fromDate, toDate]) // 確保根據 `fromDate` 和 `toDate` 變動而更新數據
+  }, [userId, fromDate, toDate, currentDate]); // 當日期變動時重新加載
+  
   
 
   const fetchData = async () => {
@@ -92,10 +93,11 @@ export default function RosterPage() {
       });
   
       const myPlayers = merged.filter((p) => p.manager_id?.toString() === userId);
-  
       setPlayers(myPlayers);
   
+      // 今日資料需要獨立處理
       await loadAssigned(myPlayers);
+  
       setPositionsLoaded(true); // 資料加載完後設置 positionsLoaded 為 true
     } catch (err) {
       console.error('讀取錯誤:', err);
@@ -104,25 +106,27 @@ export default function RosterPage() {
   };
   
   
+  
   const formatDisplayDate = (date) => date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })
 
   const handlePrevDate = () => {
-    const newDate = new Date(currentDate)
-    newDate.setDate(newDate.getDate() - 1)
-    setCurrentDate(newDate)
-    setRange('Custom')
-    setFromDate(formatDateInput(newDate))
-    setToDate(formatDateInput(newDate))
-  }
-
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setCurrentDate(newDate);
+    setRange('Custom'); // 手動選擇自定義日期
+    setFromDate(formatDateInput(newDate));
+    setToDate(formatDateInput(newDate));
+  };
+  
   const handleNextDate = () => {
-    const newDate = new Date(currentDate)
-    newDate.setDate(newDate.getDate() + 1)
-    setCurrentDate(newDate)
-    setRange('Custom')
-    setFromDate(formatDateInput(newDate))
-    setToDate(formatDateInput(newDate))
-  }
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + 1);
+    setCurrentDate(newDate);
+    setRange('Custom'); // 手動選擇自定義日期
+    setFromDate(formatDateInput(newDate));
+    setToDate(formatDateInput(newDate));
+  };
+  
 
   const isPastDate = (date) => {
     const todayStr = formatDateInput(new Date())
@@ -261,43 +265,44 @@ export default function RosterPage() {
   
 
   const loadAssigned = async (playersList) => {
-    console.log('📦 載入 assigned，用的 playersList:', playersList)
+    console.log('📦 載入 assigned，用的 playersList:', playersList);
   
-    const date = formatDateInput(currentDate)
-    const past = isPastDate(currentDate)  // 判斷是否為過去日期
+    const date = formatDateInput(currentDate);
+    const isToday = formatDateInput(currentDate) === formatDateInput(new Date()); // 判斷是否為今天
   
-    const url = past
-      ? `/api/saveAssigned/history?date=${date}&manager_id=${userId}` // 撈歷史
-      : '/api/saveAssigned/load' // 撈今日
+    // 如果是今天，撈取今日的資料；如果是過去日期，撈取歷史資料
+    const url = isToday
+      ? '/api/saveAssigned/load'  // 撈今日資料
+      : `/api/saveAssigned/history?date=${date}&manager_id=${userId}`; // 撈歷史資料
   
     try {
-      const res = await fetch(url)
-      const data = await res.json()
+      const res = await fetch(url);
+      const data = await res.json();
   
-      if (!res.ok) throw new Error(data.error || '讀取失敗')
+      if (!res.ok) throw new Error(data.error || '讀取失敗');
   
       // 如果是過去日期且資料不存在
       if (data.length === 0) {
-        // 清空已指派的資料
-        setAssignedPositions({})
-        setMoveMessage('❌ 該日期範圍無資料')  // 顯示無資料訊息
-        return  // 不處理資料，直接返回
+        setAssignedPositions({});
+        setMoveMessage('❌ 該日期範圍無資料');
+        return;
       }
   
       // 如果有資料，進行處理
-      const map = {}
-      playersList.forEach(p => {
-        const record = data.find(r => r.player_name === p.Name)
-        map[p.Name] = record?.position || 'BN'
-      })
+      const map = {};
+      playersList.forEach((p) => {
+        const record = data.find((r) => r.player_name === p.Name);
+        map[p.Name] = record?.position || 'BN'; // 預設位置為 'BN'
+      });
   
-      console.log('📋 載入完成的球員位置對應:', map)
-      setAssignedPositions(map)
+      console.log('📋 載入完成的球員位置對應:', map);
+      setAssignedPositions(map);
   
     } catch (err) {
-      console.error('❌ 載入 AssignedPositions 失敗:', err)
+      console.error('❌ 載入 AssignedPositions 失敗:', err);
     }
-  }
+  };
+  
   
 
 

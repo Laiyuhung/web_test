@@ -245,34 +245,33 @@ export default function RosterPage() {
       const res = await fetch('/api/saveAssigned/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assignedPositions: updatedMap })
+        body: JSON.stringify({ assignedPositions: updatedMap }),
       })
   
-      // 加入 try/catch 以防 res.json() 拋錯
       let data = {}
       try {
-        data = await res.json()
+        data = await res.json()  // 👈 包起來避免 json() 本身錯誤
       } catch (jsonErr) {
-        throw new Error('回傳資料格式錯誤')
+        throw new Error('無法解析後端回應')
       }
   
-      if (!res.ok) throw new Error(data.error || '儲存失敗')
+      if (!res.ok) {
+        console.error('❌ 儲存 API 錯誤:', data)
+        throw new Error(data.error || '儲存失敗')
+      }
   
-      console.log('✅ 自動儲存成功:', data)
-  
-      // ⏬ optional: 成功提示（也可以註解）
+      console.log('✅ 儲存成功:', data)
       setMoveMessage('✅ 自動儲存成功')
       setTimeout(() => setMoveMessage(''), 2000)
   
-      // 成功後 reload
       await loadAssigned(players)
-  
     } catch (err) {
-      console.error('❌ 自動儲存錯誤:', err)
+      console.error('❌ 自動儲存錯誤:', err.message)
       setMoveMessage('❌ 自動儲存失敗，請稍後再試')
       setTimeout(() => setMoveMessage(''), 3000)
     }
   }
+  
   
   
   const formatAvg = (val) => {

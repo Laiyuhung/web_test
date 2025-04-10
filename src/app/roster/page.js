@@ -16,6 +16,8 @@ export default function RosterPage() {
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
   const [moveMessage, setMoveMessage] = useState('')
   const [positionsLoaded, setPositionsLoaded] = useState(false)
+  const [currentDate, setCurrentDate] = useState(() => new Date())  // 預設今天
+
 
 
 
@@ -94,6 +96,30 @@ export default function RosterPage() {
   }, [userId, fromDate, toDate]) 
 
   
+  const formatDisplayDate = (date) => date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })
+
+  const handlePrevDate = () => {
+    const newDate = new Date(currentDate)
+    newDate.setDate(newDate.getDate() - 1)
+    setCurrentDate(newDate)
+    setRange('Custom')
+    setFromDate(formatDateInput(newDate))
+    setToDate(formatDateInput(newDate))
+  }
+
+  const handleNextDate = () => {
+    const newDate = new Date(currentDate)
+    newDate.setDate(newDate.getDate() + 1)
+    setCurrentDate(newDate)
+    setRange('Custom')
+    setFromDate(formatDateInput(newDate))
+    setToDate(formatDateInput(newDate))
+  }
+
+
+
+
+
   const today = new Date()
     
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
@@ -405,32 +431,52 @@ export default function RosterPage() {
 
 
     
-      <div className="p-6">
+    <div className="p-6">
 
+      <div className="flex flex-wrap items-center justify-between mb-4">
+        <h1 className="text-xl font-bold mr-4 mb-2">MY ROSTER</h1>
+
+        <div className="flex items-center space-x-2 mb-2">
+          <button
+            onClick={handlePrevDate}
+            className="px-2 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
+          >
+            ←
+          </button>
+          <span className="text-sm font-semibold">{formatDisplayDate(currentDate)}</span>
+          <button
+            onClick={handleNextDate}
+            className="px-2 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
+          >
+            →
+          </button>
+        </div>
+
+        <div className="flex items-center mb-2">
+          <label className="text-sm font-semibold mr-2">Stats Range</label>
+          <select
+            value={range}
+            onChange={e => setRange(e.target.value)}
+            className="border px-2 py-1 rounded"
+          >
+            <option>Today</option>
+            <option>Yesterday</option>
+            <option>Last 7 days</option>
+            <option>Last 14 days</option>
+            <option>Last 30 days</option>
+            <option>2025 Season</option>
+          </select>
+        </div>
+      </div>
+
+            
+      {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
+      
       {moveMessage && (
         <div className="mb-4 p-3 text-sm bg-blue-50 text-blue-800 border border-blue-300 rounded">
           {moveMessage}
         </div>
       )}
-
-      <div className="mb-4">
-      <label className="text-sm font-semibold">Stats Range</label>
-      <select
-          value={range}
-          onChange={e => setRange(e.target.value)}
-          className="border px-2 py-1 rounded ml-2"
-      >
-          <option>Today</option>
-          <option>Yesterday</option>
-          <option>Last 7 days</option>
-          <option>Last 14 days</option>
-          <option>Last 30 days</option>
-          <option>2025 Season</option>
-      </select>
-      </div>
-      
-      {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
-      <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
 
       {positionsLoaded && (
         <div className="overflow-auto max-h-[600px]">

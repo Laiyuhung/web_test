@@ -216,7 +216,21 @@ export default function RosterPage() {
     // TODO: 打開一個 modal，傳入 slotStatus 跟 player 本身
   }
   
-  
+  // ✅ 加入這段：
+const saveAssigned = async (updatedMap) => {
+  try {
+    const res = await fetch('/api/saveAssigned/post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ assignedPositions: updatedMap })
+    })
+    if (!res.ok) throw new Error('儲存失敗')
+  } catch (err) {
+    console.error('❌ 自動儲存錯誤:', err)
+    setMoveMessage('❌ 自動儲存失敗，請稍後再試')
+    setTimeout(() => setMoveMessage(''), 3000)
+  }
+}
   
   const formatAvg = (val) => {
     const num = parseFloat(val)
@@ -456,6 +470,7 @@ export default function RosterPage() {
                         const updated = { ...prev }
                         updated[moveTarget.Name] = posKey
                         updated[p.Name] = newPos
+                        saveAssigned(updated) // 👈 新增這行
                         return updated
                       })
                     
@@ -481,10 +496,14 @@ export default function RosterPage() {
                 {slot.count < slot.max && (
                   <button
                     onClick={() => {
-                      setAssignedPositions(prev => ({
-                        ...prev,
-                        [moveTarget.Name]: posKey
-                      }))
+                      setAssignedPositions(prev => {
+                        const updated = {
+                          ...prev,
+                          [moveTarget.Name]: posKey
+                        }
+                        saveAssigned(updated) // 👈 新增這行
+                        return updated
+                      })
 
                       setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}`)
                       setTimeout(() => setMoveMessage(''), 2000)

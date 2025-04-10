@@ -33,30 +33,6 @@ export default function RosterPage() {
 
   useEffect(() => {
 
-    const loadAssigned = async (playersList) => {
-      console.log('📦 載入 assigned，用的 playersList:', playersList)
-    
-      try {
-        const res = await fetch('/api/saveAssigned/load')
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || '讀取失敗')
-    
-        const map = {}
-        playersList.forEach(p => {
-          const record = data.find(r => r.player_name === p.Name)
-          map[p.Name] = record?.position || 'BN'
-        })
-    
-        console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
-    
-        setAssignedPositions(map)
-      } catch (err) {
-        console.error('❌ 載入 AssignedPositions 失敗:', err)
-      }
-    }
-    
-    
-
     const fetchData = async () => {
       setLoading(true)
       try {
@@ -239,6 +215,29 @@ export default function RosterPage() {
     // TODO: 打開一個 modal，傳入 slotStatus 跟 player 本身
   }
   
+
+  const loadAssigned = async (playersList) => {
+    console.log('📦 載入 assigned，用的 playersList:', playersList)
+  
+    try {
+      const res = await fetch('/api/saveAssigned/load')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || '讀取失敗')
+  
+      const map = {}
+      playersList.forEach(p => {
+        const record = data.find(r => r.player_name === p.Name)
+        map[p.Name] = record?.position || 'BN'
+      })
+  
+      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
+  
+      setAssignedPositions(map)
+    } catch (err) {
+      console.error('❌ 載入 AssignedPositions 失敗:', err)
+    }
+  }
+
   // ✅ 加入這段：
   const saveAssigned = async (updatedMap) => {
     try {

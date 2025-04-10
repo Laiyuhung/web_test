@@ -52,7 +52,7 @@ export async function POST(req) {
     }))
 
     const { error } = await supabase
-      .from('assigned_history')
+      .from('assigned_position_history')
       .upsert(rows, { onConflict: ['date', 'manager_id', 'player_name'] })
 
     if (error) {

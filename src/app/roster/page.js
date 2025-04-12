@@ -512,8 +512,6 @@ export default function RosterPage() {
   }
 
   return (
-
-
     
       <div className="p-6">
 
@@ -530,6 +528,7 @@ export default function RosterPage() {
             onClick={() => {
               const prev = new Date(selectedDate)
               prev.setDate(prev.getDate() - 1)
+              setRosterReady(false) // 🔹 新增這行
               setSelectedDate(prev.toISOString().slice(0, 10))
             }}
             className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg"
@@ -549,6 +548,7 @@ export default function RosterPage() {
             onClick={() => {
               const next = new Date(selectedDate)
               next.setDate(next.getDate() + 1)
+              setRosterReady(false) 
               setSelectedDate(next.toISOString().slice(0, 10))
             }}
             className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg"

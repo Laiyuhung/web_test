@@ -271,11 +271,11 @@ export default function RosterPage() {
     }
   }
   
-  const formatTaiwanShortDate = () => {
-    const now = new Date(Date.now() + 8 * 60 * 60 * 1000) // 台灣時間 UTC+8
-    const weekday = now.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Taipei' }) // Thu
-    const month = now.toLocaleDateString('en-US', { month: 'short', timeZone: 'Asia/Taipei' })     // Apr
-    const day = now.toLocaleDateString('en-US', { day: '2-digit', timeZone: 'Asia/Taipei' })       // 10
+  const formatTaiwanDateUSFormat = () => {
+    const taiwanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+    const weekday = taiwanTime.toLocaleDateString('en-US', { weekday: 'short' }) // e.g. "Thu"
+    const month = taiwanTime.toLocaleDateString('en-US', { month: 'short' })     // e.g. "Apr"
+    const day = taiwanTime.toLocaleDateString('en-US', { day: '2-digit' })       // e.g. "11"
     return `${weekday}, ${month} ${day}`
   }
   
@@ -419,8 +419,8 @@ export default function RosterPage() {
         </div>
       )}
 
-      <div className="text-sm font-semibold text-gray-700 mb-2">
-        {formatTaiwanShortDate()}
+      <div className="text-sm font-semibold text-gray-700 mb-4">
+        📅 {formatTaiwanDateUSFormat()}
       </div>
 
       <div className="mb-4">

@@ -16,6 +16,7 @@ export default function RosterPage() {
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
   const [moveMessage, setMoveMessage] = useState('')
   const [positionsLoaded, setPositionsLoaded] = useState(false)
+  const [rosterReady, setRosterReady] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => {
   const taiwanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
@@ -36,6 +37,12 @@ export default function RosterPage() {
   useEffect(() => {
     applyDateRange(range)
   }, [range])
+
+  useEffect(() => {
+    if (rosterReady) {
+      fetchStatsSummary()
+    }
+  }, [rosterReady])
 
   useEffect(() => {
 
@@ -89,6 +96,7 @@ export default function RosterPage() {
 
         await loadAssigned(myPlayers)
         setPositionsLoaded(true)
+        setRosterReady(true)
 
       } catch (err) {
         console.error('讀取錯誤:', err)
@@ -99,6 +107,46 @@ export default function RosterPage() {
     if (userId) fetchData()
   }, [userId, fromDate, toDate, selectedDate]) 
 
+  const fetchStatsSummary = async () => {
+    const starterNames = players
+      .filter(p => !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+      .map(p => p.Name)
+  
+    if (starterNames.length === 0) return
+  
+    try {
+      const [batterRes, pitcherRes] = await Promise.all([
+        fetch('/api/playerStatsSummary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'batter',
+            from: selectedDate,
+            to: selectedDate,
+            playerNames: starterNames,
+          })
+        }),
+        fetch('/api/playerStatsSummary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'pitcher',
+            from: selectedDate,
+            to: selectedDate,
+            playerNames: starterNames,
+          })
+        })
+      ])
+  
+      const batter = await batterRes.json()
+      const pitcher = await pitcherRes.json()
+  
+      setBatterSummary(batter)
+      setPitcherSummary(pitcher)
+    } catch (err) {
+      console.error('❌ 加總 stats summary 錯誤:', err)
+    }
+  }
   
   const today = new Date()
     

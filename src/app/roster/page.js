@@ -106,49 +106,53 @@ export default function RosterPage() {
 
     
   const applyDateRange = (range) => {
-  const d = new Date(today)
-  let from = '', to = ''
-  switch (range) {
+    const now = new Date()  // ⚠️ 改這裡，保證每次呼叫都抓系統當前時間
+    let from = '', to = ''
+  
+    switch (range) {
       case 'Today':
-      from = to = formatDateInput(d)
-      break
+        from = to = selectedDate  // ✅ 唯一使用 selectedDate 的情況
+        break
       case 'Yesterday':
-      d.setDate(d.getDate() - 1)
-      from = to = formatDateInput(d)
-      break
+        now.setDate(now.getDate() - 1)
+        from = to = formatDateInput(now)
+        break
       case 'Last 7 days':
-      const last7 = new Date(today)
-      last7.setDate(last7.getDate() - 7)
-      const yest7 = new Date(today)
-      yest7.setDate(yest7.getDate() - 1)
-      from = formatDateInput(last7)
-      to = formatDateInput(yest7)
-      break
+        const last7 = new Date(now)
+        last7.setDate(now.getDate() - 7)
+        const yest7 = new Date(now)
+        yest7.setDate(now.getDate() - 1)
+        from = formatDateInput(last7)
+        to = formatDateInput(yest7)
+        break
+      // ⬇️ 同理處理 Last 14, 30 ...
       case 'Last 14 days':
-      const last14 = new Date(today)
-      last14.setDate(last14.getDate() - 14)
-      const yest14 = new Date(today)
-      yest14.setDate(yest14.getDate() - 1)
-      from = formatDateInput(last14)
-      to = formatDateInput(yest14)
-      break
+        const last14 = new Date(now)
+        last14.setDate(now.getDate() - 14)
+        const yest14 = new Date(now)
+        yest14.setDate(now.getDate() - 1)
+        from = formatDateInput(last14)
+        to = formatDateInput(yest14)
+        break
       case 'Last 30 days':
-      const last30 = new Date(today)
-      last30.setDate(last30.getDate() - 30)
-      const yest30 = new Date(today)
-      yest30.setDate(yest30.getDate() - 1)
-      from = formatDateInput(last30)
-      to = formatDateInput(yest30)
-      break
+        const last30 = new Date(now)
+        last30.setDate(now.getDate() - 30)
+        const yest30 = new Date(now)
+        yest30.setDate(now.getDate() - 1)
+        from = formatDateInput(last30)
+        to = formatDateInput(yest30)
+        break
       case '2025 Season':
       default:
-      from = '2025-03-27'
-      to = '2025-11-30'
-      break
+        from = '2025-03-27'
+        to = '2025-11-30'
+        break
+    }
+  
+    setFromDate(from)
+    setToDate(to)
   }
-  setFromDate(from)
-  setToDate(to)
-  }
+  
 
   const renderAssignedPositionSelect = (p) => {
     const currentValue = assignedPositions[p.Name] || 'BN'
@@ -442,17 +446,6 @@ export default function RosterPage() {
           {moveMessage}
         </div>
       )}
-
-      <button
-        onClick={() => {
-          const today = new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })
-          const date = new Date(today).toISOString().slice(0, 10)
-          setSelectedDate(date)
-        }}
-        className="text-xs text-blue-600 underline mt-1"
-      >
-        Today
-      </button>
 
       <div className="flex flex-col items-center gap-2 mb-4">
         {/* 日期左右按鈕＋顯示文字 */}

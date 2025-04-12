@@ -593,33 +593,40 @@ export default function RosterPage() {
       
       {batterSummary && pitcherSummary && (
         <div className="mb-6 space-y-6 text-sm text-gray-600">
+          
           {/* 🟦 Batters Summary */}
           <div>
             <h3 className="font-semibold text-[13px] text-[#0155A0] mb-1">Batters Total</h3>
-            <div className="grid grid-cols-13 gap-x-1 px-1">
-              {['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((label, i) => (
-                <div key={i} className="text-[11px] text-gray-500 font-medium text-center">{label}</div>
-              ))}
-              {['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, i) => (
-                <div key={i} className="text-center text-[#0155A0] font-bold">{batterSummary[key]}</div>
-              ))}
+            <div className="overflow-x-auto">
+              <div className="min-w-[900px] grid grid-cols-13 gap-x-1 px-1">
+                {['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((label, i) => (
+                  <div key={i} className="text-[11px] text-gray-500 font-medium text-center">{label}</div>
+                ))}
+                {['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, i) => (
+                  <div key={i} className="text-center text-[#0155A0] font-bold">{batterSummary[key]}</div>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* 🟦 Pitchers Summary */}
           <div>
             <h3 className="font-semibold text-[13px] text-[#0155A0] mb-1">Pitchers Total</h3>
-            <div className="grid grid-cols-13 gap-x-1 px-1">
-              {['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((label, i) => (
-                <div key={i} className="text-[11px] text-gray-500 font-medium text-center">{label}</div>
-              ))}
-              {['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, i) => (
-                <div key={i} className="text-center text-[#0155A0] font-bold">{pitcherSummary[key]}</div>
-              ))}
+            <div className="overflow-x-auto">
+              <div className="min-w-[900px] grid grid-cols-13 gap-x-1 px-1">
+                {['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((label, i) => (
+                  <div key={i} className="text-[11px] text-gray-500 font-medium text-center">{label}</div>
+                ))}
+                {['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, i) => (
+                  <div key={i} className="text-center text-[#0155A0] font-bold">{pitcherSummary[key]}</div>
+                ))}
+              </div>
             </div>
           </div>
+
         </div>
       )}
+
 
       {positionsLoaded && (
         <div className="overflow-auto max-h-[600px]">

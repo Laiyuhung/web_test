@@ -18,6 +18,8 @@ export default function RosterPage() {
   const [positionsLoaded, setPositionsLoaded] = useState(false)
   const [rosterReady, setRosterReady] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const [batterSummary, setBatterSummary] = useState(null)
+  const [pitcherSummary, setPitcherSummary] = useState(null)
   const [selectedDate, setSelectedDate] = useState(() => {
   const taiwanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
     return taiwanTime.toISOString().slice(0, 10)

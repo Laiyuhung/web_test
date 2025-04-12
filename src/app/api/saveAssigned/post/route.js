@@ -7,10 +7,15 @@ export async function POST(req) {
   try {
     console.log('📥 [saveAssigned] 收到 POST 請求')
 
-    const { assignedPositions } = await req.json()
+    const { assignedPositions, startDate } = await req.json()
     if (!assignedPositions || typeof assignedPositions !== 'object') {
       return NextResponse.json({ error: '缺少 assignedPositions' }, { status: 400 })
     }
+
+    if (!startDate || isNaN(new Date(startDate))) {
+      return NextResponse.json({ error: '缺少或無效 startDate' }, { status: 400 })
+    }
+    
 
     const user_id_cookie = req.cookies.get('user_id')
     const user_id = user_id_cookie?.value
@@ -21,13 +26,12 @@ export async function POST(req) {
     }
 
     // ✅ 台灣當地時間（UTC+8）
-    const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
-    const startDate = new Date(taiwanNow.toISOString().slice(0, 10)) // 清除時間部分
+    const start = new Date(startDate)
     const endDate = new Date('2025-11-30')
 
     // ✅ 日期列表
     const dateList = []
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(start); d <= endDate; d.setDate(d.getDate() + 1)) {
       dateList.push(d.toISOString().slice(0, 10))
     }
 
@@ -36,7 +40,7 @@ export async function POST(req) {
       .from('assigned_position_history')
       .select('player_name, position')
       .eq('manager_id', manager_id)
-      .eq('date', startDate.toISOString().slice(0, 10)) // 只抓今天的
+      .eq('date', start.toISOString().slice(0, 10)) // 只抓今天的
 
     if (fetchError) {
       console.error('❌ 讀取歷史位置錯誤:', fetchError)
@@ -70,7 +74,7 @@ export async function POST(req) {
       return NextResponse.json({ error: '儲存失敗' }, { status: 500 })
     }
 
-    console.log(`✅ 已儲存 ${rows.length} 筆陣容紀錄`)
+    console.log(`✅ 已儲存 ${start} 後陣容`)
     return NextResponse.json({ message: '儲存成功', count: rows.length }, { status: 200 })
 
   } catch (err) {

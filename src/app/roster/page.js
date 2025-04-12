@@ -249,7 +249,10 @@ export default function RosterPage() {
       const res = await fetch('/api/saveAssigned/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assignedPositions: updatedMap }),
+        body: JSON.stringify({
+          assignedPositions: updatedMap,
+          startDate: selectedDate  // 👈 把目前畫面日期當作開始日傳給後端
+        }),
       })
   
       let data = {}
@@ -439,34 +442,57 @@ export default function RosterPage() {
         </div>
       )}
 
-      <div className="flex items-center gap-4 mb-4">
-        <button
-          onClick={() => {
-            const prev = new Date(selectedDate)
-            prev.setDate(prev.getDate() - 1)
-            setSelectedDate(prev.toISOString().slice(0, 10))
-          }}
-          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
-        >
-          ◀
-        </button>
+      <button
+        onClick={() => {
+          const today = new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })
+          const date = new Date(today).toISOString().slice(0, 10)
+          setSelectedDate(date)
+        }}
+        className="text-xs text-blue-600 underline mt-1"
+      >
+        Today
+      </button>
 
-        <span className="text-sm font-semibold text-gray-700">
-          {formatDateToLabel(selectedDate)}
-        </span>
+      <div className="flex flex-col items-center gap-2 mb-4">
+        {/* 上下箭頭＋中間顯示 */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => {
+              const prev = new Date(selectedDate)
+              prev.setDate(prev.getDate() - 1)
+              setSelectedDate(prev.toISOString().slice(0, 10))
+            }}
+            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+          >
+            ◀
+          </button>
 
-        <button
-          onClick={() => {
-            const next = new Date(selectedDate)
-            next.setDate(next.getDate() + 1)
-            setSelectedDate(next.toISOString().slice(0, 10))
-          }}
-          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
-        >
-          ▶
-        </button>
+          <span className="text-sm font-semibold text-gray-700">
+            {formatDateToLabel(selectedDate)}
+          </span>
+
+          <button
+            onClick={() => {
+              const next = new Date(selectedDate)
+              next.setDate(next.getDate() + 1)
+              setSelectedDate(next.toISOString().slice(0, 10))
+            }}
+            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+          >
+            ▶
+          </button>
+        </div>
+
+        {/* 日期選擇器 */}
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          min="2025-03-27"
+          max="2025-11-30"
+          className="text-sm border px-2 py-1 rounded"
+        />
       </div>
-
 
       <div className="mb-4">
       <label className="text-sm font-semibold">Stats Range</label>

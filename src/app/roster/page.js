@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
   const [players, setPlayers] = useState([])
@@ -528,12 +529,12 @@ export default function RosterPage() {
             onClick={() => {
               const prev = new Date(selectedDate)
               prev.setDate(prev.getDate() - 1)
-              setRosterReady(false) // 🔹 新增這行
+              setRosterReady(false)
               setSelectedDate(prev.toISOString().slice(0, 10))
             }}
             className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg"
           >
-            ◀
+            <ChevronLeft size={20} />
           </button>
 
           {/* 可點擊的日期文字 */}
@@ -548,12 +549,12 @@ export default function RosterPage() {
             onClick={() => {
               const next = new Date(selectedDate)
               next.setDate(next.getDate() + 1)
-              setRosterReady(false) 
+              setRosterReady(false)
               setSelectedDate(next.toISOString().slice(0, 10))
             }}
             className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg"
           >
-            ▶
+            <ChevronRight size={20} />
           </button>
         </div>
 

@@ -52,6 +52,11 @@ export default function RosterPage() {
     }
   }, [selectedDate]) // ✅ 新增這段 useEffect，當選擇的日期變動時觸發
   
+  useEffect(() => {
+    if (range === 'Today') {
+      applyDateRange('Today')
+    }
+  }, [selectedDate])
 
   useEffect(() => {
 

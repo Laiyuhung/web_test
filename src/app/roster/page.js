@@ -16,8 +16,9 @@ export default function RosterPage() {
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
   const [moveMessage, setMoveMessage] = useState('')
   const [positionsLoaded, setPositionsLoaded] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => {
-    const taiwanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+  const taiwanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
     return taiwanTime.toISOString().slice(0, 10)
   })
   
@@ -454,7 +455,7 @@ export default function RosterPage() {
       </button>
 
       <div className="flex flex-col items-center gap-2 mb-4">
-        {/* 上下箭頭＋中間顯示 */}
+        {/* 日期左右按鈕＋顯示文字 */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => {
@@ -462,14 +463,18 @@ export default function RosterPage() {
               prev.setDate(prev.getDate() - 1)
               setSelectedDate(prev.toISOString().slice(0, 10))
             }}
-            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg"
           >
             ◀
           </button>
 
-          <span className="text-sm font-semibold text-gray-700">
+          {/* 可點擊的日期文字 */}
+          <button
+            onClick={() => setShowDatePicker(prev => !prev)}
+            className="text-lg font-bold text-gray-800 hover:underline"
+          >
             {formatDateToLabel(selectedDate)}
-          </span>
+          </button>
 
           <button
             onClick={() => {
@@ -477,21 +482,39 @@ export default function RosterPage() {
               next.setDate(next.getDate() + 1)
               setSelectedDate(next.toISOString().slice(0, 10))
             }}
-            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg"
           >
             ▶
           </button>
         </div>
 
-        {/* 日期選擇器 */}
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          min="2025-03-27"
-          max="2025-11-30"
-          className="text-sm border px-2 py-1 rounded"
-        />
+        {/* 黑底白字的 Today 按鈕 */}
+        <button
+          onClick={() => {
+            const today = new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })
+            const date = new Date(today).toISOString().slice(0, 10)
+            setSelectedDate(date)
+            setShowDatePicker(false)
+          }}
+          className="px-4 py-1 rounded bg-black text-white text-sm hover:opacity-90"
+        >
+          Today
+        </button>
+
+        {/* 日期選擇器，點日期文字時才出現 */}
+        {showDatePicker && (
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => {
+              setSelectedDate(e.target.value)
+              setShowDatePicker(false)
+            }}
+            min="2025-03-27"
+            max="2025-11-30"
+            className="text-sm border px-2 py-1 rounded"
+          />
+        )}
       </div>
 
       <div className="mb-4">

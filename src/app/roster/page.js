@@ -47,12 +47,6 @@ export default function RosterPage() {
   }, [rosterReady])
 
   useEffect(() => {
-    if (userId && fromDate && toDate) {
-      fetchData()
-    }
-  }, [fromDate, toDate, selectedDate])
-
-  useEffect(() => {
 
     const fetchData = async () => {
       setLoading(true)

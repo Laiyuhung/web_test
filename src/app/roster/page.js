@@ -284,6 +284,11 @@ export default function RosterPage() {
     return isNaN(num) ? '.000' : num.toFixed(3).replace(/^0/, '')
   }
 
+  const formatDecimal2 = (val) => {
+    const num = parseFloat(val)
+    return isNaN(num) ? '0.00' : num.toFixed(2)
+  }
+
   const renderCell = (val) => {
     const displayVal = (val ?? 0).toString()
     const isGray = displayVal === '0' || displayVal === '0.00' || displayVal === '.000'
@@ -398,8 +403,9 @@ export default function RosterPage() {
                 {renderCell(p.BB)} 
                 {renderCell(p.QS)}
                 {renderCell(p.OUT)}
-                {renderCell(p.ERA)}
-                {renderCell(p.WHIP)}
+                {renderCell(formatDecimal2(p.ERA))}
+                {renderCell(formatDecimal2(p.WHIP))}
+
             </>
           )}
         </tr>

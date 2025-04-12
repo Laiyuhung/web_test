@@ -420,7 +420,7 @@ export default function RosterPage() {
       )}
 
       <div className="text-sm font-semibold text-gray-700 mb-4">
-        📅 {formatTaiwanDateUSFormat()}
+        {formatTaiwanDateUSFormat()}
       </div>
 
       <div className="mb-4">

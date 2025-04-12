@@ -10,6 +10,9 @@ function formatIP(outs) {
 export async function POST(req) {
   try {
     const { type, from, to, playerNames } = await req.json()
+
+    console.log('📥 Summary 傳入:', { type, from, to, playerNames })  // ✅ 新增這行
+
     if (!type || !from || !to || !Array.isArray(playerNames)) {
       return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
     }

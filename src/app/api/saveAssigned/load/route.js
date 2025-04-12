@@ -17,10 +17,16 @@ export async function GET(req) {
       return NextResponse.json({ error: '未登入或無效 user_id' }, { status: 401 })
     }
 
+    const url = new URL(req.url)
+    const queryDate = url.searchParams.get('date')  // e.g. '2025-04-13'
+
     const now = new Date()
     const taiwanOffset = 8 * 60 * 60 * 1000
     const taiwanDate = new Date(now.getTime() + taiwanOffset)
-    const date = taiwanDate.toISOString().slice(0, 10)
+    const defaultDate = taiwanDate.toISOString().slice(0, 10)
+
+    const date = queryDate || defaultDate  // 優先使用傳入值
+
 
     const { data, error } = await supabase
       .from('assigned_position_history')

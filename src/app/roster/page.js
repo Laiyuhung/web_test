@@ -16,6 +16,11 @@ export default function RosterPage() {
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
   const [moveMessage, setMoveMessage] = useState('')
   const [positionsLoaded, setPositionsLoaded] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const taiwanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+    return taiwanTime.toISOString().slice(0, 10)
+  })
+  
 
 
 
@@ -91,7 +96,7 @@ export default function RosterPage() {
     }
 
     if (userId) fetchData()
-  }, [userId, fromDate, toDate]) 
+  }, [userId, fromDate, toDate, selectedDate]) 
 
   
   const today = new Date()
@@ -220,7 +225,7 @@ export default function RosterPage() {
     console.log('📦 載入 assigned，用的 playersList:', playersList)
   
     try {
-      const res = await fetch('/api/saveAssigned/load')
+      const res = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
@@ -278,6 +283,15 @@ export default function RosterPage() {
     const day = taiwanTime.toLocaleDateString('en-US', { day: '2-digit' })       // e.g. "11"
     return `${weekday}, ${month} ${day}`
   }
+
+  const formatDateToLabel = (isoDateStr) => {
+    const date = new Date(isoDateStr + 'T00:00:00+08:00')
+    const weekday = date.toLocaleDateString('en-US', { weekday: 'short' })
+    const month = date.toLocaleDateString('en-US', { month: 'short' })
+    const day = date.toLocaleDateString('en-US', { day: '2-digit' })
+    return `${weekday}, ${month} ${day}`
+  }
+  
   
   const formatAvg = (val) => {
     const num = parseFloat(val)
@@ -425,9 +439,34 @@ export default function RosterPage() {
         </div>
       )}
 
-      <div className="text-sm font-semibold text-gray-700 mb-4">
-        {formatTaiwanDateUSFormat()}
+      <div className="flex items-center gap-4 mb-4">
+        <button
+          onClick={() => {
+            const prev = new Date(selectedDate)
+            prev.setDate(prev.getDate() - 1)
+            setSelectedDate(prev.toISOString().slice(0, 10))
+          }}
+          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+        >
+          ◀
+        </button>
+
+        <span className="text-sm font-semibold text-gray-700">
+          {formatDateToLabel(selectedDate)}
+        </span>
+
+        <button
+          onClick={() => {
+            const next = new Date(selectedDate)
+            next.setDate(next.getDate() + 1)
+            setSelectedDate(next.toISOString().slice(0, 10))
+          }}
+          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+        >
+          ▶
+        </button>
       </div>
+
 
       <div className="mb-4">
       <label className="text-sm font-semibold">Stats Range</label>

@@ -413,6 +413,10 @@ export default function RosterPage() {
         </div>
       )}
 
+      <div className="text-sm text-gray-600 mb-2">
+        📅 當前日期: {new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)}
+      </div>
+
       <div className="mb-4">
       <label className="text-sm font-semibold">Stats Range</label>
       <select
@@ -513,7 +517,7 @@ export default function RosterPage() {
                         const updated = { ...prev }
                         updated[moveTarget.Name] = posKey
                         updated[p.Name] = newPos
-                        saveAssigned(updated) // 👈 新增這行
+                        saveAssigned(updated) 
                         return updated
                       })
                     

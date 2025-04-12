@@ -12,8 +12,8 @@ export async function POST(req) {
   try {
     const { type, from, to } = await req.json()
 
-    console.log('📝 接收到參數:', { type, from, to, playerNames })
-    
+    console.log('📝 接收到參數:', { type, from, to })
+
     if (!type || !from || !to) {
       return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
     }

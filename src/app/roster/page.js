@@ -48,9 +48,11 @@ export default function RosterPage() {
 
   useEffect(() => {
     if (rosterReady) {
+      console.log('📊 觸發 fetchStatsSummary (roster ready & date):', selectedDate)
       fetchStatsSummary()
     }
-  }, [selectedDate]) // ✅ 新增這段 useEffect，當選擇的日期變動時觸發
+  }, [rosterReady, selectedDate])
+  
   
   useEffect(() => {
     if (range === 'Today') {

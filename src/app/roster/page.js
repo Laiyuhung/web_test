@@ -271,7 +271,13 @@ export default function RosterPage() {
     }
   }
   
-  
+  const formatTaiwanShortDate = () => {
+    const now = new Date(Date.now() + 8 * 60 * 60 * 1000) // 台灣時間 UTC+8
+    const weekday = now.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Taipei' }) // Thu
+    const month = now.toLocaleDateString('en-US', { month: 'short', timeZone: 'Asia/Taipei' })     // Apr
+    const day = now.toLocaleDateString('en-US', { day: '2-digit', timeZone: 'Asia/Taipei' })       // 10
+    return `${weekday}, ${month} ${day}`
+  }
   
   const formatAvg = (val) => {
     const num = parseFloat(val)
@@ -413,8 +419,8 @@ export default function RosterPage() {
         </div>
       )}
 
-      <div className="text-sm text-gray-600 mb-2">
-        📅 當前日期: {new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)}
+      <div className="text-sm font-semibold text-gray-700 mb-2">
+        {formatTaiwanShortDate()}
       </div>
 
       <div className="mb-4">

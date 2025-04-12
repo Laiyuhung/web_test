@@ -156,7 +156,19 @@ export default function RosterPage() {
 
   const renderAssignedPositionSelect = (p) => {
     const currentValue = assignedPositions[p.Name] || 'BN'
+    const todayStr = new Date().toISOString().slice(0, 10)
+    const isEditable = selectedDate >= todayStr
   
+    if (!isEditable) {
+      // 過去日期：藍字純文字（不能點）
+      return (
+        <span className="text-[#004AAD] text-sm font-bold min-w-[36px] text-center">
+          {currentValue}
+        </span>
+      )
+    }
+    
+    // 今日或未來：原本的可互動圓圈按鈕
     return (
       <button
         onClick={() => openMoveModal(p)}

@@ -17,8 +17,6 @@ export default function RosterPage() {
   const [moveMessage, setMoveMessage] = useState('')
   const [positionsLoaded, setPositionsLoaded] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
-  const [batterSummary, setBatterSummary] = useState(null)
-  const [pitcherSummary, setPitcherSummary] = useState(null)
   const [selectedDate, setSelectedDate] = useState(() => {
   const taiwanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
     return taiwanTime.toISOString().slice(0, 10)
@@ -98,43 +96,9 @@ export default function RosterPage() {
       setLoading(false)
     }
 
-    if (userId && positionsLoaded) {
-      fetchData().then(() => fetchStatsSummary())
-    }
+    if (userId) fetchData()
   }, [userId, fromDate, toDate, selectedDate]) 
 
-  const fetchStatsSummary = async () => {
-    const starterNames = players
-      .filter(p => !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
-      .map(p => p.Name)
-  
-    const res = await fetch('/api/playerStatsSummary', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'batter',
-        from: selectedDate,
-        to: selectedDate,
-        playerNames: starterNames,
-      })
-    })
-    const batter = await res.json()
-  
-    const res2 = await fetch('/api/playerStatsSummary', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'pitcher',
-        from: selectedDate,
-        to: selectedDate,
-        playerNames: starterNames,
-      })
-    })
-    const pitcher = await res2.json()
-  
-    setBatterSummary(batter)
-    setPitcherSummary(pitcher)
-  }
   
   const today = new Date()
     
@@ -577,43 +541,8 @@ export default function RosterPage() {
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
       <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
 
-      
       {positionsLoaded && (
         <div className="overflow-auto max-h-[600px]">
-
-        {batterSummary && pitcherSummary && (
-          <div className="mb-6 space-y-6 text-sm text-gray-600">
-
-            {/* 🟦 Batters Summary */}
-            <div>
-              <h3 className="font-semibold text-[13px] text-[#0155A0] mb-1">Batters Total</h3>
-              <div className="grid grid-cols-13 gap-x-1 px-1">
-                {['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((label, i) => (
-                  <div key={i} className="text-[11px] text-gray-500 font-medium text-center">{label}</div>
-                ))}
-                {['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, i) => (
-                  <div key={i} className="text-center text-[#0155A0] font-bold">{batterSummary[key]}</div>
-                ))}
-              </div>
-            </div>
-
-            {/* 🟦 Pitchers Summary */}
-            <div>
-              <h3 className="font-semibold text-[13px] text-[#0155A0] mb-1">Pitchers Total</h3>
-              <div className="grid grid-cols-13 gap-x-1 px-1">
-                {['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((label, i) => (
-                  <div key={i} className="text-[11px] text-gray-500 font-medium text-center">{label}</div>
-                ))}
-                {['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, i) => (
-                  <div key={i} className="text-center text-[#0155A0] font-bold">{pitcherSummary[key]}</div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-
-
           <section className="mb-8">
               <h2 className="text-lg font-semibold mb-2">Batters</h2>
 

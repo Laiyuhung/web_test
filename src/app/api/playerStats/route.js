@@ -11,6 +11,9 @@ function formatIP(outs) {
 export async function POST(req) {
   try {
     const { type, from, to } = await req.json()
+
+    console.log('📝 接收到參數:', { type, from, to, playerNames })
+    
     if (!type || !from || !to) {
       return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
     }

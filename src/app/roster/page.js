@@ -47,6 +47,13 @@ export default function RosterPage() {
   }, [rosterReady])
 
   useEffect(() => {
+    if (rosterReady) {
+      fetchStatsSummary()
+    }
+  }, [selectedDate]) // ✅ 新增這段 useEffect，當選擇的日期變動時觸發
+  
+
+  useEffect(() => {
 
     const fetchData = async () => {
       setLoading(true)
@@ -107,7 +114,7 @@ export default function RosterPage() {
     }
 
     if (userId) fetchData()
-  }, [userId, fromDate, toDate, selectedDate]) 
+  }, [userId, fromDate, toDate]) 
 
   const fetchStatsSummary = async () => {
     const starterNames = players

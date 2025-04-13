@@ -104,10 +104,10 @@ export async function POST(req) {
 
       const AB = batterSum.AB || 1
       const IP = pitcherSum.OUT / 3 || 1
-      const AVG = (batterSum.H / AB).toFixed(3).replace(/^0/, '.')
+      const AVG = batterSum.H / AB
       const OBP = (AB + batterSum.BB) ? ((batterSum.H + batterSum.BB) / (AB + batterSum.BB)) : 0
       const SLG = batterSum.TB / AB
-      const OPS = (OBP + SLG).toFixed(3).replace(/^0/, '.')
+      const OPS = OBP + SLG
       const ERA = (9 * pitcherSum.ER / IP).toFixed(2)
       const WHIP = ((pitcherSum.H + pitcherSum.BB) / IP).toFixed(2)
 
@@ -133,7 +133,8 @@ export async function POST(req) {
     for (const stat of allStats) {
       const isLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP', 'GIDP', 'K'].includes(stat)
       const values = result.map(r => {
-        const val = r.batters[stat] ?? r.pitchers[stat]
+        let val = r.batters[stat] ?? r.pitchers[stat]
+        if (isNaN(val)) val = 0
         return { team: r.team_name, value: parseFloat(val) }
       })
 

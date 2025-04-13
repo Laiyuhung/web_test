@@ -32,16 +32,6 @@ export default function MatchupTable() {
     fetchData()
   }, [week])
 
-  useEffect(() => {
-    if (data.length > 0) {
-      console.log('🐞 檢查 AVG & OPS 格式：', data.map(d => ({
-        team: d.team_name,
-        AVG: d.batters?.AVG,
-        OPS: d.batters?.OPS
-      })))
-    }
-  }, [data])
-
   const renderScoreTable = () => (
     <div className="mb-6">
       <h2 className="text-base font-bold text-[#0155A0] mb-2">📊 Fantasy Points</h2>
@@ -61,10 +51,11 @@ export default function MatchupTable() {
               <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
               {pointKeys.map((key) => (
                 <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                  {d.fantasyPoints?.[key]?.toFixed(2) || '0.00'}
+                    {d.fantasyPoints?.[key] ?? '0.0'}
                 </td>
+              
               ))}
-              <td className="border px-3 py-2 text-center font-bold">{d.fantasyPoints?.Total || '0.00'}</td>
+              <td className="border px-3 py-2 text-center font-bold">{d.fantasyPoints?.Total || '0.0'}</td>
             </tr>
           ))}
         </tbody>

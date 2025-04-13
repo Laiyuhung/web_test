@@ -104,10 +104,14 @@ export async function POST(req) {
 
       const AB = batterSum.AB || 1
       const IP = pitcherSum.OUT / 3 || 1
-      const AVG = (batterSum.H / AB).toFixed(3).replace(/^0/, '.')
+
+      const rawAVG = batterSum.H / AB
+      const AVG = isNaN(rawAVG) ? '.000' : rawAVG.toFixed(3).replace(/^0/, '.')
       const OBP = (AB + batterSum.BB) ? ((batterSum.H + batterSum.BB) / (AB + batterSum.BB)) : 0
       const SLG = batterSum.TB / AB
-      const OPS = (OBP + SLG).toFixed(3).replace(/^0/, '.')
+      const rawOPS = OBP + SLG
+      const OPS = isNaN(rawOPS) ? '.000' : rawOPS.toFixed(3).replace(/^0/, '.')
+
       const ERA = (9 * pitcherSum.ER / IP).toFixed(2)
       const WHIP = ((pitcherSum.H + pitcherSum.BB) / IP).toFixed(2)
 

@@ -125,11 +125,13 @@ export default function RosterPage() {
   }, [userId, fromDate, toDate]) 
 
   const fetchStatsSummary = async () => {
-    const starterNames = players
-      .filter(p => !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+    const batterNames = players
+      .filter(p => p.B_or_P === 'Batter' && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
       .map(p => p.Name)
-  
-    if (starterNames.length === 0) return
+
+    const pitcherNames = players
+      .filter(p => p.B_or_P === 'Pitcher' && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+      .map(p => p.Name)
   
     try {
       const [batterRes, pitcherRes] = await Promise.all([
@@ -140,7 +142,7 @@ export default function RosterPage() {
             type: 'batter',
             from: selectedDate,
             to: selectedDate,
-            playerNames: starterNames,
+            playerNames: batterNames,
           })
         }),
         fetch('/api/playerStatsSummary', {
@@ -150,7 +152,7 @@ export default function RosterPage() {
             type: 'pitcher',
             from: selectedDate,
             to: selectedDate,
-            playerNames: starterNames,
+            playerNames: pitcherNames,
           })
         })
       ])

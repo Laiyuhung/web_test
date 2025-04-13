@@ -34,30 +34,37 @@ export default function MatchupTable() {
     const fetchData = async () => {
       setLoading(true)
       try {
+        // 撈該週的數據
         const res = await fetch('/api/weekly_stats_by_manager', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ week })
         })
         const result = await res.json()
-
+  
         // 排名處理：依照 fantasyPoints.Total 排序
         result.sort((a, b) => parseFloat(b.fantasyPoints?.Total || '0') - parseFloat(a.fantasyPoints?.Total || '0'))
-
-        // 加上排名名次（rank）
-        result.forEach((r, i) => {
-        r.rank = i + 1
-        })
-
-        console.log('📦 回傳資料:', result)
+        result.forEach((r, i) => r.rank = i + 1)
         setData(result)
+  
+        // 🔥 加這段：撈該週的日期區間
+        const rangeRes = await fetch('/api/getCurrentWeek', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ week })
+        })
+        const { start, end } = await rangeRes.json()
+        setDateRange(`${start} ~ ${end}`)
+  
       } catch (err) {
-        console.error('❌ fetch weekSummary 錯誤:', err)
+        console.error('❌ fetch weekSummary 或日期區間錯誤:', err)
       }
       setLoading(false)
     }
+  
     fetchData()
   }, [week])
+  
 
   const renderScoreTable = () => (
     <div className="mb-6">

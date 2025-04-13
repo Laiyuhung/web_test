@@ -59,8 +59,11 @@ export async function POST(req) {
       .gte('game_date', start)
       .lte('game_date', end)
 
+    const managerIds = [1, 2, 3, 4]
     const result = []
-    for (const [managerId, players] of Object.entries(playerMap)) {
+
+    for (const managerId of managerIds) {
+      const players = playerMap[managerId] || {}
       const batterSum = {
         AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0,
         K: 0, BB: 0, GIDP: 0, XBH: 0, TB: 0, AVG: 0, OPS: 0
@@ -123,7 +126,6 @@ export async function POST(req) {
       batterSum.AVG = batterSum.AB ? (batterSum.H / batterSum.AB).toFixed(3) : '.000'
       batterSum.OPS = (obp + slg).toFixed(3)
 
-      // 🔹 加入 managers 表格中的 team_name
       const { data: managerData } = await supabase
         .from('managers')
         .select('team_name')

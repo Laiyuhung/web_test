@@ -22,6 +22,15 @@ export default function MatchupTable() {
           body: JSON.stringify({ week })
         })
         const result = await res.json()
+
+        // 排名處理：依照 fantasyPoints.Total 排序
+        result.sort((a, b) => parseFloat(b.fantasyPoints?.Total || '0') - parseFloat(a.fantasyPoints?.Total || '0'))
+
+        // 加上排名名次（rank）
+        result.forEach((r, i) => {
+        r.rank = i + 1
+        })
+
         console.log('📦 回傳資料:', result)
         setData(result)
       } catch (err) {
@@ -34,30 +43,31 @@ export default function MatchupTable() {
 
   const renderScoreTable = () => (
     <div className="mb-6">
-      <h2 className="text-base font-bold text-[#0155A0] mb-2">📊 Fantasy Points</h2>
+      <h2 className="text-base font-bold text-[#0155A0] mb-2">Fantasy Points</h2>
       <table className="table-auto border w-full text-sm">
         <thead>
-          <tr className="bg-gray-200">
-            <th className="border px-3 py-2 text-left">Team</th>
-            {pointKeys.map((key) => (
-              <th key={key} className="border px-3 py-2 text-center whitespace-nowrap">{key}</th>
-            ))}
-            <th className="border px-3 py-2 text-center">Total</th>
-          </tr>
+            <tr className="bg-gray-200">
+                <th className="border px-3 py-2 text-center">Rank</th>
+                <th className="border px-3 py-2 text-left">Team</th>
+                {pointKeys.map((key) => (
+                <th key={key} className="border px-3 py-2 text-center whitespace-nowrap">{key}</th>
+                ))}
+                <th className="border px-3 py-2 text-center">Total</th>
+            </tr>
         </thead>
         <tbody>
-          {data.map((d) => (
-            <tr key={d.team_name} className="text-sm">
-              <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
-              {pointKeys.map((key) => (
-                <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                    {d.fantasyPoints?.[key] ?? '0.0'}
-                </td>
-              
-              ))}
-              <td className="border px-3 py-2 text-center font-bold">{d.fantasyPoints?.Total || '0.0'}</td>
-            </tr>
-          ))}
+            {data.map((d) => (
+                <tr key={d.team_name} className="text-sm">
+                <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">{d.rank}</td>
+                <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
+                {pointKeys.map((key) => (
+                    <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
+                        {d.fantasyPoints?.[key] ?? '0.0'}
+                    </td>
+                ))}
+                <td className="border px-3 py-2 text-center font-bold">{d.fantasyPoints?.Total || '0.0'}</td>
+                </tr>
+            ))}
         </tbody>
       </table>
     </div>
@@ -68,25 +78,28 @@ export default function MatchupTable() {
       <h2 className="text-base font-bold text-[#0155A0] mb-2">{title} Total</h2>
       <table className="table-auto border w-full text-sm">
         <thead>
-          <tr className="bg-gray-200">
-            <th className="border px-3 py-2 text-left">Team</th>
-            {keys.map((key) => (
-              <th key={key} className="border px-3 py-2 text-center whitespace-nowrap">{key}</th>
-            ))}
-          </tr>
+            <tr className="bg-gray-200">
+                <th className="border px-3 py-2 text-center">Rank</th>
+                <th className="border px-3 py-2 text-left">Team</th>
+                {keys.map((key) => (
+                <th key={key} className="border px-3 py-2 text-center whitespace-nowrap">{key}</th>
+                ))}
+            </tr>
         </thead>
         <tbody>
-          {data.map((d) => (
-            <tr key={d.team_name} className="text-sm">
-              <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
-              {keys.map((key) => (
-                <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                  {d[type][key]}
-                </td>
-              ))}
-            </tr>
-          ))}
+            {data.map((d) => (
+                <tr key={d.team_name} className="text-sm">
+                <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">{d.rank}</td>
+                <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
+                {keys.map((key) => (
+                    <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
+                    {d[type][key]}
+                    </td>
+                ))}
+                </tr>
+            ))}
         </tbody>
+
       </table>
     </div>
   )

@@ -51,10 +51,10 @@ export default function MatchupTable() {
               <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
               {pointKeys.map((key) => (
                 <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                  {d.fantasyPoints?.detail?.[key]?.toFixed(2) || '0.00'}
+                  {d.fantasyPoints?.[key]?.toFixed(2) || '0.00'}
                 </td>
               ))}
-              <td className="border px-3 py-2 text-center font-bold">{d.fantasyPoints?.total?.toFixed(2) || '0.00'}</td>
+              <td className="border px-3 py-2 text-center font-bold">{d.fantasyPoints?.Total || '0.00'}</td>
             </tr>
           ))}
         </tbody>
@@ -80,7 +80,7 @@ export default function MatchupTable() {
               <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
               {keys.map((key) => (
                 <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                  {d[type][key] ?? '0'}
+                  {d[type][key]}
                 </td>
               ))}
             </tr>

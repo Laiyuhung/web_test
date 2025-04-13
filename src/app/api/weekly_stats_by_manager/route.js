@@ -59,18 +59,19 @@ export async function POST(req) {
       .gte('game_date', start)
       .lte('game_date', end)
 
-    const managerIds = [1, 2, 3, 4]
     const result = []
+    const allManagerIds = [1, 2, 3, 4]
 
-    for (const managerId of managerIds) {
+    for (const managerId of allManagerIds) {
       const players = playerMap[managerId] || {}
+
       const batterSum = {
         AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0,
-        K: 0, BB: 0, GIDP: 0, XBH: 0, TB: 0, AVG: 0, OPS: 0
+        K: 0, BB: 0, GIDP: 0, XBH: 0, TB: 0, AVG: '.000', OPS: '0.000'
       }
       const pitcherSum = {
         OUT: 0, W: 0, L: 0, HLD: 0, SV: 0,
-        H: 0, ER: 0, K: 0, BB: 0, QS: 0, ERA: 0, WHIP: 0
+        H: 0, ER: 0, K: 0, BB: 0, QS: 0, ERA: '0.00', WHIP: '0.00', IP: '0.0'
       }
 
       for (const [name, dates] of Object.entries(players)) {
@@ -91,7 +92,7 @@ export async function POST(req) {
               batterSum.BB += r.walks || 0
               batterSum.GIDP += r.ground_into_double_play || 0
               batterSum.XBH += (r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0)
-              batterSum.TB += (r.singles || 0) + (r.doubles || 0)*2 + (r.triples || 0)*3 + (r.home_runs || 0)*4
+              batterSum.TB += (r.singles || 0) + (r.doubles || 0) * 2 + (r.triples || 0) * 3 + (r.home_runs || 0) * 4
             }
           }
 
@@ -139,6 +140,42 @@ export async function POST(req) {
         pitchers: pitcherSum
       })
     }
+
+    // ✅ Fantasy Point 計算
+    const allStats = [
+      'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS',
+      'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'
+    ]
+
+    for (const stat of allStats) {
+      const isLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(stat)
+      const values = result.map(r => {
+        const value = r.batters[stat] ?? r.pitchers[stat]
+        return { team: r.team_name, value: parseFloat(value), raw: value }
+      })
+
+      values.sort((a, b) => isLowerBetter ? a.value - b.value : b.value - a.value)
+
+      const scores = {}
+      let i = 0
+      while (i < values.length) {
+        let j = i
+        while (j + 1 < values.length && values[j + 1].value === values[i].value) j++
+        const total = [...Array(j - i + 1)].reduce((sum, _, k) => sum + (4 - i - k), 0)
+        const avgScore = total / (j - i + 1)
+        for (let k = i; k <= j; k++) scores[values[k].team] = avgScore
+        i = j + 1
+      }
+
+      result.forEach(r => {
+        if (!r.fantasyPoints) r.fantasyPoints = {}
+        r.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(2) || '0')
+      })
+    }
+
+    result.forEach(r => {
+      r.fantasyPoints.Total = Object.values(r.fantasyPoints).reduce((a, b) => a + b, 0).toFixed(2)
+    })
 
     return NextResponse.json(result)
   } catch (err) {

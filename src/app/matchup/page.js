@@ -31,9 +31,9 @@ export default function MatchupTable() {
 
   const renderStatRow = (label, key, isPitcher = false) => (
     <tr className="text-sm">
-      <td className="font-bold border px-2 py-1 text-left bg-gray-100">{label}</td>
+      <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{label}</td>
       {data.map((d) => (
-        <td key={d.manager_id} className="border px-2 py-1 text-center text-[#0155A0] font-semibold">
+        <td key={d.manager_id} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
           {isPitcher && key === 'IP' ? d.pitchers[key] : d[isPitcher ? 'pitchers' : 'batters'][key] ?? 0}
         </td>
       ))}
@@ -42,14 +42,14 @@ export default function MatchupTable() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-6">Matchup Summary</h1>
+      <h1 className="text-2xl font-bold mb-6">Matchup Summary</h1>
 
-      <div className="mb-4 flex gap-4 items-center">
+      <div className="mb-6 flex gap-4 items-center">
         <label className="text-sm font-semibold">Select Week:</label>
         <select
           value={week}
           onChange={(e) => setWeek(e.target.value)}
-          className="px-2 py-1 border rounded text-sm"
+          className="px-3 py-2 border rounded text-sm"
         >
           {weeks.map(w => <option key={w}>{w}</option>)}
         </select>
@@ -66,9 +66,9 @@ export default function MatchupTable() {
             <table className="table-auto border w-full text-sm">
               <thead>
                 <tr className="bg-gray-200">
-                  <th className="border px-2 py-1">Stat</th>
+                  <th className="border px-3 py-2 text-left">Stat</th>
                   {data.map((d) => (
-                    <th key={d.manager_id} className="border px-2 py-1">Manager #{d.manager_id}</th>
+                    <th key={d.manager_id} className="border px-3 py-2 text-center">Manager #{d.manager_id}</th>
                   ))}
                 </tr>
               </thead>
@@ -96,9 +96,9 @@ export default function MatchupTable() {
             <table className="table-auto border w-full text-sm">
               <thead>
                 <tr className="bg-gray-200">
-                  <th className="border px-2 py-1">Stat</th>
+                  <th className="border px-3 py-2 text-left">Stat</th>
                   {data.map((d) => (
-                    <th key={d.manager_id} className="border px-2 py-1">Manager #{d.manager_id}</th>
+                    <th key={d.manager_id} className="border px-3 py-2 text-center">Manager #{d.manager_id}</th>
                   ))}
                 </tr>
               </thead>

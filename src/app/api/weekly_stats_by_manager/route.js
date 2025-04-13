@@ -80,6 +80,8 @@ export async function POST(req) {
 
         for (const date of dates) {
           if (isBatter) {
+            console.log('[CHECK] 比對名稱:', name, '比對日期:', date)
+            console.log('[CHECK] batStats 有幾筆:', batStats.length, '→', batStats.map(r => [r.name, r.game_date]))
             const rows = batStats.filter(r => r.name === name && r.game_date === date)
             for (const r of rows) {
               batterSum.AB += r.at_bats || 0
@@ -97,6 +99,8 @@ export async function POST(req) {
           }
 
           if (isPitcher) {
+            console.log('[CHECK - 投手] 比對名稱:', name, '比對日期:', date)
+            console.log('[CHECK - 投手] pitStats 有幾筆:', pitStats.length, '→', pitStats.map(r => [r.name, r.game_date]))
             const rows = pitStats.filter(r => r.name === name && r.game_date === date)
             for (const r of rows) {
               const rawIP = r.innings_pitched || 0
@@ -144,11 +148,11 @@ export async function POST(req) {
     // ✅ Fantasy Point 計算
     const allStats = [
       'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS',
-      'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'
+      'W', 'L', 'HLD', 'SV', 'H(P)', 'ER', 'K(P)', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'
     ]
 
     for (const stat of allStats) {
-      const isLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(stat)
+      const isLowerBetter = ['K', 'GIDP', 'L', 'H(P)', 'ER', 'BB', 'ERA', 'WHIP'].includes(stat)
       const values = result.map(r => {
         const value = r.batters[stat] ?? r.pitchers[stat]
         return { team: r.team_name, value: parseFloat(value), raw: value }

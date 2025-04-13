@@ -32,13 +32,6 @@ export default function MatchupTable() {
     fetchData()
   }, [week])
 
-  const formatStat = (key, val) => {
-    const num = parseFloat(val)
-    if (['AVG', 'OPS'].includes(key)) return isNaN(num) ? '.000' : num.toFixed(3).replace(/^0/, '.')
-    if (['ERA', 'WHIP'].includes(key)) return isNaN(num) ? '0.00' : num.toFixed(2)
-    return val
-  }
-
   const renderScoreTable = () => (
     <div className="mb-6">
       <h2 className="text-base font-bold text-[#0155A0] mb-2">📊 Fantasy Points</h2>
@@ -87,7 +80,7 @@ export default function MatchupTable() {
               <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
               {keys.map((key) => (
                 <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                  {formatStat(key, d[type][key])}
+                  {d[type][key] ?? '0'}
                 </td>
               ))}
             </tr>

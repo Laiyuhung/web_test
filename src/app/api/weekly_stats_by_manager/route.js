@@ -104,10 +104,10 @@ export async function POST(req) {
 
       const AB = batterSum.AB || 1
       const IP = pitcherSum.OUT / 3 || 1
-      const AVG = batterSum.H / AB
+      const AVG = (batterSum.H / AB).toFixed(3).replace(/^0/, '.')
       const OBP = (AB + batterSum.BB) ? ((batterSum.H + batterSum.BB) / (AB + batterSum.BB)) : 0
       const SLG = batterSum.TB / AB
-      const OPS = OBP + SLG
+      const OPS = (OBP + SLG).toFixed(3).replace(/^0/, '.')
       const ERA = (9 * pitcherSum.ER / IP).toFixed(2)
       const WHIP = ((pitcherSum.H + pitcherSum.BB) / IP).toFixed(2)
 
@@ -130,13 +130,17 @@ export async function POST(req) {
       'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'
     ]
 
+    const batterLowerBetter = ['K', 'GIDP']
+    const pitcherLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
+
     for (const stat of allStats) {
-      const isLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP', 'GIDP', 'K'].includes(stat)
       const values = result.map(r => {
-        let val = r.batters[stat] ?? r.pitchers[stat]
-        if (isNaN(val)) val = 0
-        return { team: r.team_name, value: parseFloat(val) }
+        const val = r.batters[stat] ?? r.pitchers[stat]
+        return { team: r.team_name, value: isNaN(val) ? 0 : parseFloat(val) }
       })
+
+      const isBatter = stat in result[0].batters
+      const isLowerBetter = isBatter ? batterLowerBetter.includes(stat) : pitcherLowerBetter.includes(stat)
 
       values.sort((a, b) => isLowerBetter ? a.value - b.value : b.value - a.value)
 
@@ -151,19 +155,19 @@ export async function POST(req) {
         const avg = total / (j - i + 1)
         for (let k = i; k <= j; k++) {
           scores[values[k].team] = avg
-          console.log(`🏅 ${stat} ➜ ${values[k].team} 獲得 ${avg.toFixed(2)} 分（原始值: ${values[k].value}）`)
+          console.log(`🏅 ${stat} ➜ ${values[k].team} 獲得 ${avg.toFixed(1)} 分（原始值: ${values[k].value}）`)
         }
         i = j + 1
       }
 
       result.forEach(r => {
         if (!r.fantasyPoints) r.fantasyPoints = {}
-        r.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(2) || '0.00')
+        r.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(1) || '0.00')
       })
     }
 
     result.forEach(r => {
-      r.fantasyPoints.Total = Object.values(r.fantasyPoints).reduce((a, b) => a + b, 0).toFixed(2)
+      r.fantasyPoints.Total = Object.values(r.fantasyPoints).reduce((a, b) => a + b, 0).toFixed(1)
     })
 
     return NextResponse.json(result)

@@ -29,15 +29,37 @@ export default function MatchupTable() {
     fetchData()
   }, [week])
 
-  const renderStatRow = (label, key, isPitcher = false) => (
-    <tr className="text-sm">
-      <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{label}</td>
-      {data.map((d) => (
-        <td key={d.manager_id} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-          {isPitcher && key === 'IP' ? d.pitchers[key] : d[isPitcher ? 'pitchers' : 'batters'][key] ?? 0}
-        </td>
-      ))}
-    </tr>
+  const batterKeys = ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
+  const pitcherKeys = ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
+
+  const renderStatTable = (title, keys, type) => (
+    <div>
+      <h2 className="text-base font-bold text-[#0155A0] mb-2">{title} Total</h2>
+      <table className="table-auto border w-full text-sm">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="border px-3 py-2 text-left">Stat</th>
+            {keys.map((key) => (
+              <th key={key} className="border px-3 py-2 text-center whitespace-nowrap">{key}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((d) => (
+            <tr key={d.manager_id} className="text-sm">
+              <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">Manager #{d.manager_id}</td>
+              {keys.map((key) => (
+                <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
+                  {type === 'pitchers' && key === 'IP'
+                    ? d.pitchers[key]
+                    : d[type][key] ?? 0}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 
   return (
@@ -59,67 +81,8 @@ export default function MatchupTable() {
 
       {data.length > 0 && (
         <div className="overflow-x-auto space-y-12">
-
-          {/* 🟦 Batters Table */}
-          <div>
-            <h2 className="text-base font-bold text-[#0155A0] mb-2">Batters Total</h2>
-            <table className="table-auto border w-full text-sm">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="border px-3 py-2 text-left">Stat</th>
-                  {data.map((d) => (
-                    <th key={d.manager_id} className="border px-3 py-2 text-center">Manager #{d.manager_id}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {renderStatRow('AB', 'AB')}
-                {renderStatRow('R', 'R')}
-                {renderStatRow('H', 'H')}
-                {renderStatRow('HR', 'HR')}
-                {renderStatRow('RBI', 'RBI')}
-                {renderStatRow('SB', 'SB')}
-                {renderStatRow('K', 'K')}
-                {renderStatRow('BB', 'BB')}
-                {renderStatRow('GIDP', 'GIDP')}
-                {renderStatRow('XBH', 'XBH')}
-                {renderStatRow('TB', 'TB')}
-                {renderStatRow('AVG', 'AVG')}
-                {renderStatRow('OPS', 'OPS')}
-              </tbody>
-            </table>
-          </div>
-
-          {/* 🟦 Pitchers Table */}
-          <div>
-            <h2 className="text-base font-bold text-[#0155A0] mb-2">Pitchers Total</h2>
-            <table className="table-auto border w-full text-sm">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="border px-3 py-2 text-left">Stat</th>
-                  {data.map((d) => (
-                    <th key={d.manager_id} className="border px-3 py-2 text-center">Manager #{d.manager_id}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {renderStatRow('IP', 'IP', true)}
-                {renderStatRow('W', 'W', true)}
-                {renderStatRow('L', 'L', true)}
-                {renderStatRow('HLD', 'HLD', true)}
-                {renderStatRow('SV', 'SV', true)}
-                {renderStatRow('H', 'H', true)}
-                {renderStatRow('ER', 'ER', true)}
-                {renderStatRow('K', 'K', true)}
-                {renderStatRow('BB', 'BB', true)}
-                {renderStatRow('QS', 'QS', true)}
-                {renderStatRow('OUT', 'OUT', true)}
-                {renderStatRow('ERA', 'ERA', true)}
-                {renderStatRow('WHIP', 'WHIP', true)}
-              </tbody>
-            </table>
-          </div>
-
+          {renderStatTable('Batters', batterKeys, 'batters')}
+          {renderStatTable('Pitchers', pitcherKeys, 'pitchers')}
         </div>
       )}
     </div>

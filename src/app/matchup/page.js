@@ -1,14 +1,17 @@
+// MatchupTable.js
 'use client'
 
 import { useEffect, useState } from 'react'
 
-export default function MatchupPage() {
+export default function MatchupTable() {
   const [week, setWeek] = useState('W1')
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
-  const [selectedManager, setSelectedManager] = useState('All')
 
-  const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9', 'W10', 'W11', 'W12', 'W13', 'W14', 'W15', 'W16', 'W17', 'W18']
+  const weeks = [
+    'W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9',
+    'W10', 'W11', 'W12', 'W13', 'W14', 'W15', 'W16', 'W17', 'W18'
+  ]
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,92 +23,75 @@ export default function MatchupPage() {
           body: JSON.stringify({ week })
         })
         const result = await res.json()
-        console.log('✅ API 回傳資料:', result)
         setData(result)
       } catch (err) {
-        console.error('❌ fetch weekly_stats_by_manager 錯誤:', err)
+        console.error('❌ Fetch Error:', err)
       }
       setLoading(false)
     }
-
     fetchData()
   }, [week])
 
-  const renderBatters = (bat) => (
-    <div className="text-sm text-gray-700">
-      <div className="grid grid-cols-13 gap-2 mb-1">
-        {['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key) => (
-          <div key={key} className="font-bold text-[#0155A0] text-center">{bat[key]}</div>
-        ))}
-      </div>
-    </div>
-  )
-
-  const renderPitchers = (pit) => (
-    <div className="text-sm text-gray-700">
-      <div className="grid grid-cols-13 gap-2">
-        {['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key) => (
-          <div key={key} className="font-bold text-[#0155A0] text-center">{pit[key]}</div>
-        ))}
-      </div>
-    </div>
-  )
-
-  const filteredData = selectedManager === 'All'
-    ? data
-    : data.filter(d => d.manager_id.toString() === selectedManager)
-
-  console.log('🔎 篩選後資料:', filteredData)
-
-  const uniqueManagers = [...new Set(data.map(d => d.manager_id.toString()))]
+  const battingKeys = ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
+  const pitchingKeys = ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Matchup Summary</h1>
+      <h1 className="text-2xl font-bold mb-4">Matchup Summary</h1>
 
-      <div className="flex gap-4 mb-4">
-        <div>
-          <label className="font-semibold text-sm">Select Week:</label>
-          <select
-            value={week}
-            onChange={(e) => setWeek(e.target.value)}
-            className="ml-2 px-3 py-1 border rounded"
-          >
-            {weeks.map((w) => (
-              <option key={w} value={w}>{w}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="font-semibold text-sm">Select Manager:</label>
-          <select
-            value={selectedManager}
-            onChange={(e) => setSelectedManager(e.target.value)}
-            className="ml-2 px-3 py-1 border rounded"
-          >
-            <option value="All">All</option>
-            {uniqueManagers.map(mid => (
-              <option key={mid} value={mid}>Manager #{mid}</option>
-            ))}
-          </select>
-        </div>
+      <div className="mb-4 flex items-center gap-3">
+        <label className="font-semibold">Select Week:</label>
+        <select
+          value={week}
+          onChange={e => setWeek(e.target.value)}
+          className="border px-2 py-1 rounded"
+        >
+          {weeks.map(w => <option key={w} value={w}>{w}</option>)}
+        </select>
       </div>
 
-      {loading && <div className="text-blue-600 font-semibold">Loading...</div>}
+      {loading && <p>Loading...</p>}
 
-      <div className="space-y-6">
-        {filteredData.map((d) => (
-          <div key={d.manager_id} className="border rounded p-4 bg-white shadow">
-            <h2 className="font-bold text-lg mb-2">Manager #{d.manager_id}</h2>
+      {/* 🟦 Batting 表格 */}
+      <h2 className="text-xl font-bold mt-8 mb-2">Batters Total</h2>
+      <div className="overflow-x-auto">
+        <table className="table-auto w-full text-sm text-center border">
+          <thead className="bg-gray-200">
+            <tr>
+              <th>Manager</th>
+              {battingKeys.map(k => <th key={k}>{k}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((d, idx) => (
+              <tr key={idx} className="border-t">
+                <td className="font-bold text-left px-2">#{d.manager_id}</td>
+                {battingKeys.map(k => <td key={k}>{d.batters[k]}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-            <h3 className="text-sm font-semibold text-gray-600 mb-1">Batters</h3>
-            {renderBatters(d.batters)}
-
-            <h3 className="text-sm font-semibold text-gray-600 mt-4 mb-1">Pitchers</h3>
-            {renderPitchers(d.pitchers)}
-          </div>
-        ))}
+      {/* 🟦 Pitching 表格 */}
+      <h2 className="text-xl font-bold mt-8 mb-2">Pitchers Total</h2>
+      <div className="overflow-x-auto">
+        <table className="table-auto w-full text-sm text-center border">
+          <thead className="bg-gray-200">
+            <tr>
+              <th>Manager</th>
+              {pitchingKeys.map(k => <th key={k}>{k}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((d, idx) => (
+              <tr key={idx} className="border-t">
+                <td className="font-bold text-left px-2">#{d.manager_id}</td>
+                {pitchingKeys.map(k => <td key={k}>{d.pitchers[k]}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )

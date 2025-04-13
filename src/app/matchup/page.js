@@ -32,6 +32,16 @@ export default function MatchupTable() {
     fetchData()
   }, [week])
 
+  useEffect(() => {
+    if (data.length > 0) {
+      console.log('🐞 檢查 AVG & OPS 格式：', data.map(d => ({
+        team: d.team_name,
+        AVG: d.batters?.AVG,
+        OPS: d.batters?.OPS
+      })))
+    }
+  }, [data])
+
   const renderScoreTable = () => (
     <div className="mb-6">
       <h2 className="text-base font-bold text-[#0155A0] mb-2">📊 Fantasy Points</h2>

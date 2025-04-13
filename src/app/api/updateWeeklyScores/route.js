@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import supabase from '@/lib/supabase'
 
+export async function GET(req) {
+    return await POST(req)
+  }
+  
 export async function POST() {
   // 取得今天日期（yyyy-mm-dd）
   const today = new Date().toISOString().split('T')[0]

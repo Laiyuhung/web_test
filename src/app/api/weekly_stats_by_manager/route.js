@@ -148,7 +148,10 @@ export async function POST(req) {
         while (j + 1 < values.length && values[j + 1].value === values[i].value) j++
         const total = [...Array(j - i + 1)].reduce((sum, _, k) => sum + (4 - i - k), 0)
         const avg = total / (j - i + 1)
-        for (let k = i; k <= j; k++) scores[values[k].team] = avg
+        for (let k = i; k <= j; k++) {
+          scores[values[k].team] = avg
+          console.log(`🏅 ${stat} ➜ ${values[k].team} 獲得 ${avg.toFixed(2)} 分（原始值: ${values[k].value}）`)
+        }
         i = j + 1
       }
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 export default function MatchupTable() {
   const [week, setWeek] = useState('W1')
+  const [dateRange, setDateRange] = useState('')  // 用來顯示日期區間
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const weeks = Array.from({ length: 18 }, (_, i) => `W${i + 1}`)
@@ -11,6 +12,23 @@ export default function MatchupTable() {
   const batterKeys = ['R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
   const pitcherKeys = ['W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
   const pointKeys = [...batterKeys, ...pitcherKeys]
+  
+
+
+  useEffect(() => {
+    const fetchDefaultWeek = async () => {
+      try {
+        const res = await fetch('/api/getCurrentWeek')
+        if (!res.ok) return
+        const { week, start, end } = await res.json()
+        setWeek(week)
+        setDateRange(`${start} ~ ${end}`)
+      } catch (err) {
+        console.error('❌ 取得本週週次失敗:', err)
+      }
+    }
+    fetchDefaultWeek()
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,7 +128,7 @@ export default function MatchupTable() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Matchup Summary</h1>
+      <h1 className="text-2xl font-bold mb-6">MATCHUP</h1>
 
       <div className="mb-6 flex gap-4 items-center">
         <label className="text-sm font-semibold">Select Week:</label>
@@ -121,6 +139,10 @@ export default function MatchupTable() {
         >
           {weeks.map(w => <option key={w}>{w}</option>)}
         </select>
+
+        {dateRange && (
+            <p className="mt-1 text-sm text-gray-500">本週賽事日期：{dateRange}</p>
+        )}
       </div>
 
       {loading && <div className="text-blue-600 font-semibold">Loading...</div>}

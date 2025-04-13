@@ -44,6 +44,7 @@ export default function MatchupTable() {
   const renderScoreTable = () => (
     <div className="mb-6">
       <h2 className="text-base font-bold text-[#0155A0] mb-2">Fantasy Points</h2>
+      <div className="overflow-x-auto">
       <table className="table-auto border w-full text-sm">
         <thead>
             <tr className="bg-gray-200">
@@ -70,12 +71,14 @@ export default function MatchupTable() {
             ))}
         </tbody>
       </table>
+      </div>
     </div>
   )
 
   const renderStatTable = (title, keys, type) => (
     <div>
       <h2 className="text-base font-bold text-[#0155A0] mb-2">{title} Total</h2>
+      <div className="overflow-x-auto">
       <table className="table-auto border w-full text-sm">
         <thead>
             <tr className="bg-gray-200">
@@ -101,6 +104,7 @@ export default function MatchupTable() {
         </tbody>
 
       </table>
+      </div>
     </div>
   )
 

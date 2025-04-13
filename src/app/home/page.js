@@ -1,10 +1,10 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 export default function HomePage() {
   const router = useRouter()
@@ -13,8 +13,9 @@ export default function HomePage() {
   const [filtered, setFiltered] = useState([])
   const [selectedWeek, setSelectedWeek] = useState('')
   const [currentWeek, setCurrentWeek] = useState('')
-  const [standings, setStandings] = useState([])
-  const [tab, setTab] = useState('firstHalf')
+  const [firstHalf, setFirstHalf] = useState([])
+  const [secondHalf, setSecondHalf] = useState([])
+  const [season, setSeason] = useState([])
 
   // 取得登入者名稱
   useEffect(() => {
@@ -68,19 +69,25 @@ export default function HomePage() {
     fetchSchedules()
   }, [])
 
-  // 查詢 standings（API 傳回 team_name）
+  // 查詢三種 standings
   useEffect(() => {
-    async function fetchStandings() {
-      const res = await fetch('/api/standings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: tab }),
-      })
-      const result = await res.json()
-      setStandings(result)
+    async function fetchAllStandings() {
+      const fetchByType = async (type, setter) => {
+        const res = await fetch('/api/standings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type }),
+        })
+        const result = await res.json()
+        setter(result)
+      }
+
+      fetchByType('firstHalf', setFirstHalf)
+      fetchByType('secondHalf', setSecondHalf)
+      fetchByType('season', setSeason)
     }
-    fetchStandings()
-  }, [tab])
+    fetchAllStandings()
+  }, [])
 
   const handleFilter = week => {
     setSelectedWeek(week)
@@ -88,26 +95,15 @@ export default function HomePage() {
     else setFiltered(schedules.filter(s => s.week === week))
   }
 
-  const renderStandings = (type) => {
-    const keys = [
-      `${type}_1st`,
-      `${type}_2nd`,
-      `${type}_3rd`,
-      `${type}_4th`,
-      `${type}_points`,
-    ]
-
-    return (
-      <table className="w-full text-sm text-center mt-4">
+  const renderStandings = (title, standings, type) => (
+    <div className="mb-6">
+      <h2 className="text-base font-bold text-[#0155A0] mb-2">{title}</h2>
+      <table className="w-full text-sm text-center border">
         <thead className="bg-gray-100">
           <tr>
             <th className="p-2">名次</th>
             <th className="p-2">隊名</th>
-            <th className="p-2">1st</th>
-            <th className="p-2">2nd</th>
-            <th className="p-2">3rd</th>
-            <th className="p-2">4th</th>
-            <th className="p-2">分數</th>
+            <th className="p-2">總積分</th>
           </tr>
         </thead>
         <tbody>
@@ -115,15 +111,13 @@ export default function HomePage() {
             <tr key={s.id} className="border-t">
               <td className="p-2">{i + 1}</td>
               <td className="p-2">{s.team_name}</td>
-              {keys.map(k => (
-                <td key={k} className="p-2">{s[k]}</td>
-              ))}
+              <td className="p-2">{s[`${type}_points`] ?? 0}</td>
             </tr>
           ))}
         </tbody>
       </table>
-    )
-  }
+    </div>
+  )
 
   return (
     <div className="p-6">
@@ -178,15 +172,10 @@ export default function HomePage() {
       </Card>
 
       <Card className="mt-6">
-        <CardContent>
-          <Tabs defaultValue="firstHalf" value={tab} onValueChange={setTab}>
-            <TabsList>
-              <TabsTrigger value="firstHalf">上半季</TabsTrigger>
-              <TabsTrigger value="secondHalf">下半季</TabsTrigger>
-              <TabsTrigger value="season">全年</TabsTrigger>
-            </TabsList>
-            <TabsContent value={tab}>{renderStandings(tab)}</TabsContent>
-          </Tabs>
+        <CardContent className="space-y-8">
+          {renderStandings('📘 上半季戰績', firstHalf, 'firstHalf')}
+          {renderStandings('📗 下半季戰績', secondHalf, 'secondHalf')}
+          {renderStandings('📙 全年戰績', season, 'season')}
         </CardContent>
       </Card>
     </div>

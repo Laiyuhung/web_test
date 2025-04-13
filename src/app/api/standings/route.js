@@ -9,34 +9,53 @@ export async function POST(req) {
       return NextResponse.json({ error: 'type 無效' }, { status: 400 })
     }
 
-    const { data, error } = await supabase
-      .from('standings')
-      .select(`
-        *,
-        managers ( team_name )
-      `)
+    // 決定週次範圍
+    const weeks = {
+      firstHalf: Array.from({ length: 9 }, (_, i) => `W${i + 1}`),
+      secondHalf: Array.from({ length: 9 }, (_, i) => `W${i + 10}`),
+      season: Array.from({ length: 18 }, (_, i) => `W${i + 1}`),
+    }[type]
+
+    // 撈對應週次的 schedule
+    const { data: schedules, error } = await supabase
+      .from('schedule')
+      .select('*')
+      .in('week', weeks)
 
     if (error) {
-      console.error('❌ 讀取 standings 錯誤:', error)
+      console.error('❌ 讀取 schedule 錯誤:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // 排序用欄位，例如 firstHalf_points
-    const pointKey = `${type}_points`
+    // 統計 manager_id => 總分
+    const scoreMap = {}
 
-    // 對應每筆資料
-    const result = data.map(row => ({
-      id: row.id,
-      team_name: row.managers?.team_name || '(未知隊伍)',
-      [`${type}_1st`]: row[`${type}_1st`],
-      [`${type}_2nd`]: row[`${type}_2nd`],
-      [`${type}_3rd`]: row[`${type}_3rd`],
-      [`${type}_4th`]: row[`${type}_4th`],
-      [`${type}_points`]: row[`${type}_points`],
+    for (const s of schedules) {
+      const pairs = [
+        [s.team1, s.score1],
+        [s.team2, s.score2],
+        [s.team3, s.score3],
+        [s.team4, s.score4],
+      ]
+      for (const [id, score] of pairs) {
+        if (!scoreMap[id]) scoreMap[id] = 0
+        scoreMap[id] += score ?? 0
+      }
+    }
+
+    // 撈出所有隊名
+    const { data: managers } = await supabase.from('managers').select('id, team_name')
+    const idToName = Object.fromEntries(managers.map(m => [m.id, m.team_name]))
+
+    // 整理結果：回傳 id, team_name, type_points
+    const result = Object.entries(scoreMap).map(([id, total]) => ({
+      id: parseInt(id),
+      team_name: idToName[id] || '(未知隊伍)',
+      [`${type}_points`]: total,
     }))
 
-    // 依照 type_points 做排序（高分在前）
-    result.sort((a, b) => (b[pointKey] ?? 0) - (a[pointKey] ?? 0))
+    // 依照分數排序（高分在前）
+    result.sort((a, b) => b[`${type}_points`] - a[`${type}_points`])
 
     return NextResponse.json(result)
   } catch (err) {

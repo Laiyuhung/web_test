@@ -1,4 +1,3 @@
-// MatchupTable.js
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -38,7 +37,7 @@ export default function MatchupTable() {
       <table className="table-auto border w-full text-sm">
         <thead>
           <tr className="bg-gray-200">
-            <th className="border px-3 py-2 text-left">Stat</th>
+            <th className="border px-3 py-2 text-left">Team</th>
             {keys.map((key) => (
               <th key={key} className="border px-3 py-2 text-center whitespace-nowrap">{key}</th>
             ))}
@@ -47,12 +46,10 @@ export default function MatchupTable() {
         <tbody>
           {data.map((d) => (
             <tr key={d.manager_id} className="text-sm">
-              <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">Manager #{d.manager_id}</td>
+              <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
               {keys.map((key) => (
                 <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                  {type === 'pitchers' && key === 'IP'
-                    ? d.pitchers[key]
-                    : d[type][key] ?? 0}
+                  {type === 'pitchers' && key === 'IP' ? d.pitchers[key] : d[type][key] ?? 0}
                 </td>
               ))}
             </tr>

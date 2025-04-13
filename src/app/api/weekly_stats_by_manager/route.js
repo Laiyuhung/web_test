@@ -6,7 +6,6 @@ export async function POST(req) {
     const { week } = await req.json()
     if (!week) return NextResponse.json({ error: '缺少 week 參數' }, { status: 400 })
 
-    // 1️⃣ 取得區間日期
     const { data: weekData, error: weekError } = await supabase
       .from('schedule_date')
       .select('*')
@@ -19,7 +18,6 @@ export async function POST(req) {
 
     const { start, end } = weekData
 
-    // 2️⃣ 抓取所有指定週的先發名單
     const { data: assigned, error: assignErr } = await supabase
       .from('assigned_position_history')
       .select('*')
@@ -30,7 +28,6 @@ export async function POST(req) {
 
     const starters = assigned.filter(row => !['BN', 'NA', 'NA(備用)'].includes(row.position))
 
-    // 3️⃣ 根據玩家與球員分類出每天的先發名單
     const playerMap = {} // manager_id => Set of {name, dates[]}
     for (const row of starters) {
       const key = row.manager_id
@@ -39,7 +36,6 @@ export async function POST(req) {
       playerMap[key][row.player_name].add(row.date)
     }
 
-    // 4️⃣ 撈出打者與投手的身分 (要查 playerslist)
     const allNames = [...new Set(starters.map(s => s.player_name))]
 
     const { data: playerTypes, error: typeErr } = await supabase
@@ -51,7 +47,6 @@ export async function POST(req) {
 
     const typeMap = Object.fromEntries(playerTypes.map(p => [p.Name, p.B_or_P]))
 
-    // 5️⃣ 撈 stats 並分類
     const { data: batStats } = await supabase
       .from('batting_stats')
       .select('*')
@@ -64,7 +59,6 @@ export async function POST(req) {
       .gte('game_date', start)
       .lte('game_date', end)
 
-    // 6️⃣ 加總結果 per manager
     const result = []
     for (const [managerId, players] of Object.entries(playerMap)) {
       const batterSum = {
@@ -123,14 +117,22 @@ export async function POST(req) {
       pitcherSum.ERA = IP ? (9 * pitcherSum.ER / IP).toFixed(2) : '0.00'
       pitcherSum.WHIP = IP ? ((pitcherSum.H + pitcherSum.BB) / IP).toFixed(2) : '0.00'
 
-      const obpDen = batterSum.AB + batterSum.BB + 0 + 0
-      const obp = obpDen ? (batterSum.H + batterSum.BB + 0) / obpDen : 0
+      const obpDen = batterSum.AB + batterSum.BB
+      const obp = obpDen ? (batterSum.H + batterSum.BB) / obpDen : 0
       const slg = batterSum.AB ? batterSum.TB / batterSum.AB : 0
       batterSum.AVG = batterSum.AB ? (batterSum.H / batterSum.AB).toFixed(3) : '.000'
       batterSum.OPS = (obp + slg).toFixed(3)
 
+      // 🔹 加入 managers 表格中的 team_name
+      const { data: managerData } = await supabase
+        .from('managers')
+        .select('team_name')
+        .eq('id', managerId)
+        .single()
+
       result.push({
         manager_id: Number(managerId),
+        team_name: managerData?.team_name || `Manager #${managerId}`,
         batters: batterSum,
         pitchers: pitcherSum
       })

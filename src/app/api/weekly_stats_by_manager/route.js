@@ -162,7 +162,7 @@ export async function POST(req) {
 
       result.forEach(r => {
         if (!r.fantasyPoints) r.fantasyPoints = {}
-        r.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(1) || '0.00')
+        r.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(1) || '0.0')
       })
     }
 

@@ -14,7 +14,7 @@ export default function MatchupPage() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const res = await fetch('/api/weekSummary', {
+        const res = await fetch('/api/weekly_stats_by_manager', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ week })
@@ -23,7 +23,7 @@ export default function MatchupPage() {
         console.log('✅ API 回傳資料:', result)
         setData(result)
       } catch (err) {
-        console.error('❌ fetch weekSummary 錯誤:', err)
+        console.error('❌ fetch weekly_stats_by_manager 錯誤:', err)
       }
       setLoading(false)
     }

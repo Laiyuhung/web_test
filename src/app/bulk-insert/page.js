@@ -22,6 +22,10 @@ export default function BulkInsertPage() {
   const [isMajor, setIsMajor] = useState(true)
   const [isPitcher, setIsPitcher] = useState(false)
 
+  const [lineupDate, setLineupDate] = useState(todayStr)
+  const [lineupTeam, setLineupTeam] = useState('')
+  const [battingOrder, setBattingOrder] = useState(Array(9).fill(''))
+
   const [moveText, setMoveText] = useState('')
   const [moveDate, setMoveDate] = useState(todayStr)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -36,6 +40,51 @@ export default function BulkInsertPage() {
   const [startingPitchers, setStartingPitchers] = useState([])
 
   
+  const handleBattingChange = (index, value) => {
+    const updated = [...battingOrder]
+    updated[index] = value
+    setBattingOrder(updated)
+  }
+  
+  const handleSubmitLineup = async () => {
+    if (!lineupTeam) {
+      setDialogMessage('⚠️ 請先選擇球隊')
+      setDialogOpen(true)
+      return
+    }
+  
+    const rows = battingOrder
+      .map((name, i) => name.trim() && ({
+        date: lineupDate,
+        team: lineupTeam,
+        name: name.trim(),
+        batting_no: i + 1,
+      }))
+      .filter(Boolean)
+  
+    if (rows.length === 0) {
+      setDialogMessage('⚠️ 尚未填入打序資料')
+      setDialogOpen(true)
+      return
+    }
+  
+    const res = await fetch('/api/starting-lineup/insert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rows),
+    })
+  
+    const result = await res.json()
+    if (res.ok) {
+      setDialogMessage('✅ 打序登錄成功')
+      setBattingOrder(Array(9).fill(''))
+    } else {
+      setDialogMessage(`❌ 錯誤：${result.error || '請稍後再試'}`)
+    }
+    setDialogOpen(true)
+  }
+
+
   const handleInsertStarter = async () => {
     if (!starterDate || !starterName) return
   
@@ -47,7 +96,7 @@ export default function BulkInsertPage() {
     const result = await res.json()
   
     if (res.ok) {
-      setStarterName(starterName.trim())
+      setStarterName('') // ⬅️ 清空輸入欄位
       setDialogMessage('✅ 先發投手已登錄成功')
       setDialogOpen(true)
       await loadTomorrowStarters()
@@ -208,6 +257,56 @@ export default function BulkInsertPage() {
                 </span>
               ))}
         </div>
+
+        <h2 className="text-lg font-bold mt-10 mb-2">今日打序登錄</h2>
+        <div className="flex flex-wrap gap-4 mb-4">
+          {/* 日期 */}
+          <div>
+            <label className="block text-sm mb-1">日期</label>
+            <input
+              type="date"
+              className="border px-3 py-1 rounded"
+              value={lineupDate}
+              onChange={(e) => setLineupDate(e.target.value)}
+            />
+          </div>
+
+          {/* 球隊選單 */}
+          <div>
+            <label className="block text-sm mb-1">球隊</label>
+            <select
+              className="border px-3 py-1 rounded"
+              value={lineupTeam}
+              onChange={(e) => setLineupTeam(e.target.value)}
+            >
+              <option value="">請選擇</option>
+              <option>統一獅</option>
+              <option>樂天桃猿</option>
+              <option>富邦悍將</option>
+              <option>味全龍</option>
+              <option>中信兄弟</option>
+              <option>台鋼雄鷹</option>
+            </select>
+          </div>
+        </div>
+
+        {/* 1～9棒 */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+          {battingOrder.map((name, idx) => (
+            <div key={idx}>
+              <label className="text-sm">第 {idx + 1} 棒</label>
+              <input
+                type="text"
+                className="border w-full px-3 py-1 rounded"
+                value={name}
+                onChange={(e) => handleBattingChange(idx, e.target.value)}
+                placeholder="球員名稱"
+              />
+            </div>
+          ))}
+        </div>
+
+        <Button onClick={handleSubmitLineup}>送出打序</Button>
 
 
       </div>

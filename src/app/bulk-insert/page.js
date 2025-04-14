@@ -14,13 +14,16 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function BulkInsertPage() {
+
+  const todayStr = new Date().toISOString().split('T')[0]
+
   const [text, setText] = useState('')
-  const [date, setDate] = useState('')
+  const [date, setDate] = useState(todayStr)
   const [isMajor, setIsMajor] = useState(true)
   const [isPitcher, setIsPitcher] = useState(false)
 
   const [moveText, setMoveText] = useState('')
-  const [moveDate, setMoveDate] = useState('')
+  const [moveDate, setMoveDate] = useState(todayStr)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogMessage, setDialogMessage] = useState('')
 
@@ -164,7 +167,7 @@ export default function BulkInsertPage() {
         </div>
         <textarea
           className="w-full h-64 border p-3 text-sm"
-          placeholder="貼上格式：\n林智勝	降二軍\n伍鐸	升一軍"
+          placeholder="無須貼上日期"
           value={moveText}
           onChange={e => setMoveText(e.target.value)}
         />
@@ -187,7 +190,7 @@ export default function BulkInsertPage() {
             <input
               type="text"
               className="border px-3 py-1 rounded"
-              placeholder="如：黃品熏"
+              placeholder="如：古林睿煬"
               value={starterName}
               onChange={(e) => setStarterName(e.target.value)}
             />

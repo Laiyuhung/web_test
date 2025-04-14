@@ -18,14 +18,27 @@ function getUTCFormat() {
 // 🔧 回傳 [今天 ~ 2025-11-30] 所有日期字串
 function getDateList(startStr, endStr) {
   const list = []
-  const start = new Date(startStr)
-  const end = new Date(endStr)
 
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    list.push(d.toISOString().slice(0, 10))
+  // 將字串切出年月日
+  const [startY, startM, startD] = startStr.split('-').map(Number)
+  const [endY, endM, endD] = endStr.split('-').map(Number)
+
+  // 從台灣時間轉為 UTC 開始點（手動減去 8 小時）
+  const start = new Date(Date.UTC(startY, startM - 1, startD, -8, 0, 0)) // UTC 00:00 - 8h = 台灣前一天 16:00
+  const end = new Date(Date.UTC(endY, endM - 1, endD, -8, 0, 0))
+
+  for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+    const taiwanTime = new Date(d.getTime() + 8 * 60 * 60 * 1000)
+    const year = taiwanTime.getFullYear()
+    const month = String(taiwanTime.getMonth() + 1).padStart(2, '0')
+    const day = String(taiwanTime.getDate()).padStart(2, '0')
+    list.push(`${year}-${month}-${day}`)
   }
+
   return list
 }
+
+
 
 export async function POST(req) {
   try {

@@ -373,8 +373,8 @@ export default function RosterPage() {
 
   const formatDateToLabel = (isoDateStr) => {
     const [y, m, d] = isoDateStr.split('-').map(Number)
-    const date = new Date(Date.UTC(y, m - 1, d))
-    const taiwanDate = new Date(date.getTime() + 8 * 60 * 60 * 1000) // 加 8 小時
+    const utcDate = new Date(Date.UTC(y, m - 1, d)) // 製造 UTC 時間
+    const taiwanDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000) // 加 8 小時 = 台灣時間
   
     const weekday = taiwanDate.toLocaleDateString('en-US', { weekday: 'short' })
     const month = taiwanDate.toLocaleDateString('en-US', { month: 'short' })

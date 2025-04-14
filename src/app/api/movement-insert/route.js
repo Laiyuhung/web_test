@@ -19,7 +19,7 @@ export async function POST(req) {
       }
 
       const name = parts[0]
-      const action = parts[2] // 忽略球隊，只取異動事件
+      const action = parts[2] // 只取異動事件
 
       return {
         name,
@@ -28,11 +28,25 @@ export async function POST(req) {
       }
     }).filter(r => r !== null)
 
-    const { error } = await supabase.from('player_movements').insert(records)
+    // ✅ 先刪除該日期的舊資料
+    const { error: deleteError } = await supabase
+      .from('player_movements')
+      .delete()
+      .eq('move_date', date)
 
-    if (error) {
-      console.error('❌ Supabase insert 錯誤:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (deleteError) {
+      console.error('❌ 刪除舊資料錯誤:', deleteError)
+      return NextResponse.json({ error: deleteError.message }, { status: 500 })
+    }
+
+    // ✅ 再插入新資料
+    const { error: insertError } = await supabase
+      .from('player_movements')
+      .insert(records)
+
+    if (insertError) {
+      console.error('❌ 插入新資料錯誤:', insertError)
+      return NextResponse.json({ error: insertError.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })

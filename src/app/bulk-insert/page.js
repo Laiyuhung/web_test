@@ -16,6 +16,7 @@ import {
 export default function BulkInsertPage() {
 
   const todayStr = new Date().toISOString().split('T')[0]
+  const [submittedTeams, setSubmittedTeams] = useState([])
 
   const [text, setText] = useState('')
   const [date, setDate] = useState(todayStr)
@@ -39,6 +40,13 @@ export default function BulkInsertPage() {
   })
   const [startingPitchers, setStartingPitchers] = useState([])
 
+  const loadSubmittedTeams = async () => {
+    const res = await fetch(`/api/starting-lineup/teams?date=${lineupDate}`)
+    const result = await res.json()
+    if (res.ok && Array.isArray(result)) {
+      setSubmittedTeams(result)
+    }
+  }
   
   const handleBattingChange = (index, value) => {
     const updated = [...battingOrder]
@@ -53,20 +61,18 @@ export default function BulkInsertPage() {
       return
     }
   
-    const rows = battingOrder
-      .map((name, i) => name.trim() && ({
-        date: lineupDate,
-        team: lineupTeam,
-        name: name.trim(),
-        batting_no: i + 1,
-      }))
-      .filter(Boolean)
-  
-    if (rows.length === 0) {
-      setDialogMessage('⚠️ 尚未填入打序資料')
+    if (battingOrder.some(name => !name.trim())) {
+      setDialogMessage('⚠️ 所有九個打序欄位都必須填寫')
       setDialogOpen(true)
       return
     }
+  
+    const rows = battingOrder.map((name, i) => ({
+      date: lineupDate,
+      team: lineupTeam,
+      name: name.trim(),
+      batting_no: i + 1,
+    }))
   
     const res = await fetch('/api/starting-lineup/insert', {
       method: 'POST',
@@ -78,11 +84,13 @@ export default function BulkInsertPage() {
     if (res.ok) {
       setDialogMessage('✅ 打序登錄成功')
       setBattingOrder(Array(9).fill(''))
+      await loadSubmittedTeams() // ⬅️ 登錄成功後重新載入列表
     } else {
       setDialogMessage(`❌ 錯誤：${result.error || '請稍後再試'}`)
     }
     setDialogOpen(true)
   }
+  
 
 
   const handleInsertStarter = async () => {
@@ -155,6 +163,10 @@ export default function BulkInsertPage() {
   useEffect(() => {
     loadTomorrowStarters()
   }, [starterDate])
+
+  useEffect(() => {
+    loadSubmittedTeams()
+  }, [lineupDate]) // 👈 每當 lineupDate 改變就重新載入球隊列表
 
   return (
     <>
@@ -307,7 +319,17 @@ export default function BulkInsertPage() {
         </div>
 
         <Button onClick={handleSubmitLineup}>送出打序</Button>
-
+        
+        <div className="mt-4 text-sm">
+          <span className="font-semibold">今日已登錄打序球隊：</span>
+          {submittedTeams.length === 0
+            ? <span className="text-gray-500 ml-1">尚無資料</span>
+            : submittedTeams.map((team, idx) => (
+                <span key={idx} className="inline-block bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded mr-2 mt-1">
+                  {team}
+                </span>
+              ))}
+        </div>
 
       </div>
 

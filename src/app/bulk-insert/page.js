@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { useEffect, useState } from 'react'
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -24,6 +25,45 @@ export default function BulkInsertPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogMessage, setDialogMessage] = useState('')
 
+  const [starterName, setStarterName] = useState('')
+  const [starterDate, setStarterDate] = useState(() => {
+    const d = new Date()
+    d.setDate(d.getDate() + 1)
+    return d.toISOString().split('T')[0]
+  })
+  const [startingPitchers, setStartingPitchers] = useState([])
+
+  
+  const handleInsertStarter = async () => {
+    if (!starterDate || !starterName) return
+  
+    const res = await fetch('/api/starting-pitcher/insert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: starterDate, name: starterName }),
+    })
+    const result = await res.json()
+  
+    if (res.ok) {
+      setStarterName(starterName.trim())
+      setDialogMessage('✅ 先發投手已登錄成功')
+      setDialogOpen(true)
+      await loadTomorrowStarters()
+    } else {
+      setDialogMessage(`❌ 錯誤：${result.error || '請稍後再試'}`)
+      setDialogOpen(true)
+    }
+  }
+  
+  const loadTomorrowStarters = async () => {
+    const res = await fetch(`/api/starting-pitcher/load?date=${starterDate}`)
+    const result = await res.json()
+    if (res.ok) {
+      setStartingPitchers(result)
+    }
+  }
+  
+  
   const handleSubmit = async () => {
     const endpoint = isPitcher ? '/api/pitching-insert' : '/api/bulk-insert'
 
@@ -60,6 +100,10 @@ export default function BulkInsertPage() {
     }
     setDialogOpen(true)
   }
+
+  useEffect(() => {
+    loadTomorrowStarters()
+  }, [starterDate])
 
   return (
     <>
@@ -126,6 +170,44 @@ export default function BulkInsertPage() {
           onChange={e => setMoveText(e.target.value)}
         />
         <Button onClick={handleMovementSubmit} className="mt-4">送出升降異動</Button>
+
+
+        <h2 className="text-lg font-bold mt-10 mb-2">登錄先發投手（明日）</h2>
+        <div className="mb-3 flex gap-3 flex-wrap items-center">
+          <div>
+            <label className="block text-sm mb-1">日期</label>
+            <input
+              type="date"
+              className="border px-3 py-1 rounded"
+              value={starterDate}
+              onChange={(e) => setStarterDate(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">投手名稱</label>
+            <input
+              type="text"
+              className="border px-3 py-1 rounded"
+              placeholder="如：黃品熏"
+              value={starterName}
+              onChange={(e) => setStarterName(e.target.value)}
+            />
+          </div>
+          <Button onClick={handleInsertStarter}>送出先發投手</Button>
+        </div>
+
+        <div className="mt-4 text-sm">
+          <span className="font-semibold">明日已登錄先發：</span>
+          {startingPitchers.length === 0
+            ? <span className="text-gray-500 ml-1">尚無資料</span>
+            : startingPitchers.map((p, i) => (
+                <span key={i} className="inline-block bg-blue-100 text-blue-700 font-medium px-2 py-0.5 rounded mr-2 mt-1">
+                  {p.name}
+                </span>
+              ))}
+        </div>
+
+
       </div>
 
       {/* ✅ 提示結果 Dialog 共用 */}

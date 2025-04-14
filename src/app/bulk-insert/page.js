@@ -32,6 +32,12 @@ export default function BulkInsertPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogMessage, setDialogMessage] = useState('')
 
+
+  const [rewardManagerId, setRewardManagerId] = useState('')
+  const [rewardEvent, setRewardEvent] = useState('')
+  const [rewardAmount, setRewardAmount] = useState('')
+  const [managers, setManagers] = useState([])
+
   const [starterName, setStarterName] = useState('')
   const [starterDate, setStarterDate] = useState(() => {
     const d = new Date()
@@ -159,6 +165,46 @@ export default function BulkInsertPage() {
     }
     setDialogOpen(true)
   }
+
+  const handleSubmitReward = async () => {
+    if (!rewardManagerId || !rewardEvent || !rewardAmount) {
+      setDialogMessage('⚠️ 請完整填寫所有欄位')
+      setDialogOpen(true)
+      return
+    }
+  
+    const res = await fetch('/api/rewards/insert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        manager: rewardManagerId,
+        event: rewardEvent,
+        awards: parseInt(rewardAmount, 10),
+      }),
+    })
+  
+    const result = await res.json()
+    if (res.ok) {
+      setDialogMessage('✅ 獎金登錄成功')
+      setRewardManagerId('')
+      setRewardEvent('')
+      setRewardAmount('')
+    } else {
+      setDialogMessage(`❌ 錯誤：${result.error || '請稍後再試'}`)
+    }
+    setDialogOpen(true)
+  }
+
+  useEffect(() => {
+    const fetchManagers = async () => {
+      const res = await fetch('/api/rewards/managers')
+      const result = await res.json()
+      if (res.ok) {
+        setManagers(result)
+      }
+    }
+    fetchManagers()
+  }, [])
 
   useEffect(() => {
     loadTomorrowStarters()
@@ -330,6 +376,45 @@ export default function BulkInsertPage() {
                 </span>
               ))}
         </div>
+
+
+        <h2 className="text-lg font-bold mt-10 mb-2">獎金登錄</h2>
+        <div className="flex flex-wrap gap-4 mb-4">
+          <div>
+            <label className="block text-sm mb-1">球隊（Manager）</label>
+            <select
+              className="border px-3 py-1 rounded"
+              value={rewardManagerId}
+              onChange={(e) => setRewardManagerId(e.target.value)}
+            >
+              <option value="">請選擇</option>
+              {managers.map((m) => (
+                <option key={m.id} value={m.id}>{m.team_name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm mb-1">事件</label>
+            <input
+              type="text"
+              className="border px-3 py-1 rounded"
+              placeholder="如：單週冠軍"
+              value={rewardEvent}
+              onChange={(e) => setRewardEvent(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">獎金金額</label>
+            <input
+              type="number"
+              className="border px-3 py-1 rounded"
+              placeholder="例如 1000"
+              value={rewardAmount}
+              onChange={(e) => setRewardAmount(e.target.value)}
+            />
+          </div>
+        </div>
+        <Button onClick={handleSubmitReward}>送出獎金登錄</Button>
 
       </div>
 

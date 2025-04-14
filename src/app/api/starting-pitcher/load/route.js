@@ -1,15 +1,22 @@
+import { NextResponse } from 'next/server'
 import supabase from '@/lib/supabase'
 
-export async function getStartingPitchersByDate(date) {
+export async function GET(req) {
+  const { searchParams } = new URL(req.url)
+  const date = searchParams.get('date')
+
+  if (!date) {
+    return NextResponse.json({ error: '缺少日期' }, { status: 400 })
+  }
+
   const { data, error } = await supabase
     .from('starting_pitcher')
     .select('*')
     .eq('date', date)
 
   if (error) {
-    console.error('❌ 讀取失敗:', error.message)
-    return []
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return data // 陣列，包含每位先發投手資料
+  return NextResponse.json(data)
 }

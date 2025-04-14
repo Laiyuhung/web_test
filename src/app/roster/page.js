@@ -362,30 +362,17 @@ export default function RosterPage() {
       setTimeout(() => setMoveMessage(''), 3000)
     }
   }
-  
-  const formatTaiwanDateUSFormat = () => {
-    const taiwanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
-    const weekday = taiwanTime.toLocaleDateString('en-US', { weekday: 'short' }) // e.g. "Thu"
-    const month = taiwanTime.toLocaleDateString('en-US', { month: 'short' })     // e.g. "Apr"
-    const day = taiwanTime.toLocaleDateString('en-US', { day: '2-digit' })       // e.g. "11"
-    return `${weekday}, ${month} ${day}`
-  }
 
-  const formatDateToLabel = () => {
-    const nowUTC = new Date()
-    const taiwanOffsetMs = 8 * 60 * 60 * 1000
-    const taiwanNow = new Date(nowUTC.getTime() + taiwanOffsetMs)
+
+  const formatDateToLabel = (isoDateStr) => {
+    const [y, m, d] = isoDateStr.split('-').map(Number)
+    const localDate = new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}T00:00:00+08:00`)
+    
+    const weekday = localDate.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Taipei' })
+    const month = localDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'Asia/Taipei' })
+    const day = localDate.toLocaleDateString('en-US', { day: '2-digit', timeZone: 'Asia/Taipei' })
   
-    const weekday = taiwanNow.toLocaleDateString('en-US', { weekday: 'short' })
-    const month = taiwanNow.toLocaleDateString('en-US', { month: 'short' })
-    const day = taiwanNow.toLocaleDateString('en-US', { day: '2-digit' })
-  
-    const label = `${weekday}, ${month} ${day}`
-    console.log(`🌐 UTC now: ${nowUTC.toISOString()}`)
-    console.log(`🇹🇼 台灣時間: ${taiwanNow.toString()}`)
-    console.log(`📝 Label: ${label}`)
-  
-    return label
+    return `${weekday}, ${month} ${day}`
   }
   
   const formatAvg = (val) => {

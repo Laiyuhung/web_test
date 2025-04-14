@@ -39,6 +39,12 @@ export async function GET(req) {
       return NextResponse.json({ error: '讀取失敗' }, { status: 500 })
     }
 
+    // 🪵 新增 Log：印出回傳的資料
+    console.log(`📦 ${date} 的 assigned players（manager_id=${manager_id}）:`)
+    data?.forEach(p => {
+      console.log(`🔹 ${p.player_name} -> ${p.position}`)
+    })
+
     return NextResponse.json(data)
   } catch (err) {
     console.error('❌ 發生錯誤:', err)

@@ -372,12 +372,16 @@ export default function RosterPage() {
   }
 
   const formatDateToLabel = (isoDateStr) => {
-    const date = new Date(isoDateStr + 'T00:00:00+08:00')
-    const weekday = date.toLocaleDateString('en-US', { weekday: 'short' })
-    const month = date.toLocaleDateString('en-US', { month: 'short' })
-    const day = date.toLocaleDateString('en-US', { day: '2-digit' })
+    const [y, m, d] = isoDateStr.split('-').map(Number)
+    const date = new Date(Date.UTC(y, m - 1, d))
+    const taiwanDate = new Date(date.getTime() + 8 * 60 * 60 * 1000) // 加 8 小時
+  
+    const weekday = taiwanDate.toLocaleDateString('en-US', { weekday: 'short' })
+    const month = taiwanDate.toLocaleDateString('en-US', { month: 'short' })
+    const day = taiwanDate.toLocaleDateString('en-US', { day: '2-digit' })
     return `${weekday}, ${month} ${day}`
   }
+  
   
   
   const formatAvg = (val) => {

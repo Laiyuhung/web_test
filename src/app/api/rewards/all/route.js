@@ -4,43 +4,32 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    // 查詢獎金資料（使用 manager_id）
-    const { data: summaryRaw, error: summaryError } = await supabase
+    // 查詢獎金細節
+    const { data: details, error: detailError } = await supabase
       .from('rewards')
-      .select('manager_id, awards')
-
-    const { data: managers, error: mgrErr } = await supabase
-      .from('managers')
-      .select('id, team_name')
-
-    if (summaryError || mgrErr) {
-      console.error('❌ 讀取錯誤:', summaryError || mgrErr)
-      return NextResponse.json({ error: '資料查詢失敗' }, { status: 500 })
-    }
-
-    const managerMap = Object.fromEntries(managers.map(m => [m.id, m.team_name]))
-
-    const summary = [1, 2, 3, 4].map(id => {
-      const total = summaryRaw
-        .filter(r => r.manager_id === id)
-        .reduce((sum, r) => sum + (r.awards || 0), 0)
-      return { id, team_name: managerMap[id] || `隊伍 ${id}`, total }
-    })
-
-    // 所有明細（記得是 manager_id）
-    const { data: list, error: listError } = await supabase
-      .from('rewards')
-      .select('manager_id, event, awards, created_at')
+      .select('manager_id, event, awards, created_at, managers ( team_name )')
       .order('created_at', { ascending: false })
 
-    const listWithName = list.map(r => ({
-      ...r,
-      team_name: managerMap[r.manager_id] || `隊伍 ${r.manager_id}`
-    }))
+    if (detailError) {
+      console.error('❌ 查詢 rewards 細節失敗:', detailError)
+      return NextResponse.json({ error: detailError.message }, { status: 500 })
+    }
 
-    return NextResponse.json({ summary, list: listWithName })
+    // 查詢累計獎金總額
+    const { data: summary, error: summaryError } = await supabase
+      .from('rewards')
+      .select('manager_id, managers ( team_name )')
+      .select('manager_id, managers ( team_name ), sum(awards) as total')
+      .group('manager_id, managers.team_name')
+
+    if (summaryError) {
+      console.error('❌ 查詢累計失敗:', summaryError)
+      return NextResponse.json({ error: summaryError.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ details, summary })
   } catch (err) {
-    console.error('❌ 例外錯誤:', err)
+    console.error('❌ GET 例外錯誤:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

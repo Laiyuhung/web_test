@@ -10,8 +10,22 @@ export async function POST(req) {
       return NextResponse.json({ error: '缺少必要欄位' }, { status: 400 })
     }
 
+    // 🔍 查出 managers 表中對應的 id
+    const { data: managerData, error: managerError } = await supabase
+      .from('managers')
+      .select('id')
+      .eq('team_name', manager)
+      .single()
+
+    if (managerError || !managerData) {
+      return NextResponse.json({ error: `找不到隊伍名稱 ${manager}` }, { status: 400 })
+    }
+
+    const managerId = managerData.id
+
+    // ✅ 插入 rewards 表格
     const { error } = await supabase.from('rewards').insert([
-      { manager, event, awards: parseInt(awards, 10) },
+      { manager: managerId, event, awards: parseInt(awards, 10) },
     ])
 
     if (error) {

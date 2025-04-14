@@ -14,7 +14,7 @@ export async function POST(req) {
 
     const { error } = await supabase.from('rewards').insert([
       {
-        manager: parseInt(manager, 10),
+        manager_id: parseInt(manager, 10),
         event,
         awards: parseInt(awards, 10),
       },

@@ -33,6 +33,9 @@ function getDateList(startStr, endStr) {
     const month = String(taiwanTime.getMonth() + 1).padStart(2, '0')
     const day = String(taiwanTime.getDate()).padStart(2, '0')
     list.push(`${year}-${month}-${day}`)
+
+    console.log('📅 台灣時間日期列表：')
+    list.forEach(d => console.log(' -', d))
   }
 
   return list

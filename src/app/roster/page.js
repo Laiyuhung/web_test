@@ -379,6 +379,10 @@ export default function RosterPage() {
     const weekday = taiwanDate.toLocaleDateString('en-US', { weekday: 'short' })
     const month = taiwanDate.toLocaleDateString('en-US', { month: 'short' })
     const day = taiwanDate.toLocaleDateString('en-US', { day: '2-digit' })
+
+    console.log('📅 台灣時間日期列表：')
+    list.forEach(d => console.log(' -', d))
+
     return `${weekday}, ${month} ${day}`
   }
   

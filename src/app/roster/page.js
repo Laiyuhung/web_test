@@ -373,19 +373,23 @@ export default function RosterPage() {
 
   const formatDateToLabel = (isoDateStr) => {
     const [y, m, d] = isoDateStr.split('-').map(Number)
-    const utcDate = new Date(Date.UTC(y, m - 1, d)) // 製造 UTC 時間
-    const taiwanDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000) // 台灣時間
+  
+    const utcDate = new Date(Date.UTC(y, m - 1, d)) // 00:00 UTC
+    const taiwanDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000) // 台灣時間 = UTC +8
   
     const weekday = taiwanDate.toLocaleDateString('en-US', { weekday: 'short' })
     const month = taiwanDate.toLocaleDateString('en-US', { month: 'short' })
     const day = taiwanDate.toLocaleDateString('en-US', { day: '2-digit' })
   
     const label = `${weekday}, ${month} ${day}`
-    console.log(`🧭 格式化 ${isoDateStr} → ${label}（台灣時間）`)
+  
+    console.log(`📅 原始 isoDateStr: ${isoDateStr}`)
+    console.log(`🌐 UTC 時間:        ${utcDate.toISOString()}`)
+    console.log(`🇹🇼 台灣時間:      ${taiwanDate.toString()}`)
+    console.log(`📝 最終格式化:    ${label}`)
+  
     return label
   }
-  
-  
   
   
   const formatAvg = (val) => {

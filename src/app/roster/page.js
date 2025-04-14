@@ -371,21 +371,19 @@ export default function RosterPage() {
     return `${weekday}, ${month} ${day}`
   }
 
-  const formatDateToLabel = (isoDateStr) => {
-    const [y, m, d] = isoDateStr.split('-').map(Number)
+  const getTodayTaiwanLabel = () => {
+    const nowUTC = new Date()
+    const taiwanOffsetMs = 8 * 60 * 60 * 1000
+    const taiwanNow = new Date(nowUTC.getTime() + taiwanOffsetMs)
   
-    // 將 yyyy-mm-dd 當作台灣時間 00:00：手動建構當地時間
-    const taiwanDate = new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}T00:00:00+08:00`)
-  
-    const weekday = taiwanDate.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Taipei' })
-    const month = taiwanDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'Asia/Taipei' })
-    const day = taiwanDate.toLocaleDateString('en-US', { day: '2-digit', timeZone: 'Asia/Taipei' })
+    const weekday = taiwanNow.toLocaleDateString('en-US', { weekday: 'short' })
+    const month = taiwanNow.toLocaleDateString('en-US', { month: 'short' })
+    const day = taiwanNow.toLocaleDateString('en-US', { day: '2-digit' })
   
     const label = `${weekday}, ${month} ${day}`
-  
-    console.log(`📅 輸入日期:     ${isoDateStr}`)
-    console.log(`🇹🇼 台灣時間物件: ${taiwanDate.toString()}`)
-    console.log(`📝 顯示格式:     ${label}`)
+    console.log(`🌐 UTC now: ${nowUTC.toISOString()}`)
+    console.log(`🇹🇼 台灣時間: ${taiwanNow.toString()}`)
+    console.log(`📝 Label: ${label}`)
   
     return label
   }

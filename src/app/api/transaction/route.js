@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import supabase from '@/lib/supabase'
 
-// 🔧 封裝：回傳台灣時間 +08:00 的 ISO 字串
+// 🔧 台灣 +08:00 時區的 ISO 格式
 function getUTCFormat() {
   const date = new Date()
   const pad = (n) => String(n).padStart(2, '0')
@@ -14,33 +14,27 @@ function getUTCFormat() {
     pad(date.getSeconds()) + '+00:00'
   )
 }
+
+// 🔧 回傳 [今天 ~ 2025-11-30] 所有日期字串
+function getDateList(startStr, endStr) {
+  const list = []
+  const start = new Date(startStr)
+  const end = new Date(endStr)
+
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    list.push(d.toISOString().slice(0, 10))
+  }
+  return list
+}
+
 export async function POST(req) {
   try {
-    console.log('📥 收到 POST 請求，開始處理...')
-
     const { playerName, type } = await req.json()
-    console.log('🎯 收到的 playerName:', playerName, 'type:', type)
-
-    if (type !== 'Add' && type !== 'Drop') {
-      console.log('❌ 無效的交易類型:', type)
-      return NextResponse.json({ error: '交易類型錯誤' }, { status: 400 })
-    }
-
-    const user_id_cookie = req.cookies.get('user_id')
-    const user_id = user_id_cookie?.value
-    console.log('🍪 從 cookies 中獲得的 user_id:', user_id)
-
-    if (!user_id) {
-      console.log('⚠️ 未登入，user_id 不存在')
-      return NextResponse.json({ error: '未登入' }, { status: 401 })
-    }
-
+    const user_id = req.cookies.get('user_id')?.value
     const manager_id = parseInt(user_id, 10)
-    console.log('🔢 轉換後的 manager_id:', manager_id, typeof manager_id)
 
-    if (isNaN(manager_id)) {
-      console.log('❌ 無效的 manager_id:', user_id)
-      return NextResponse.json({ error: '無效的 manager_id' }, { status: 400 })
+    if (!playerName || !user_id || isNaN(manager_id)) {
+      return NextResponse.json({ error: '參數錯誤或未登入' }, { status: 400 })
     }
 
     const { data: playerData, error: playerError } = await supabase
@@ -50,39 +44,57 @@ export async function POST(req) {
       .single()
 
     if (playerError || !playerData) {
-      console.log('❗ 玩家未找到:', playerError)
-      return NextResponse.json({ error: '玩家未找到' }, { status: 404 })
+      return NextResponse.json({ error: '找不到球員' }, { status: 404 })
     }
 
     const Player_no = playerData.Player_no
     const transaction_time = getUTCFormat()
-    // const type = 'Add'
 
-    console.log('🧾 準備插入的交易資料如下：')
-    console.log({
-      transaction_time,
-      manager_id,
-      type,
-      Player_no
-    })
-
+    // ✅ 寫入交易
     const { error: insertError } = await supabase
       .from('transactions')
-      .insert([
-        {
-          transaction_time,
-          manager_id,
-          type,
-          Player_no
-        }
-      ])
+      .insert([{ transaction_time, manager_id, type, Player_no }])
 
     if (insertError) {
-      console.log('❌ 插入交易記錄錯誤:', insertError)
-      return NextResponse.json({ error: '插入交易記錄錯誤' }, { status: 500 })
+      return NextResponse.json({ error: '交易寫入失敗' }, { status: 500 })
     }
 
-    console.log('🎉 交易成功，已插入新的交易記錄')
+    const todayStr = new Date().toISOString().slice(0, 10)
+    const endStr = '2025-11-30'
+
+    if (type === 'Add') {
+      const dateList = getDateList(todayStr, endStr)
+      const rows = dateList.map(date => ({
+        date,
+        manager_id,
+        player_name: playerName,
+        position: 'BN',
+      }))
+
+      const { error: assignError } = await supabase
+        .from('assigned_position_history')
+        .insert(rows)
+
+      if (assignError) {
+        console.warn('⚠️ Add 時寫入位置失敗:', assignError.message)
+      }
+    }
+
+    if (type === 'Drop') {
+      const dateList = getDateList(todayStr, endStr)
+
+      const { error: deleteError } = await supabase
+        .from('assigned_position_history')
+        .delete()
+        .in('date', dateList)
+        .eq('manager_id', manager_id)
+        .eq('player_name', playerName)
+
+      if (deleteError) {
+        console.warn('⚠️ Drop 時刪除位置失敗:', deleteError.message)
+      }
+    }
+
     return NextResponse.json({
       message: '交易成功',
       transaction: {
@@ -93,7 +105,7 @@ export async function POST(req) {
       }
     })
   } catch (err) {
-    console.error('❌ API 錯誤:', err)
+    console.error('❌ 發生錯誤:', err)
     return NextResponse.json({ error: '內部伺服器錯誤' }, { status: 500 })
   }
 }

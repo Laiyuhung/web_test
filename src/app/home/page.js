@@ -16,8 +16,10 @@ export default function HomePage() {
   const [currentWeek, setCurrentWeek] = useState('')
   const [standings, setStandings] = useState([])
   const [tab, setTab] = useState('firstHalf')
+  const [rewardTab, setRewardTab] = useState('summary')
+  const [rewardSummary, setRewardSummary] = useState([])
+  const [rewardList, setRewardList] = useState([])
 
-  // 取得登入者名稱
   useEffect(() => {
     const cookie = document.cookie.split('; ').find(row => row.startsWith('user_id='))
     if (!cookie) return router.push('/login')
@@ -27,7 +29,6 @@ export default function HomePage() {
     })
   }, [])
 
-  // 取得 schedule + managers 對應隊名
   useEffect(() => {
     async function fetchSchedules() {
       const [{ data: scheduleData }, { data: managerData }] = await Promise.all([
@@ -69,7 +70,6 @@ export default function HomePage() {
     fetchSchedules()
   }, [])
 
-  // 查詢 standings（API 傳回 team_name 與 type_points）
   useEffect(() => {
     async function fetchStandings() {
       const res = await fetch('/api/standings', {
@@ -82,6 +82,18 @@ export default function HomePage() {
     }
     fetchStandings()
   }, [tab])
+
+  useEffect(() => {
+    async function fetchRewards() {
+      const res = await fetch('/api/rewards/all')
+      const result = await res.json()
+      if (res.ok) {
+        setRewardSummary(result.summary)
+        setRewardList(result.list)
+      }
+    }
+    fetchRewards()
+  }, [])
 
   const handleFilter = week => {
     setSelectedWeek(week)
@@ -104,6 +116,48 @@ export default function HomePage() {
             <td className="p-2">{i + 1}</td>
             <td className="p-2">{s.team_name}</td>
             <td className="p-2">{s[`${type}_points`] ?? 0}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+
+  const renderRewardSummary = () => (
+    <table className="w-full text-sm text-center mt-4">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="p-2">隊名</th>
+          <th className="p-2">獎金總額</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rewardSummary.map((r, i) => (
+          <tr key={i} className="border-t">
+            <td className="p-2">{r.team_name}</td>
+            <td className="p-2">{r.total_awards}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+
+  const renderRewardList = () => (
+    <table className="w-full text-sm text-center mt-4">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="p-2">隊名</th>
+          <th className="p-2">事件</th>
+          <th className="p-2">金額</th>
+          <th className="p-2">時間</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rewardList.map((r, i) => (
+          <tr key={i} className="border-t">
+            <td className="p-2">{r.team_name}</td>
+            <td className="p-2">{r.event}</td>
+            <td className="p-2">{r.awards}</td>
+            <td className="p-2">{r.created_at?.slice(0, 10)}</td>
           </tr>
         ))}
       </tbody>
@@ -161,7 +215,7 @@ export default function HomePage() {
           </table>
         </CardContent>
       </Card>
-      
+
       <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">LIVE STANDINGS</h2>
       <Card className="mt-6">
         <CardContent>
@@ -172,6 +226,20 @@ export default function HomePage() {
               <TabsTrigger value="season">全年</TabsTrigger>
             </TabsList>
             <TabsContent value={tab}>{renderStandings(tab)}</TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">獎金統計</h2>
+      <Card className="mt-6">
+        <CardContent>
+          <Tabs defaultValue="summary" value={rewardTab} onValueChange={setRewardTab}>
+            <TabsList>
+              <TabsTrigger value="summary">累計金額</TabsTrigger>
+              <TabsTrigger value="list">事件明細</TabsTrigger>
+            </TabsList>
+            <TabsContent value="summary">{renderRewardSummary()}</TabsContent>
+            <TabsContent value="list">{renderRewardList()}</TabsContent>
           </Tabs>
         </CardContent>
       </Card>

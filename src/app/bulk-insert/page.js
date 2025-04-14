@@ -17,43 +17,56 @@ export default function BulkInsertPage() {
   const handleSubmit = async () => {
     setMessage('匯入中...')
     const endpoint = isPitcher ? '/api/pitching-insert' : '/api/bulk-insert'
-
+  
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, date, isMajor }),
     })
     const result = await res.json()
+  
     if (res.ok) {
       setText('')
       toast({
         title: "✅ 匯入成功",
         description: "已成功匯入數據，並自動更新週得分。",
       })
-
-      // ✅ 在這裡加上觸發「更新週得分」的 API
       await fetch('/api/updateWeeklyScores', { method: 'POST' })
-
     } else {
-      setMessage(`❌ 錯誤：${result.error}`)
+      toast({
+        variant: "destructive",
+        title: "❌ 錯誤發生",
+        description: result.error || "請稍後再試",
+      })
     }
   }
+  
 
-  const handleMovementSubmit = async () => {
-    setMessage('異動登錄中...')
-    const res = await fetch('/api/movement-insert', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: moveText, date: moveDate }),
+const { toast } = useToast() // 放在 function component 裡面最上面
+
+const handleMovementSubmit = async () => {
+  setMessage('異動登錄中...')
+  const res = await fetch('/api/movement-insert', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: moveText, date: moveDate }),
+  })
+  const result = await res.json()
+
+  if (res.ok) {
+    toast({
+      title: "✅ 異動匯入成功",
+      description: "已成功登錄球員升降異動。",
     })
-    const result = await res.json()
-    if (res.ok) {
-      setMessage('✅ 異動匯入成功')
-      setMoveText('')
-    } else {
-      setMessage(`❌ 錯誤：${result.error}`)
-    }
+    setMoveText('')
+  } else {
+    toast({
+      variant: "destructive",
+      title: "❌ 異動登錄失敗",
+      description: result.error || "請稍後再試一次。",
+    })
   }
+}
 
   return (
     <div className="p-6">

@@ -22,9 +22,12 @@ export default function RosterPage() {
   const [batterSummary, setBatterSummary] = useState(null)
   const [pitcherSummary, setPitcherSummary] = useState(null)
   const [selectedDate, setSelectedDate] = useState(() => {
-  const taiwanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
-    return taiwanTime.toISOString().slice(0, 10)
+    const nowUTC = new Date()
+    const taiwanOffset = 8 * 60 * 60 * 1000 // +08:00 offset in milliseconds
+    const taiwanDate = new Date(nowUTC.getTime() + taiwanOffset)
+    return taiwanDate.toISOString().slice(0, 10)
   })
+  
   
 
 
@@ -365,15 +368,15 @@ export default function RosterPage() {
 
 
   const formatDateToLabel = (isoDateStr) => {
-    const [y, m, d] = isoDateStr.split('-').map(Number)
-    const localDate = new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}T00:00:00+08:00`)
-    
-    const weekday = localDate.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Taipei' })
-    const month = localDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'Asia/Taipei' })
-    const day = localDate.toLocaleDateString('en-US', { day: '2-digit', timeZone: 'Asia/Taipei' })
+  const [y, m, d] = isoDateStr.split('-').map(Number)
+  const localDate = new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}T00:00:00+08:00`)
   
-    return `${weekday}, ${month} ${day}`
-  }
+  const weekday = localDate.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Taipei' })
+  const month = localDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'Asia/Taipei' })
+  const day = localDate.toLocaleDateString('en-US', { day: '2-digit', timeZone: 'Asia/Taipei' })
+
+  return `${weekday}, ${month} ${day}`
+}
   
   const formatAvg = (val) => {
     const num = parseFloat(val)

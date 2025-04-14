@@ -162,7 +162,7 @@ export default function HomePage() {
         </CardContent>
       </Card>
       
-      <h2 className="text-xl font-bold text-[#0155A0] mb-2">LIVE STANDINGS</h2>
+      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">LIVE STANDINGS</h2>
       <Card className="mt-6">
         <CardContent>
           <Tabs defaultValue="firstHalf" value={tab} onValueChange={setTab}>

@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { useToast } from "@/components/ui/use-toast"
+
 
 export default function BulkInsertPage() {
   const [text, setText] = useState('')
@@ -23,8 +25,15 @@ export default function BulkInsertPage() {
     })
     const result = await res.json()
     if (res.ok) {
-      setMessage(`✅ 匯入成功`)
       setText('')
+      toast({
+        title: "✅ 匯入成功",
+        description: "已成功匯入數據，並自動更新週得分。",
+      })
+
+      // ✅ 在這裡加上觸發「更新週得分」的 API
+      await fetch('/api/updateWeeklyScores', { method: 'POST' })
+
     } else {
       setMessage(`❌ 錯誤：${result.error}`)
     }

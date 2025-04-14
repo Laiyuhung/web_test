@@ -374,17 +374,17 @@ export default function RosterPage() {
   const formatDateToLabel = (isoDateStr) => {
     const [y, m, d] = isoDateStr.split('-').map(Number)
     const utcDate = new Date(Date.UTC(y, m - 1, d)) // 製造 UTC 時間
-    const taiwanDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000) // 加 8 小時 = 台灣時間
+    const taiwanDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000) // 台灣時間
   
     const weekday = taiwanDate.toLocaleDateString('en-US', { weekday: 'short' })
     const month = taiwanDate.toLocaleDateString('en-US', { month: 'short' })
     const day = taiwanDate.toLocaleDateString('en-US', { day: '2-digit' })
-
-    console.log('📅 台灣時間日期列表：')
-    list.forEach(d => console.log(' -', d))
-
-    return `${weekday}, ${month} ${day}`
+  
+    const label = `${weekday}, ${month} ${day}`
+    console.log(`🧭 格式化 ${isoDateStr} → ${label}（台灣時間）`)
+    return label
   }
+  
   
   
   

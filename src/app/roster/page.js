@@ -371,7 +371,7 @@ export default function RosterPage() {
     return `${weekday}, ${month} ${day}`
   }
 
-  const getTodayTaiwanLabel = () => {
+  const formatDateToLabel = () => {
     const nowUTC = new Date()
     const taiwanOffsetMs = 8 * 60 * 60 * 1000
     const taiwanNow = new Date(nowUTC.getTime() + taiwanOffsetMs)

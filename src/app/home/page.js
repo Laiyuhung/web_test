@@ -134,7 +134,7 @@ export default function HomePage() {
         {rewardSummary.map((r, i) => (
           <tr key={i} className="border-t">
             <td className="p-2">{r.team_name}</td>
-            <td className="p-2">{r.total_awards}</td>
+            <td className="p-2">{r.total}</td>   
           </tr>
         ))}
       </tbody>

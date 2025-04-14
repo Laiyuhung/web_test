@@ -374,23 +374,21 @@ export default function RosterPage() {
   const formatDateToLabel = (isoDateStr) => {
     const [y, m, d] = isoDateStr.split('-').map(Number)
   
-    const utcDate = new Date(Date.UTC(y, m - 1, d)) // 00:00 UTC
-    const taiwanDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000) // 台灣時間 = UTC +8
+    // 將 yyyy-mm-dd 當作台灣時間 00:00：手動建構當地時間
+    const taiwanDate = new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}T00:00:00+08:00`)
   
-    const weekday = taiwanDate.toLocaleDateString('en-US', { weekday: 'short' })
-    const month = taiwanDate.toLocaleDateString('en-US', { month: 'short' })
-    const day = taiwanDate.toLocaleDateString('en-US', { day: '2-digit' })
+    const weekday = taiwanDate.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Taipei' })
+    const month = taiwanDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'Asia/Taipei' })
+    const day = taiwanDate.toLocaleDateString('en-US', { day: '2-digit', timeZone: 'Asia/Taipei' })
   
     const label = `${weekday}, ${month} ${day}`
   
-    console.log(`📅 原始 isoDateStr: ${isoDateStr}`)
-    console.log(`🌐 UTC 時間:        ${utcDate.toISOString()}`)
-    console.log(`🇹🇼 台灣時間:      ${taiwanDate.toString()}`)
-    console.log(`📝 最終格式化:    ${label}`)
+    console.log(`📅 輸入日期:     ${isoDateStr}`)
+    console.log(`🇹🇼 台灣時間物件: ${taiwanDate.toString()}`)
+    console.log(`📝 顯示格式:     ${label}`)
   
     return label
   }
-  
   
   const formatAvg = (val) => {
     const num = parseFloat(val)

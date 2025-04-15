@@ -227,7 +227,7 @@ export default function HomePage() {
               <TabsTrigger value="secondHalf">下半季</TabsTrigger>
               <TabsTrigger value="season">全年</TabsTrigger>
             </TabsList>
-            <TabsContent value={tab}>{renderStandings(tab)}</TabsContent>
+            <TabsContent value={standingTab}>{renderStandings(standingTab)}</TabsContent>
           </Tabs>
         </CardContent>
       </Card>

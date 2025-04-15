@@ -41,6 +41,7 @@ export default function RosterPage() {
         const data = await res.json()
         if (res.ok) {
           setLineupTeams(data)
+          console.log('📋 已登錄打序的球隊:', data)
         } else {
           console.error('❌ 取得 lineup 球隊失敗:', data)
           setLineupTeams([])

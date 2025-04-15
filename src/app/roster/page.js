@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [gameInfoMap, setGameInfoMap] = useState({})
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)
   const [range, setRange] = useState('Today')
@@ -121,6 +122,31 @@ export default function RosterPage() {
 
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const res = await fetch(`/api/schedule?date=${selectedDate}`)
+        const data = await res.json()
+  
+        if (!Array.isArray(data)) return
+  
+        const map = {}
+        data.forEach(game => {
+          const { time, away, home, is_postponed } = game
+          const info = `${is_postponed ? 'PPD' : time}（${away} @ ${home}）vs ${away}`
+          map[away] = info
+          map[home] = info
+        })
+        setGameInfoMap(map)
+      } catch (err) {
+        console.error('❌ 賽程讀取失敗:', err)
+        setGameInfoMap({})
+      }
+    }
+  
+    fetchGames()
+  }, [selectedDate])
 
   const fetchStatsSummary = async () => {
     const batterNames = players
@@ -475,6 +501,9 @@ export default function RosterPage() {
               />
               <span>{p.Name}</span>
               <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
+              <span className="text-xs text-gray-400 ml-10">
+                {gameInfoMap[p.Team] ?? 'No game'}
+              </span>
               {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
                 <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
                   {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}

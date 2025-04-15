@@ -253,33 +253,39 @@ export default function RosterPage() {
   
 
   const renderAssignedPositionSelect = (p) => {
-    
     const getTaiwanTodayString = () => {
       const now = new Date()
       const taiwanOffset = 8 * 60 * 60 * 1000
       const taiwanNow = new Date(now.getTime() + taiwanOffset)
-    
-      console.log('🌐 UTC 現在時間:', now.toISOString())
-      console.log('🇹🇼 台灣現在時間:', taiwanNow.toISOString())
-      console.log('📅 台灣今天日期字串:', taiwanNow.toISOString().slice(0, 10))
-    
       return taiwanNow.toISOString().slice(0, 10)
     }
-    
+  
     const currentValue = assignedPositions[p.Name] || 'BN'
     const todayStr = getTaiwanTodayString()
     const isEditable = selectedDate >= todayStr
   
-    if (loading || !isEditable) {
-      // 過去日期：藍字純文字（不能點）
+    // ✅ 判斷比賽是否已開打
+    const gameInfo = gameInfoMap[p.Team]
+    let isLocked = false
+  
+    if (gameInfo && !gameInfo.startsWith('PPD') && !gameInfo.startsWith('No game')) {
+      const timeStr = gameInfo.slice(0, 5) // 取得 "18:35"
+      const [h, m] = timeStr.split(':')
+      const gameDateTime = new Date(`${selectedDate}T${h}:${m}:00+08:00`)
+      const now = new Date()
+      const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+      isLocked = taiwanNow >= gameDateTime
+    }
+  
+    if (loading || !isEditable || isLocked) {
       return (
         <span className="text-[#004AAD] text-sm font-bold min-w-[36px] text-center">
-          {currentValue}
+          {isLocked ? '🔒Locked' : currentValue}
         </span>
       )
     }
-    
-    // 今日或未來：原本的可互動圓圈按鈕
+  
+    // ✅ 可異動才顯示按鈕
     return (
       <button
         onClick={() => openMoveModal(p)}
@@ -289,6 +295,7 @@ export default function RosterPage() {
       </button>
     )
   }
+  
   
   const openMoveModal = (player) => {
     console.log('🔁 可選位置:', player.finalPosition)
@@ -763,6 +770,18 @@ export default function RosterPage() {
                   <button
                     key={p.Name}
                     onClick={() => {
+                      // 🔒 1. 檢查比賽是否已開打（非 PPD）
+                      const gameInfo = gameInfoMap[moveTarget.Team]
+                      const isLocked = gameInfo && !gameInfo.startsWith('PPD') &&
+                        new Date(`${selectedDate}T${gameInfo.slice(0, 5)}:00+08:00`) <= new Date(new Date().getTime() + 8 * 60 * 60 * 1000)
+                    
+                      if (isLocked) {
+                        setMoveMessage(`${moveTarget.Team} 比賽已開始，禁止異動位置`)
+                        setTimeout(() => setMoveMessage(''), 3000)
+                        return
+                      }
+                    
+                      // ✅ 2. 原本交換邏輯
                       const currentPos = assignedPositions[moveTarget.Name]
                       const canReturn = (p.finalPosition || []).includes(currentPos) ||
                                         (p.B_or_P === 'Batter' && currentPos === 'Util') ||
@@ -773,22 +792,21 @@ export default function RosterPage() {
                       const fallback = 'BN'
                       const newPos = canReturn ? currentPos : fallback
                     
-                      // ✅ 先關掉 modal，避免 React state 延遲導致沒關
                       setMoveTarget(null)
                       setMoveSlots(null)
                     
-                      // ✅ 再更新位置
                       setAssignedPositions(prev => {
                         const updated = { ...prev }
                         updated[moveTarget.Name] = posKey
                         updated[p.Name] = newPos
-                        saveAssigned(updated) 
+                        saveAssigned(updated)
                         return updated
                       })
                     
                       setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}，${p.Name} 被移動到 ${newPos}`)
                       setTimeout(() => setMoveMessage(''), 3000)
                     }}
+                    
                     
                     className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"
                   >
@@ -807,22 +825,35 @@ export default function RosterPage() {
 
                 {slot.count < slot.max && (
                   <button
-                    onClick={() => {
-                      setAssignedPositions(prev => {
-                        const updated = {
-                          ...prev,
-                          [moveTarget.Name]: posKey
-                        }
-                        saveAssigned(updated) // 👈 新增這行
-                        return updated
-                      })
-
-                      setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}`)
-                      setTimeout(() => setMoveMessage(''), 2000)
-
-                      setMoveTarget(null)
-                      setMoveSlots(null)
-                    }}
+                  onClick={() => {
+                    // 🔒 檢查比賽是否已開打（非 PPD）
+                    const gameInfo = gameInfoMap[moveTarget.Team]
+                    const isLocked = gameInfo && !gameInfo.startsWith('PPD') &&
+                      new Date(`${selectedDate}T${gameInfo.slice(0, 5)}:00+08:00`) <= new Date(new Date().getTime() + 8 * 60 * 60 * 1000)
+                  
+                    if (isLocked) {
+                      setMoveMessage(`${moveTarget.Team} 比賽已開始，禁止異動位置`)
+                      setTimeout(() => setMoveMessage(''), 3000)
+                      return
+                    }
+                  
+                    // ✅ 原本的異動邏輯
+                    setAssignedPositions(prev => {
+                      const updated = {
+                        ...prev,
+                        [moveTarget.Name]: posKey
+                      }
+                      saveAssigned(updated)
+                      return updated
+                    })
+                  
+                    setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}`)
+                    setTimeout(() => setMoveMessage(''), 2000)
+                  
+                    setMoveTarget(null)
+                    setMoveSlots(null)
+                  }}
+                  
                     className="w-full flex items-center justify-center text-blue-600 font-semibold border-2 border-dashed border-blue-400 p-3 rounded bg-white hover:bg-blue-50"
                   >
                     ➕ Empty

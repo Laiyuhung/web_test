@@ -509,10 +509,12 @@ export default function RosterPage() {
                 onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
               />
               <span>{p.Name}</span>
-              <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
-              <span className="text-xs text-gray-400 ml-10">
-                {gameInfoMap[p.Team] ?? 'No game'}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
+                <span className="text-base text-black font-medium">
+                  {gameInfoMap[p.Team] ?? 'No game'}
+                </span>
+              </div>
               {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
                 <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
                   {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}

@@ -259,8 +259,8 @@ export default function RosterPage() {
     console.log('🔁 可選位置:', player.finalPosition)
   
     const baseSlots = [...(player.finalPosition || []), player.B_or_P === 'Batter' ? 'Util' : 'P', 'BN']
-    const naSlot = player.registerStatus === '一軍' ? 'NA(備用)' : 'NA'
-    const allSlots = [...baseSlots, naSlot]
+    const naSlots = player.registerStatus === '一軍' ? ['NA(備用)'] : ['NA', 'NA(備用)']
+    const allSlots = [...baseSlots, naSlots]
   
     const slotLimit = {
       'C': 1,
@@ -286,14 +286,23 @@ export default function RosterPage() {
           assignedPositions[p.Name] === 'NA' || assignedPositions[p.Name] === 'NA(備用)'
         )
   
-        if (!slotStatus['NA']) {
-          slotStatus['NA'] = {
-            displayAs: naSlot, // 這裡保留目前要顯示的樣式（NA or NA(備用)）
-            count: assigned.length,
-            max: slotLimit['NA'],
-            players: assigned
+        // 計算 NA 類位置總數（合併）
+        const naPlayers = players.filter(p =>
+          assignedPositions[p.Name] === 'NA' || assignedPositions[p.Name] === 'NA(備用)'
+        )
+        const naCount = naPlayers.length
+
+        // 個別 slot 顯示用
+        const naVariants = ['NA', 'NA(備用)']
+        naVariants.forEach(variant => {
+          slotStatus[variant] = {
+            displayAs: variant,          // 顯示原樣
+            count: naCount,              // ✅ 合併計算數量
+            max: slotLimit['NA'],        // ✅ 限制仍為 5
+            players: naPlayers           // ✅ 合併玩家列表
           }
-        }
+        })
+
       } else {
         const assigned = players.filter(p => assignedPositions[p.Name] === pos)
         slotStatus[pos] = {

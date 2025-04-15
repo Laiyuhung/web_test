@@ -710,8 +710,11 @@ export default function RosterPage() {
         </div>
       )}
 
+      {positionsLoaded && !gameInfoLoaded && (
+        <div className="text-sm text-gray-500 mb-4">陣容及賽程載入中...</div>
+      )}
 
-      {positionsLoaded && (
+      {positionsLoaded && gameInfoLoaded && (
         <div className="overflow-auto max-h-[600px]">
           <section className="mb-8">
               <h2 className="text-lg font-semibold mb-2">Batters</h2>

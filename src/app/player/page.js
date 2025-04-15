@@ -469,19 +469,8 @@ export default function PlayerPage() {
                       onError={(e) => e.target.src = '/photo/defaultPlayer.png'} // 若沒有圖片，顯示預設圖片
                     />
                   
-                  <div className="flex flex-col">
-                      {/* 第一行：名字 + Team + Position */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>
-                        <span className="text-sm text-gray-500">{p.Team}</span>
-                        <span className="text-sm text-gray-500">| {(p.finalPosition || []).join(', ')}</span>
-                      </div>
-
-                      {/* 第二行：比賽資訊 */}
-                      <span className="text-sm text-gray-500">
-                        {gameInfoMap[p.Team] ?? 'No game'}
-                      </span>
-                    </div>
+                    <span>{p.Name}</span>
+                    <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
                     {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
                       <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
                         {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}

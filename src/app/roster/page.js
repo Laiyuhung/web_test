@@ -325,7 +325,9 @@ export default function RosterPage() {
       const map = {}
       playersList.forEach(p => {
         const record = data.find(r => r.player_name === p.Name)
-        map[p.Name] = record?.position || 'BN'
+        if (record) {
+          map[p.Name] = record.position
+        }
       })
   
       console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
@@ -407,7 +409,7 @@ export default function RosterPage() {
   
 
   const batters = players
-  .filter(p => p.B_or_P === 'Batter')
+  .filter(p => p.B_or_P === 'Batter' && assignedPositions[p.Name] !== undefined)
   .sort((a, b) => {
     const posA = assignedPositions[a.Name] || 'BN'
     const posB = assignedPositions[b.Name] || 'BN'
@@ -415,7 +417,7 @@ export default function RosterPage() {
   })
   
   const pitchers = players
-  .filter(p => p.B_or_P === 'Pitcher')
+  .filter(p => p.B_or_P === 'Pitcher' && assignedPositions[p.Name] !== undefined)
   .sort((a, b) => {
     const posA = assignedPositions[a.Name] || 'BN'
     const posB = assignedPositions[b.Name] || 'BN'

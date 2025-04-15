@@ -22,6 +22,7 @@ export default function RosterPage() {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [batterSummary, setBatterSummary] = useState(null)
   const [pitcherSummary, setPitcherSummary] = useState(null)
+  const [gameInfoLoaded, setGameInfoLoaded] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => {
     const nowUTC = new Date()
     const taiwanOffset = 8 * 60 * 60 * 1000 // +08:00 offset in milliseconds
@@ -145,12 +146,14 @@ export default function RosterPage() {
         }
   
         setGameInfoMap(map)
+        setGameInfoLoaded(true)
       } catch (err) {
         console.error('❌ 賽程讀取失敗:', err)
         setGameInfoMap({})
       }
     }
-  
+    
+    setGameInfoLoaded(false)
     if (players.length > 0) {
       fetchGames()
     }
@@ -280,7 +283,7 @@ export default function RosterPage() {
     if (loading || !isEditable || isLocked) {
       return (
         <span className="text-[#004AAD] text-sm font-bold min-w-[36px] text-center">
-          {isLocked ? '🔒Locked' : currentValue}
+          {currentValue}
         </span>
       )
     }

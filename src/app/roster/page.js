@@ -796,8 +796,8 @@ export default function RosterPage() {
         </div>
 
         <div className="text-sm text-right font-medium text-gray-700">
-          On team洋將：<span className="text-[#0155A0]">{foreignCount.all}</span>, 
-          Active洋將：<span className="text-green-700">{foreignCount.active}</span>
+          <span className="text-[#0155A0]">On team洋將：{foreignCount.all}</span> 
+          <span className="text-green-700">Active洋將：{foreignCount.active}</span>
         </div>
       </div>
       

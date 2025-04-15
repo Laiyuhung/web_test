@@ -36,7 +36,7 @@ export default function RosterPage() {
   useEffect(() => {
     const fetchStartingPitchers = async () => {
       try {
-        const res = await fetch(`/api/starting-pitcher/load?date=${starterDate}`)
+        const res = await fetch(`/api/starting-pitcher/load?date=${selectedDate}`)
         const data = await res.json()
         if (res.ok) {
           setStartingPitchers(data)

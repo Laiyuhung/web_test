@@ -555,7 +555,7 @@ export default function RosterPage() {
                 {/* 第二行：比賽資訊 + 若為先發投手加上 V */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">{gameInfoMap[p.Team] ?? 'No game'}</span>
-                  {startingPitchers.includes(p.Name) && (
+                  {startingPitchers.some(sp => sp.name === p.Name) && (
                     <span className="text-white bg-green-700 text-xs font-bold px-2 py-0.5 rounded">
                       V
                     </span>

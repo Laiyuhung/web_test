@@ -40,7 +40,7 @@ export default function RosterPage() {
         const res = await fetch(`/api/starting-pitcher/load?date=${selectedDate}`)
         const data = await res.json()
         if (res.ok) {
-          console.log('🎯 startingPitchers:', data) // ✅ 印出來檢查
+          // console.log('🎯 startingPitchers:', data) // ✅ 印出來檢查
           setStartingPitchers(data)
         } else {
           console.error('❌ 取得先發名單失敗:', data)
@@ -77,7 +77,7 @@ export default function RosterPage() {
 
   useEffect(() => {
     if (rosterReady) {
-      console.log('📊 觸發 fetchStatsSummary (roster ready & date):', selectedDate)
+      // console.log('📊 觸發 fetchStatsSummary (roster ready & date):', selectedDate)
       fetchStatsSummary()
     }
   }, [rosterReady, selectedDate])
@@ -309,9 +309,9 @@ export default function RosterPage() {
       const taiwanOffset = 8 * 60 * 60 * 1000
       const taiwanNow = new Date(now.getTime() + taiwanOffset)
     
-      console.log('🌐 UTC 現在時間:', now.toISOString())
-      console.log('🇹🇼 台灣現在時間:', taiwanNow.toISOString())
-      console.log('📅 台灣今天日期字串:', taiwanNow.toISOString().slice(0, 10))
+      // console.log('🌐 UTC 現在時間:', now.toISOString())
+      // console.log('🇹🇼 台灣現在時間:', taiwanNow.toISOString())
+      // console.log('📅 台灣今天日期字串:', taiwanNow.toISOString().slice(0, 10))
     
       return taiwanNow.toISOString().slice(0, 10)
     }
@@ -408,7 +408,7 @@ export default function RosterPage() {
   
 
   const loadAssigned = async (playersList) => {
-    console.log('📦 載入 assigned，用的 playersList:', playersList)
+    // console.log('📦 載入 assigned，用的 playersList:', playersList)
   
     try {
       const res = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
@@ -423,7 +423,7 @@ export default function RosterPage() {
         }
       })
   
-      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
+      // console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
   
       setAssignedPositions(map)
     } catch (err) {
@@ -540,7 +540,7 @@ export default function RosterPage() {
 
   const renderRow = (p, type) => {
 
-    console.log('🧪 檢查 p.Name:', p.Name, '是否在先發名單中？', startingPitchers.includes(p.Name))
+    // console.log('🧪 檢查 p.Name:', p.Name, '是否在先發名單中？', startingPitchers.includes(p.Name))
     return (
       <>
         <tr>

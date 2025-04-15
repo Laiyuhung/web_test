@@ -235,7 +235,7 @@ export default function RosterPage() {
     const todayStr = getTaiwanTodayString()
     const isEditable = selectedDate >= todayStr
   
-    if (!isEditable) {
+    if (loading || !isEditable) {
       // 過去日期：藍字純文字（不能點）
       return (
         <span className="text-[#004AAD] text-sm font-bold min-w-[36px] text-center">

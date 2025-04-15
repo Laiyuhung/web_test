@@ -37,15 +37,6 @@ export default function RosterPage() {
     return taiwanDate.toISOString().slice(0, 10)
   })
 
-  useEffect(() => {
-    const allForeign = players.filter(p => p.identity === '洋將')
-    const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
-  
-    setForeignCount({
-      all: allForeign.length,
-      active: activeForeign.length
-    })
-  }, [players, assignedPositions])
 
   useEffect(() => {
     const fetchLineupTeams = async () => {
@@ -213,6 +204,16 @@ export default function RosterPage() {
         await loadAssigned(myPlayers)
         setPositionsLoaded(true)
         setRosterReady(true)
+
+        // 🔁 加這段直接計算
+        const allForeign = myPlayers.filter(p => p.identity === '洋將')
+        const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+
+        setForeignCount({
+          all: allForeign.length,
+          active: activeForeign.length
+        })
+
 
       } catch (err) {
         console.error('讀取錯誤:', err)

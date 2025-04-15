@@ -16,5 +16,20 @@ export async function POST(req) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json(data)
+  if (!data || data.length === 0) {
+    return NextResponse.json({ info: 'No game' }) // 若沒比賽只回 info
+  }
+
+  const game = data[0]
+  const isPostponed = game.is_postponed
+  const timeOrPPD = isPostponed ? 'PPD' : game.time
+
+  let info = ''
+  if (game.home === team) {
+    info = `${timeOrPPD} vs ${game.away}`
+  } else {
+    info = `${timeOrPPD} @ ${game.home}`
+  }
+
+  return NextResponse.json({ ...game, info })
 }

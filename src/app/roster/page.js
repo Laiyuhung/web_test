@@ -511,7 +511,7 @@ export default function RosterPage() {
               <span>{p.Name}</span>
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
-                <span className="text-base text-black font-medium">
+                <span className="text-sm text-gray-500">
                   {gameInfoMap[p.Team] ?? 'No game'}
                 </span>
               </div>

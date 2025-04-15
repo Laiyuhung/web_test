@@ -27,11 +27,6 @@ export default function RosterPage() {
     const taiwanDate = new Date(nowUTC.getTime() + taiwanOffset)
     return taiwanDate.toISOString().slice(0, 10)
   })
-  
-  
-
-
-
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -169,9 +164,7 @@ export default function RosterPage() {
       console.error('❌ 加總 stats summary 錯誤:', err)
     }
   }
-  
-  const today = new Date()
-    
+ 
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
 
     
@@ -225,8 +218,21 @@ export default function RosterPage() {
   
 
   const renderAssignedPositionSelect = (p) => {
+    
+    const getTaiwanTodayString = () => {
+      const now = new Date()
+      const taiwanOffset = 8 * 60 * 60 * 1000
+      const taiwanNow = new Date(now.getTime() + taiwanOffset)
+    
+      console.log('🌐 UTC 現在時間:', now.toISOString())
+      console.log('🇹🇼 台灣現在時間:', taiwanNow.toISOString())
+      console.log('📅 台灣今天日期字串:', taiwanNow.toISOString().slice(0, 10))
+    
+      return taiwanNow.toISOString().slice(0, 10)
+    }
+    
     const currentValue = assignedPositions[p.Name] || 'BN'
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayStr = getTaiwanTodayString()
     const isEditable = selectedDate >= todayStr
   
     if (!isEditable) {

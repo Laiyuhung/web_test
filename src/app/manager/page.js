@@ -27,12 +27,54 @@ export default function RosterPage() {
   const [gameInfoLoaded, setGameInfoLoaded] = useState(false)
   const [startingPitchers, setStartingPitchers] = useState([])
   const [pitchersLoaded, setPitchersLoaded] = useState(false)
+  const [startingLineup, setStartingLineup] = useState([])
+  const [lineupTeams, setLineupTeams] = useState([])
   const [selectedDate, setSelectedDate] = useState(() => {
     const nowUTC = new Date()
     const taiwanOffset = 8 * 60 * 60 * 1000 // +08:00 offset in milliseconds
     const taiwanDate = new Date(nowUTC.getTime() + taiwanOffset)
     return taiwanDate.toISOString().slice(0, 10)
   })
+
+  useEffect(() => {
+    const fetchLineupTeams = async () => {
+      try {
+        const res = await fetch(`/api/starting-lineup/teams?date=${selectedDate}`)
+        const data = await res.json()
+        if (res.ok) {
+          setLineupTeams(data)
+        } else {
+          console.error('❌ 取得 lineup 球隊失敗:', data)
+          setLineupTeams([])
+        }
+      } catch (err) {
+        console.error('❌ 無法取得 starting-lineup/teams:', err)
+        setLineupTeams([])
+      }
+    }
+  
+    fetchLineupTeams()
+  }, [selectedDate])
+
+  useEffect(() => {
+    const fetchStartingLineup = async () => {
+      try {
+        const res = await fetch(`/api/starting-lineup/load?date=${selectedDate}`)
+        const data = await res.json()
+        if (res.ok) {
+          setStartingLineup(data) // ← 儲存整包打序資料
+        } else {
+          console.error('❌ 取得先發打序失敗:', data)
+          setStartingLineup([])
+        }
+      } catch (err) {
+        console.error('❌ 無法取得 starting_lineup:', err)
+        setStartingLineup([])
+      }
+    }
+  
+    fetchStartingLineup()
+  }, [selectedDate])
 
   useEffect(() => {
     const fetchStartingPitchers = async () => {
@@ -569,11 +611,38 @@ export default function RosterPage() {
                 {/* 第二行：比賽資訊 + 若為先發投手加上 V */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">{gameInfoMap[p.Team] ?? 'No game'}</span>
-                  {startingPitchers.some(sp => sp.name === p.Name) && (
-                    <span className="text-white bg-green-700 text-xs font-bold px-2 py-0.5 rounded">
-                      V
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {/* 打序邏輯 */}
+                    {(() => {
+                      const found = startingLineup.find(l => l.name === p.Name)
+                      if (found) {
+                        return (
+                          <span className="text-white bg-blue-600 text-xs font-bold px-2 py-0.5 rounded">
+                            {found.batting_no}
+                          </span>
+                        )
+                      } else if (lineupTeams.includes(p.Team)) {
+                        return (
+                          <span className="text-white bg-yellow-500 text-xs font-bold px-2 py-0.5 rounded">
+                            X
+                          </span>
+                        )
+                      } else {
+                        return (
+                          <span className="text-white bg-red-600 text-xs font-bold px-2 py-0.5 rounded">
+                            X
+                          </span>
+                        )
+                      }
+                    })()}
+
+                    {/* 投手先發 V */}
+                    {startingPitchers.some(sp => sp.name === p.Name) && (
+                      <span className="text-white bg-green-700 text-xs font-bold px-2 py-0.5 rounded">
+                        V
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

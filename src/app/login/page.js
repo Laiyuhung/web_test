@@ -11,12 +11,28 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // 自動檢查 localStorage，有登入就導回首頁
-    const userId = localStorage.getItem('user_id') // 改為從 localStorage 取出 user_id
-    if (userId) {
-      router.push('/home')
-    }
+    const userId = localStorage.getItem('user_id')
+    if (!userId) return
+  
+    // 向後端驗證 user_id 是否有效（可以簡單打個 /api/username）
+    fetch('/api/username', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data?.name) {
+          router.push('/home') // 有效才導向首頁
+        } else {
+          localStorage.removeItem('user_id') // ❌ 無效 → 強制登出
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem('user_id') // ❌ API 故障 → 清除 user_id
+      })
   }, [router])
+  
 
   const handleLogin = async () => {
     setError('')

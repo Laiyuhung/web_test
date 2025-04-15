@@ -22,12 +22,28 @@ export default function HomePage() {
 
   useEffect(() => {
     const cookie = document.cookie.split('; ').find(row => row.startsWith('user_id='))
-    if (!cookie) return router.push('/login')
+    if (!cookie) {
+      localStorage.removeItem('user_id')  // 🧼 清除 localStorage
+      return router.push('/login')
+    }
+  
     const user_id = cookie.split('=')[1]
-    supabase.from('managers').select('name').eq('id', user_id).single().then(({ data }) => {
-      if (data) setUserName(data.name)
-    })
-  }, [])
+  
+    supabase
+      .from('managers')
+      .select('name')
+      .eq('id', user_id)
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          localStorage.removeItem('user_id')  // ❌ 無效登入資料 → 清除
+          router.push('/login')
+        } else {
+          setUserName(data.name)
+        }
+      })
+  }, [router])
+  
 
   useEffect(() => {
     async function fetchSchedules() {

@@ -260,7 +260,7 @@ export default function RosterPage() {
   
     const baseSlots = [...(player.finalPosition || []), player.B_or_P === 'Batter' ? 'Util' : 'P', 'BN']
     const naSlots = player.registerStatus === '一軍' ? ['NA(備用)'] : ['NA', 'NA(備用)']
-    const allSlots = [...baseSlots, naSlots]
+    const allSlots = [...baseSlots, ...naSlots]
   
     const slotLimit = {
       'C': 1,

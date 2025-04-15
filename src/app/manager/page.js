@@ -207,7 +207,10 @@ export default function RosterPage() {
 
         // 🔁 加這段直接計算
         const allForeign = myPlayers.filter(p => p.identity === '洋將')
+        console.log('🌐 allForeign:', allForeign.map(p => p.Name))  // 👉 印出所有洋將名字
+
         const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+        console.log('✅ activeForeign:', activeForeign.map(p => p.Name))  // 👉 印出活躍洋將名字
 
         setForeignCount({
           all: allForeign.length,

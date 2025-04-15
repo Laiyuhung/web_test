@@ -193,13 +193,16 @@ export default function RosterPage() {
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 
 
-  const allForeign = myPlayers.filter(p => p.identity === '洋將')
-  const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
-
-  setForeignCount({
-    all: allForeign.length,
-    active: activeForeign.length
-  })
+  useEffect(() => {
+    const allForeign = players.filter(p => p.identity === '洋將')
+    const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+  
+    setForeignCount({
+      all: allForeign.length,
+      active: activeForeign.length
+    })
+  }, [players, assignedPositions])
+  
 
   useEffect(() => {
     const fetchGames = async () => {

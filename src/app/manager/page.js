@@ -25,12 +25,37 @@ export default function RosterPage() {
   const [pitcherSummary, setPitcherSummary] = useState(null)
   const [gameInfoMap, setGameInfoMap] = useState({})
   const [gameInfoLoaded, setGameInfoLoaded] = useState(false)
+  const [startingPitchers, setStartingPitchers] = useState([])
+  const [pitchersLoaded, setPitchersLoaded] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => {
     const nowUTC = new Date()
     const taiwanOffset = 8 * 60 * 60 * 1000 // +08:00 offset in milliseconds
     const taiwanDate = new Date(nowUTC.getTime() + taiwanOffset)
     return taiwanDate.toISOString().slice(0, 10)
   })
+
+  useEffect(() => {
+    const fetchStartingPitchers = async () => {
+      try {
+        const res = await fetch(`/api/starting_pitcher?date=${selectedDate}`)
+        const data = await res.json()
+        if (res.ok) {
+          setStartingPitchers(data)
+        } else {
+          console.error('❌ 取得先發名單失敗:', data)
+          setStartingPitchers([])
+        }
+      } catch (err) {
+        console.error('❌ 無法取得 starting_pitcher:', err)
+        setStartingPitchers([])
+      }
+      setPitchersLoaded(true)
+    }
+  
+    setPitchersLoaded(false)
+    fetchStartingPitchers()
+  }, [selectedDate])
+  
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -530,13 +555,20 @@ export default function RosterPage() {
                 className="w-8 h-8 rounded-full"
                 onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
               />
-              <span>{p.Name}</span>
               <div className="flex flex-col">
-                <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
+                {/* 第一行：名字 + Team + Position */}
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>
+                  <span className="text-sm text-gray-500">{p.Team}</span>
+                  <span className="text-sm text-gray-500">| {(p.finalPosition || []).join(', ')}</span>
+                </div>
+
+                {/* 第二行：比賽資訊 */}
                 <span className="text-sm text-gray-500">
                   {gameInfoMap[p.Team] ?? 'No game'}
                 </span>
               </div>
+              
               {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
                 <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
                   {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}

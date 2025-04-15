@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [myPlayers, setMyPlayers] = useState([])
   const [selectedManager, setSelectedManager] = useState('1')
   const [managers, setManagers] = useState([]) // 儲存撈回來的 manager 名單
   const [players, setPlayers] = useState([])
@@ -38,20 +39,20 @@ export default function RosterPage() {
   })
 
   useEffect(() => {
-    if (players.length === 0 || Object.keys(assignedPositions).length === 0) return
+    if (myPlayers.length === 0 || Object.keys(assignedPositions).length === 0) return
   
-    const allForeign = players.filter(p => p.identity === '洋將')
+    const allForeign = myPlayers.filter(p => p.identity === '洋將')
     const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
   
     console.log('🌐 所有洋將:', allForeign.map(p => p.Name))
     console.log('✅ Active 洋將:', activeForeign.map(p => p.Name))
-    console.log('📌 Assigned 狀況:', assignedPositions)
   
     setForeignCount({
       all: allForeign.length,
       active: activeForeign.length
     })
-  }, [players, assignedPositions])
+  }, [myPlayers, assignedPositions])
+  
   
 
   useEffect(() => {
@@ -216,7 +217,7 @@ export default function RosterPage() {
         const myPlayers = merged.filter(p => p.manager_id?.toString() === selectedManager)
 
         setPlayers(myPlayers)
-
+        setMyPlayers(myPlayers)
         await loadAssigned(myPlayers)
         setPositionsLoaded(true)
         setRosterReady(true)

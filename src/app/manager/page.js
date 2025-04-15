@@ -29,12 +29,23 @@ export default function RosterPage() {
   const [pitchersLoaded, setPitchersLoaded] = useState(false)
   const [startingLineup, setStartingLineup] = useState([])
   const [lineupTeams, setLineupTeams] = useState([])
+  const [foreignCount, setForeignCount] = useState({ all: 0, active: 0 })
   const [selectedDate, setSelectedDate] = useState(() => {
     const nowUTC = new Date()
     const taiwanOffset = 8 * 60 * 60 * 1000 // +08:00 offset in milliseconds
     const taiwanDate = new Date(nowUTC.getTime() + taiwanOffset)
     return taiwanDate.toISOString().slice(0, 10)
   })
+
+  useEffect(() => {
+    const allForeign = players.filter(p => p.identity === '洋將')
+    const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+  
+    setForeignCount({
+      all: allForeign.length,
+      active: activeForeign.length
+    })
+  }, [players, assignedPositions])
 
   useEffect(() => {
     const fetchLineupTeams = async () => {
@@ -782,20 +793,33 @@ export default function RosterPage() {
         )}
       </div>
 
-      <div className="mb-4">
-      <label className="text-sm font-semibold">Stats Range</label>
-      <select
-          value={range}
-          onChange={e => setRange(e.target.value)}
-          className="border px-2 py-1 rounded ml-2"
-      >
-          <option>Today</option>
-          <option>Yesterday</option>
-          <option>Last 7 days</option>
-          <option>Last 14 days</option>
-          <option>Last 30 days</option>
-          <option>2025 Season</option>
-      </select>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <label className="text-sm font-semibold">Stats Range</label>
+          <select
+              value={range}
+              onChange={e => setRange(e.target.value)}
+              className="border px-2 py-1 rounded ml-2"
+          >
+              <option>Today</option>
+              <option>Yesterday</option>
+              <option>Last 7 days</option>
+              <option>Last 14 days</option>
+              <option>Last 30 days</option>
+              <option>2025 Season</option>
+          </select>
+        </div>
+
+        <div className="text-sm text-right font-medium text-gray-700 leading-snug">
+          <div>
+            <span className="text-[#0155A0]">On team 洋將：</span>
+            <span className="text-[#0155A0]">{foreignCount.all}</span>
+          </div>
+          <div>
+            <span className="text-green-700">Active 洋將：</span>
+            <span className="text-green-700">{foreignCount.active}</span>
+          </div>
+        </div>
       </div>
 
       <div className="mb-4">

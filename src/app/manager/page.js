@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
   const [selectedManager, setSelectedManager] = useState('1')
+  const [managers, setManagers] = useState([]) // 儲存撈回來的 manager 名單
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)
   const [range, setRange] = useState('Today')
@@ -53,7 +54,25 @@ export default function RosterPage() {
     }
   }, [rosterReady, selectedDate])
   
+  useEffect(() => {
+    const fetchManagers = async () => {
+      try {
+        const res = await fetch('/api/managers')
+        const data = await res.json()
+        if (Array.isArray(data)) {
+          setManagers(data)
+        } else {
+          console.error('manager 資料格式錯誤:', data)
+        }
+      } catch (err) {
+        console.error('無法取得 managers:', err)
+      }
+    }
   
+    fetchManagers()
+  }, [])
+
+
   useEffect(() => {
     if (range === 'Today') {
       applyDateRange('Today')
@@ -121,7 +140,7 @@ export default function RosterPage() {
     }
 
     if (userId) fetchData()
-  }, [userId, fromDate, toDate]) 
+  }, [userId, fromDate, toDate, selectedManager]) 
 
   const fetchStatsSummary = async () => {
     const batterNames = players
@@ -625,13 +644,15 @@ export default function RosterPage() {
         <select
             value={selectedManager}
             onChange={(e) => {
-            setSelectedManager(e.target.value)
-            setRosterReady(false)
+                setSelectedManager(e.target.value)
+                setRosterReady(false)
             }}
             className="border px-2 py-1 rounded"
-        >
-            {[1, 2, 3, 4].map(id => (
-            <option key={id} value={id}>玩家 {id}</option>
+            >
+            {managers.map(m => (
+                <option key={m.id} value={m.id}>
+                {m.team_name}
+                </option>
             ))}
         </select>
       </div>  

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [selectedManager, setSelectedManager] = useState('1')
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)
   const [range, setRange] = useState('Today')
@@ -105,7 +106,7 @@ export default function RosterPage() {
           }
         })
 
-        const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
+        const myPlayers = merged.filter(p => p.manager_id?.toString() === selectedManager)
 
         setPlayers(myPlayers)
 
@@ -618,9 +619,25 @@ export default function RosterPage() {
           <option>2025 Season</option>
       </select>
       </div>
+
+      <div className="mb-4">
+        <label className="text-sm font-semibold mr-2">選擇玩家：</label>
+        <select
+            value={selectedManager}
+            onChange={(e) => {
+            setSelectedManager(e.target.value)
+            setRosterReady(false)
+            }}
+            className="border px-2 py-1 rounded"
+        >
+            {[1, 2, 3, 4].map(id => (
+            <option key={id} value={id}>玩家 {id}</option>
+            ))}
+        </select>
+      </div>  
       
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
-      <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
+      <h1 className="text-xl font-bold mb-6">MANAGERS LINEUP</h1>
       
       {batterSummary && pitcherSummary && (
         <div className="mb-6 space-y-6 text-sm text-gray-600">

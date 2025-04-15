@@ -15,7 +15,7 @@ export default function HomePage() {
   const [selectedWeek, setSelectedWeek] = useState('')
   const [currentWeek, setCurrentWeek] = useState('')
   const [standings, setStandings] = useState([])
-  const [tab, setTab] = useState('firstHalf')
+  const [standingTab, setStandingTab] = useState('firstHalf')
   const [rewardTab, setRewardTab] = useState('summary')
   const [rewardSummary, setRewardSummary] = useState([])
   const [rewardList, setRewardList] = useState([])
@@ -72,24 +72,16 @@ export default function HomePage() {
 
   useEffect(() => {
     async function fetchStandings() {
-      try {
-        const res = await fetch('/api/standings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: tab }),
-        })
-        const result = await res.json()
-  
-        if (!res.ok) throw new Error(result.message || '發生錯誤')
-  
-        setStandings(result)
-      } catch (err) {
-        alert('❌ 發生錯誤：' + err.message)
-        console.error('📛 錯誤內容：', err)
-      }
+      const res = await fetch('/api/standings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: standingTab }), // ✅ 改這裡
+      })
+      const result = await res.json()
+      setStandings(result)
     }
     fetchStandings()
-  }, [tab])
+  }, [standingTab])
   
 
   useEffect(() => {
@@ -228,7 +220,8 @@ export default function HomePage() {
       <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">LIVE STANDINGS</h2>
       <Card className="mt-6">
         <CardContent>
-          <Tabs defaultValue="firstHalf" value={tab} onValueChange={setTab}>
+          <Tabs defaultValue="firstHalf" value={standingTab} onValueChange={setStandingTab}>
+
             <TabsList>
               <TabsTrigger value="firstHalf">上半季</TabsTrigger>
               <TabsTrigger value="secondHalf">下半季</TabsTrigger>

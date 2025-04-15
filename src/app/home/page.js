@@ -72,16 +72,25 @@ export default function HomePage() {
 
   useEffect(() => {
     async function fetchStandings() {
-      const res = await fetch('/api/standings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: tab }),
-      })
-      const result = await res.json()
-      setStandings(result)
+      try {
+        const res = await fetch('/api/standings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: tab }),
+        })
+        const result = await res.json()
+  
+        if (!res.ok) throw new Error(result.message || '發生錯誤')
+  
+        setStandings(result)
+      } catch (err) {
+        alert('❌ 發生錯誤：' + err.message)
+        console.error('📛 錯誤內容：', err)
+      }
     }
     fetchStandings()
   }, [tab])
+  
 
   useEffect(() => {
     async function fetchRewards() {

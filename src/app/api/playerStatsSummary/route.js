@@ -57,8 +57,9 @@ export async function POST(req) {
 
       return NextResponse.json({
         ...total,
-        AVG: AVG.toFixed(3),
-        OPS: (OBP + SLG).toFixed(3)
+        AVG: AVG.toFixed(3).replace(/^0/, ''),
+        OPS: (OBP + SLG).toFixed(3).replace(/^0/, '')
+
       })
     }
 

@@ -23,6 +23,8 @@ export default function RosterPage() {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [batterSummary, setBatterSummary] = useState(null)
   const [pitcherSummary, setPitcherSummary] = useState(null)
+  const [gameInfoMap, setGameInfoMap] = useState({})
+  const [gameInfoLoaded, setGameInfoLoaded] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => {
     const nowUTC = new Date()
     const taiwanOffset = 8 * 60 * 60 * 1000 // +08:00 offset in milliseconds
@@ -141,6 +143,43 @@ export default function RosterPage() {
 
     if (userId) fetchData()
   }, [userId, fromDate, toDate, selectedManager]) 
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const map = {}
+        const teams = [...new Set(players.map(p => p.Team))]
+  
+        for (const team of teams) {
+          const res = await fetch('/api/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: selectedDate, team })
+          })
+          const data = await res.json()
+  
+          if (data?.info) {
+            map[team] = data.info
+          } else {
+            map[team] = 'No game'
+          }
+        }
+  
+        setGameInfoMap(map)
+        setGameInfoLoaded(true)
+      } catch (err) {
+        console.error('❌ 賽程讀取失敗:', err)
+        setGameInfoMap({})
+        setGameInfoLoaded(true)
+      }
+    }
+  
+    setGameInfoLoaded(false)
+    if (players.length > 0) {
+      fetchGames()
+    }
+  }, [selectedDate, players])
+  
 
   const fetchStatsSummary = async () => {
     const batterNames = players
@@ -492,7 +531,12 @@ export default function RosterPage() {
                 onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
               />
               <span>{p.Name}</span>
-              <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
+                <span className="text-sm text-gray-500">
+                  {gameInfoMap[p.Team] ?? 'No game'}
+                </span>
+              </div>
               {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
                 <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
                   {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}
@@ -696,8 +740,11 @@ export default function RosterPage() {
         </div>
       )}
 
+      {positionsLoaded && !gameInfoLoaded && (
+        <div className="text-sm text-gray-500 mb-4">陣容及賽程載入中...</div>
+      )}
 
-      {positionsLoaded && (
+      {positionsLoaded && gameInfoLoaded && (
         <div className="overflow-auto max-h-[600px]">
           <section className="mb-8">
               <h2 className="text-lg font-semibold mb-2">Batters</h2>

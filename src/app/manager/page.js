@@ -40,6 +40,7 @@ export default function RosterPage() {
         const res = await fetch(`/api/starting-pitcher/load?date=${selectedDate}`)
         const data = await res.json()
         if (res.ok) {
+          console.log('🎯 startingPitchers:', data) // ✅ 印出來檢查
           setStartingPitchers(data)
         } else {
           console.error('❌ 取得先發名單失敗:', data)
@@ -538,6 +539,8 @@ export default function RosterPage() {
   
 
   const renderRow = (p, type) => {
+
+    console.log('🧪 檢查 p.Name:', p.Name, '是否在先發名單中？', startingPitchers.includes(p.Name))
     return (
       <>
         <tr>

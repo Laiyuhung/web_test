@@ -282,27 +282,28 @@ export default function RosterPage() {
     allSlots.forEach(pos => {
       // 處理 NA 與 NA(備用) 為同一組
       if (pos === 'NA' || pos === 'NA(備用)') {
-        const assigned = players.filter(p =>
-          assignedPositions[p.Name] === 'NA' || assignedPositions[p.Name] === 'NA(備用)'
-        )
-  
-        // 計算 NA 類位置總數（合併）
-        const naPlayers = players.filter(p =>
-          assignedPositions[p.Name] === 'NA' || assignedPositions[p.Name] === 'NA(備用)'
-        )
-        const naCount = naPlayers.length
-
-        // 個別 slot 顯示用
-        const naVariants = ['NA', 'NA(備用)']
-        naVariants.forEach(variant => {
-          slotStatus[variant] = {
-            displayAs: variant,          // 顯示原樣
-            count: naCount,              // ✅ 合併計算數量
-            max: slotLimit['NA'],        // ✅ 限制仍為 5
-            players: naPlayers           // ✅ 合併玩家列表
+        const assignedNA = players.filter(p => assignedPositions[p.Name] === 'NA')
+        const assignedBackup = players.filter(p => assignedPositions[p.Name] === 'NA(備用)')
+        const totalCount = assignedNA.length + assignedBackup.length
+        const max = slotLimit['NA'] // 限制總共 5 人
+      
+        if (pos === 'NA' && !slotStatus['NA']) {
+          slotStatus['NA'] = {
+            displayAs: 'NA',
+            count: totalCount,
+            max,
+            players: assignedNA
           }
-        })
-
+        }
+      
+        if (pos === 'NA(備用)' && !slotStatus['NA(備用)']) {
+          slotStatus['NA(備用)'] = {
+            displayAs: 'NA(備用)',
+            count: totalCount,
+            max,
+            players: assignedBackup
+          }
+        }
       } else {
         const assigned = players.filter(p => assignedPositions[p.Name] === pos)
         slotStatus[pos] = {

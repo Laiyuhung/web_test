@@ -4,6 +4,8 @@ import supabase from '@/lib/supabase'
 export async function POST(req) {
   const { team, date } = await req.json()
 
+  console.log('📥 傳入查詢參數:', { team, date })  // ✅ 加這行
+
   if (!team || !date) {
     return NextResponse.json({ error: '缺少 team 或 date' }, { status: 400 })
   }
@@ -17,7 +19,8 @@ export async function POST(req) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   if (!data || data.length === 0) {
-    return NextResponse.json({ info: 'No game' }) // 若沒比賽只回 info
+    console.log(`📭 ${team} 在 ${date} 無比賽`)  // ✅ 加這行
+    return NextResponse.json({ info: 'No game' })
   }
 
   const game = data[0]
@@ -30,6 +33,8 @@ export async function POST(req) {
   } else {
     info = `${timeOrPPD} @ ${game.home}`
   }
+
+  console.log('📤 回傳比賽資訊:', info)  // ✅ 加這行
 
   return NextResponse.json({ ...game, info })
 }

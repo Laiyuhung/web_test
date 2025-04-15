@@ -126,18 +126,24 @@ export default function RosterPage() {
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const res = await fetch(`/api/schedule?date=${selectedDate}`)
-        const data = await res.json()
-  
-        if (!Array.isArray(data)) return
-  
         const map = {}
-        data.forEach(game => {
-          const { time, away, home, is_postponed } = game
-          const info = `${is_postponed ? 'PPD' : time}（${away} @ ${home}）vs ${away}`
-          map[away] = info
-          map[home] = info
-        })
+        const teams = [...new Set(players.map(p => p.Team))]
+  
+        for (const team of teams) {
+          const res = await fetch('/api/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: selectedDate, team })
+          })
+          const data = await res.json()
+  
+          if (data?.info) {
+            map[team] = data.info
+          } else {
+            map[team] = 'No game'
+          }
+        }
+  
         setGameInfoMap(map)
       } catch (err) {
         console.error('❌ 賽程讀取失敗:', err)
@@ -145,8 +151,11 @@ export default function RosterPage() {
       }
     }
   
-    fetchGames()
-  }, [selectedDate])
+    if (players.length > 0) {
+      fetchGames()
+    }
+  }, [selectedDate, players])
+  
 
   const fetchStatsSummary = async () => {
     const batterNames = players

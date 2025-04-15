@@ -608,41 +608,47 @@ export default function RosterPage() {
                   <span className="text-sm text-gray-500">- {(p.finalPosition || []).join(', ')}</span>
                 </div>
 
-                {/* 第二行：比賽資訊 + 若為先發投手加上 V */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">{gameInfoMap[p.Team] ?? 'No game'}</span>
-                  <div className="flex items-center gap-1">
-                    {/* 打序邏輯 */}
-                    {(() => {
-                      const found = startingLineup.find(l => l.name === p.Name)
-                      if (found) {
-                        return (
-                          <span className="text-white bg-blue-600 text-xs font-bold px-2 py-0.5 rounded">
-                            {found.batting_no}
-                          </span>
-                        )
-                      } else if (lineupTeams.includes(p.Team)) {
-                        return (
-                          <span className="text-white bg-yellow-500 text-xs font-bold px-2 py-0.5 rounded">
-                            X
-                          </span>
-                        )
-                      } else {
-                        return (
-                          <span className="text-white bg-red-600 text-xs font-bold px-2 py-0.5 rounded">
-                            X
-                          </span>
-                        )
-                      }
-                    })()}
+                {/* 第二行：比賽資訊 + 打序 or 先發標記 */}
+                <div className="flex items-center justify-start gap-2">
+                  <span className="text-sm text-gray-500">
+                    {gameInfoMap[p.Team] ?? 'No game'}
+                  </span>
 
-                    {/* 投手先發 V */}
-                    {startingPitchers.some(sp => sp.name === p.Name) && (
-                      <span className="text-white bg-green-700 text-xs font-bold px-2 py-0.5 rounded">
-                        V
-                      </span>
-                    )}
-                  </div>
+                  {/* 顯示打序號 or X or V */}
+                  {(() => {
+                    const found = startingLineup.find(l => l.name === p.Name)
+
+                    // 先發打序：顯示號碼（深綠底）
+                    if (found) {
+                      return (
+                        <span className="text-white bg-green-700 text-xs font-bold px-2 py-0.5 rounded">
+                          {found.batting_no}
+                        </span>
+                      )
+                    }
+
+                    // 沒找到打序，若為 Pitcher 不顯示 X
+                    if (p.B_or_P === 'Pitcher') return null
+
+                    // 隊伍有登錄但沒該球員 → 紅底 X
+                    if (lineupTeams.includes(p.Team)) {
+                      return (
+                        <span className="text-white bg-red-600 text-xs font-bold px-2 py-0.5 rounded">
+                          X
+                        </span>
+                      )
+                    }
+
+                    // 沒有打比賽也沒登錄 → 不顯示
+                    return null
+                  })()}
+
+                  {/* 若為投手先發 → 顯示 V */}
+                  {startingPitchers.some(sp => sp.name === p.Name) && (
+                    <span className="text-white bg-green-700 text-xs font-bold px-2 py-0.5 rounded">
+                      V
+                    </span>
+                  )}
                 </div>
               </div>
 

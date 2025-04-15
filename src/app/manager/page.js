@@ -560,15 +560,20 @@ export default function RosterPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>
                   <span className="text-sm text-gray-500">{p.Team}</span>
-                  <span className="text-sm text-gray-500">| {(p.finalPosition || []).join(', ')}</span>
+                  <span className="text-sm text-gray-500">- {(p.finalPosition || []).join(', ')}</span>
                 </div>
 
-                {/* 第二行：比賽資訊 */}
-                <span className="text-sm text-gray-500">
-                  {gameInfoMap[p.Team] ?? 'No game'}
-                </span>
+                {/* 第二行：比賽資訊 + 若為先發投手加上 V */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">{gameInfoMap[p.Team] ?? 'No game'}</span>
+                  {startingPitchers.includes(p.Name) && (
+                    <span className="text-white bg-green-700 text-xs font-bold px-2 py-0.5 rounded">
+                      V
+                    </span>
+                  )}
+                </div>
               </div>
-              
+
               {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
                 <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
                   {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}

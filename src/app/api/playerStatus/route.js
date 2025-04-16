@@ -29,7 +29,9 @@ export async function GET() {
       let manager_id = null  // ✅ 這行要補上
 
       if (addCount - dropCount === 1) {
-        const lastAdd = [...playerTx].reverse().find(t => t.type.includes('Add'))
+        const addList = playerTx.filter(t => t.type.includes('Add'))
+				const lastAdd = addList
+  				.sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
         if (lastAdd) {
           status = 'On Team'
           const m = managers.find(m => m.id === lastAdd.manager_id)
@@ -37,8 +39,12 @@ export async function GET() {
           manager_id = m?.id || null  // ✅ 這裡加上 manager_id
         }
       } else if (addCount - dropCount === 0) {
-        const lastDrop = [...playerTx].reverse().find(t => t.type.includes('Drop'))
-        const lastAdd = [...playerTx].reverse().find(t => t.type.includes('Add'))
+        const lastDrop = playerTx
+  				.filter(t => t.type.includes('Drop'))
+ 					.sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
+        const addList = playerTx.filter(t => t.type.includes('Add'))
+				const lastAdd = addList
+  				.sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
       
         if (lastDrop && lastAdd) {
           const dropTime = new Date(lastDrop.transaction_time)

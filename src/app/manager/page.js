@@ -168,6 +168,10 @@ export default function RosterPage() {
   }, [])
 
   useEffect(() => {
+    if (selectedManager) fetchData()
+  }, [selectedManager, userId, fromDate, toDate])
+
+  useEffect(() => {
     applyDateRange(range)
   }, [range])
 

@@ -52,7 +52,7 @@ export async function POST(req) {
       add_player,
       off_waiver,
       drop_player: drop_player || null,
-      priority: newPriority,
+      personal_priority: newPriority,
       status: 'pending',
     })
 

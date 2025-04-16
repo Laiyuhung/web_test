@@ -241,12 +241,22 @@ export default function RosterPage() {
         
         const statsData = [...batterData, ...pitcherData]
 
+        const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
+
         const merged = statusData.map(p => {
-          const stat = statsData.find(s => s.name === p.Name)
-          const pos = positionData.find(pos => pos.name === p.Name)
+          const pClean = cleanName(p.Name)
+
+          const stat = statsData.find(s => cleanName(s.name) === pClean)
+          const pos = positionData.find(pos => cleanName(pos.name) === pClean)
+          const reg = registerData.find(r => cleanName(r.name) === pClean)
+
+          if (!stat) console.warn('⚠️ 找不到 stat 對應:', p.Name)
+          if (!pos) console.warn('⚠️ 找不到 position 對應:', p.Name)
+          if (!reg) console.warn('⚠️ 找不到 register 對應:', p.Name)
+
           const finalPosition = pos?.finalPosition || []
-          const reg = registerData.find(r => r.name === p.Name)
           const registerStatus = reg?.status || '未知'
+
           return {
             ...p,
             ...(stat || {}),
@@ -254,6 +264,7 @@ export default function RosterPage() {
             registerStatus
           }
         })
+
 
         const myPlayers = merged.filter(p => String(p.manager_id) === String(selectedManager))
 

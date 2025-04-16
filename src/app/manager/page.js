@@ -858,7 +858,7 @@ export default function RosterPage() {
             }}
             className="ml-2 border px-2 py-1 rounded"
           >
-            <option value="">請選擇...</option>
+            <option value="">選擇玩家</option>
             {managers.map(m => (
               <option key={m.id} value={m.id}>{m.team_name}</option>
             ))}

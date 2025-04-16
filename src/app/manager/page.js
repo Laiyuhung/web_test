@@ -247,7 +247,7 @@ export default function RosterPage() {
           }
         })
 
-        const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
+        const myPlayers = merged.filter(p => p.manager_id?.toString() === selectedManager)
 
         setPlayers(myPlayers)
 
@@ -845,7 +845,6 @@ export default function RosterPage() {
             value={selectedManager || ''}
             onChange={(e) => {
               setSelectedManager(e.target.value)
-              setUserId(e.target.value)  // 👈 同步改 userId 來載入對應球員
             }}
             className="ml-2 border px-2 py-1 rounded"
           >

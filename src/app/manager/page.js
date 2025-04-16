@@ -805,8 +805,10 @@ export default function RosterPage() {
         {/* 黑底白字的 Today 按鈕 */}
         <button
           onClick={() => {
-            const today = new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })
-            const date = new Date(today).toISOString().slice(0, 10)
+            const now = new Date()
+            const taiwanOffset = 8 * 60 * 60 * 1000
+            const taiwanTime = new Date(now.getTime() + taiwanOffset)
+            const date = taiwanTime.toISOString().slice(0, 10)
             setSelectedDate(date)
             setShowDatePicker(false)
           }}

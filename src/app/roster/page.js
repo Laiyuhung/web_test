@@ -383,11 +383,16 @@ export default function RosterPage() {
     if (gameInfo && !gameInfo.startsWith('PPD') && !gameInfo.startsWith('No game')) {
       const timeStr = gameInfo.slice(0, 5) // 取得 "18:35"
       const [h, m] = timeStr.split(':')
+    
       const gameDateTime = new Date(`${selectedDate}T${h}:${m}:00+08:00`)
-      const now = new Date()
-      const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+      const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+    
+      console.log('🕓 gameDateTime:', gameDateTime.toISOString())
+      console.log('🕒 taiwanNow:', taiwanNow.toISOString())
+    
       isLocked = taiwanNow >= gameDateTime
     }
+    
   
     if (loading || !isEditable || isLocked) {
       return (

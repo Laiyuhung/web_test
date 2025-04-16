@@ -141,6 +141,7 @@ export default function PlayerPage() {
             body: JSON.stringify({ date: toDate, team })
           })
           const data = await res.json()
+          console.log('🧪 查詢', team, '日期', toDate, '結果:', data)
           map[team] = data.info || 'No game'
         } catch (err) {
           map[team] = 'No game'

@@ -953,7 +953,7 @@ export default function RosterPage() {
                       const now = new Date()
                       const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
 
-                      const gameDateTime = new Date(`${selectedDate}T${timeStr}:00+08:00`)
+                      const gameDateTime = new Date(`${selectedDate}T${timeStr}:00+00:00`)
                       const isLocked = taiwanNow >= gameDateTime
                     
                       if (isLocked) {

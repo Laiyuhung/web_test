@@ -1,14 +1,23 @@
 import { NextResponse } from 'next/server'
 import supabase from '@/lib/supabaseServer'
 
+export async function GET() {
+  console.log('🌐 手動觸發 Waiver 處理 (GET)')
+  return handleWaiver()
+}
+
 export async function POST() {
+  console.log('🚀 自動觸發 Waiver 處理 (POST)')
+  return handleWaiver()
+}
+
+async function handleWaiver() {
   try {
     const now = new Date()
     const taiwanOffset = 8 * 60 * 60 * 1000
     const taiwanDate = new Date(now.getTime() + taiwanOffset).toISOString().slice(0, 10)
     console.log(`📆 今日台灣日期: ${taiwanDate}`)
 
-    // 1️⃣ 撈出今日所有 pending 的 waiver
     const { data: waivers, error: waiverError } = await supabase
       .from('waiver')
       .select('*')
@@ -20,7 +29,6 @@ export async function POST() {
 
     console.log(`📌 今日共 ${waivers.length} 筆待處理 Waiver`)
 
-    // 2️⃣ 撈出順位順序
     const { data: priorities, error: priorityError } = await supabase
       .from('waiver_priority')
       .select('id, priority')
@@ -31,7 +39,6 @@ export async function POST() {
     let priorityList = priorities.map(p => p.id)
     console.log('📋 當前順位順序:', priorityList)
 
-    // 3️⃣ 依序處理各順位
     for (let i = 0; i < priorityList.length; i++) {
       const managerId = priorityList[i]
       const managerWaivers = waivers
@@ -46,7 +53,6 @@ export async function POST() {
       const w = managerWaivers[0]
       console.log(`⚙️ 處理 Manager ${managerId} Waiver：新增 ${w.add_player}，移除 ${w.drop_player}`)
 
-      // 撈當日 assigned_position_history
       const { data: positions, error: posError } = await supabase
         .from('assigned_position_history')
         .select('player_name, position')
@@ -57,7 +63,6 @@ export async function POST() {
 
       const assignedMap = Object.fromEntries(positions.map(p => [p.player_name, p.position]))
 
-      // 撈球員是否洋將
       const { data: playerList } = await supabase
         .from('playerslist')
         .select('Name, identity')
@@ -67,7 +72,6 @@ export async function POST() {
         return p?.identity === '洋將'
       }
 
-      // 模擬加入
       if (!w.add_player) continue
       assignedMap[w.add_player] = 'BN'
       if (w.drop_player) delete assignedMap[w.drop_player]
@@ -90,13 +94,11 @@ export async function POST() {
         continue
       }
 
-      // 成功，標記為 Success
       console.log('✅ 通過 Roster 檢查，標記為 Success')
       await supabase.from('waiver')
         .update({ status: 'Success' })
         .eq('apply_no', w.apply_no)
 
-      // 同日同球員其他申請 Fail
       const { error: updateOthersError } = await supabase
         .from('waiver')
         .update({ status: 'Fail (low priority)' })
@@ -107,17 +109,15 @@ export async function POST() {
 
       if (updateOthersError) console.error('❌ 無法更新其他 Waiver:', updateOthersError)
 
-      // 順位移到最後
       const newPriority = Math.min(...priorities.map(p => p.priority)) - 1
       console.log(`🔃 調整順位：Manager ${managerId} 新順位 ${newPriority}`)
       await supabase.from('waiver_priority')
         .update({ priority: newPriority })
         .eq('id', managerId)
 
-      // 更新本地 priorityList，放最後
       priorityList.splice(i, 1)
       priorityList.push(managerId)
-      i-- // 下一輪仍從目前 index 處理
+      i--
     }
 
     return NextResponse.json({ success: true })

@@ -1070,10 +1070,17 @@ export default function RosterPage() {
                 {slot.count < slot.max && (
                   <button
                   onClick={() => {
-                    // 🔒 檢查比賽是否已開打（非 PPD）
-                    const gameInfo = gameInfoMap[moveTarget.Team]
-                    const isLocked = gameInfo && !gameInfo.startsWith('PPD') &&
-                      new Date(`${selectedDate}T${gameInfo.slice(0, 5)}:00+08:00`) <= new Date(new Date().getTime() + 8 * 60 * 60 * 1000)
+                    const getGameDateTime = (team) => {
+                      const info = gameInfoMap[team]
+                      const timeMatch = info?.match(/\d{2}:\d{2}/)
+                      const timeStr = timeMatch ? timeMatch[0] : '23:59'
+                      return new Date(`${selectedDate}T${timeStr}:00+08:00`)
+                    }
+                  
+                    const now = new Date()
+                    const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+                    const gameDateTime = getGameDateTime(moveTarget.Team)
+                    const isLocked = taiwanNow >= gameDateTime
                   
                     if (isLocked) {
                       setMoveMessage(`${moveTarget.Team} 比賽已開始，禁止異動位置`)
@@ -1097,6 +1104,7 @@ export default function RosterPage() {
                     setMoveTarget(null)
                     setMoveSlots(null)
                   }}
+                  
                   
                     className="w-full flex items-center justify-center text-blue-600 font-semibold border-2 border-dashed border-blue-400 p-3 rounded bg-white hover:bg-blue-50"
                   >

@@ -5,11 +5,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
   const [weeklyIP, setWeeklyIP] = useState('0.0')
-  const [activeRosterCount, setActiveRosterCount] = useState(0)
+  const [activeCount, setActiveCount] = useState(0)
   const [weeklyAddCount, setWeeklyAddCount] = useState(null)
-  const [myPlayers, setMyPlayers] = useState([])
-  const [selectedManager, setSelectedManager] = useState('')
-  const [managers, setManagers] = useState([]) // 儲存撈回來的 manager 名單
+  const [gameInfoMap, setGameInfoMap] = useState({})
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)
   const [range, setRange] = useState('Today')
@@ -27,7 +25,6 @@ export default function RosterPage() {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [batterSummary, setBatterSummary] = useState(null)
   const [pitcherSummary, setPitcherSummary] = useState(null)
-  const [gameInfoMap, setGameInfoMap] = useState({})
   const [gameInfoLoaded, setGameInfoLoaded] = useState(false)
   const [startingPitchers, setStartingPitchers] = useState([])
   const [pitchersLoaded, setPitchersLoaded] = useState(false)
@@ -42,52 +39,40 @@ export default function RosterPage() {
   })
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedId = document.cookie.split('; ').find(row => row.startsWith('user_id='))?.split('=')[1]
-      if (storedId) {
-        setUserId(storedId)
-        setSelectedManager(prev => prev || storedId)  // 👈 若還沒選擇則預設為登入者
-      }
-    }
-  }, [])
-  
-
-  useEffect(() => {
-    if (!selectedManager) return
+    if (!userId) return
   
     const fetchWeeklyIP = async () => {
       try {
         const res = await fetch('/api/weekly_ip_by_manager', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ manager_id: parseInt(selectedManager) })
+          body: JSON.stringify({ manager_id: parseInt(userId) })
         })
         const data = await res.json()
         if (res.ok) {
           setWeeklyIP(data.IP || '0.0')
         } else {
           console.error('❌ weekly_ip 查詢失敗:', data)
-          setWeeklyIP('0.0')
+          setWeeklyIP(null)
         }
       } catch (err) {
         console.error('❌ 呼叫 weekly_ip_by_manager 失敗:', err)
-        setWeeklyIP('0.0')
+        setWeeklyIP(null)
       }
     }
   
     fetchWeeklyIP()
-  }, [selectedManager])
-  
+  }, [userId])
 
   useEffect(() => {
-    if (!selectedManager) return
+    if (!userId) return
   
     const fetchWeeklyAddCount = async () => {
       try {
         const res = await fetch('/api/transaction/weekly_add_count', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ manager_id: selectedManager })
+          body: JSON.stringify({ manager_id: userId })
         })
   
         const data = await res.json()
@@ -104,9 +89,9 @@ export default function RosterPage() {
     }
   
     fetchWeeklyAddCount()
-  }, [selectedManager])
+  }, [userId])
   
-
+  
   useEffect(() => {
     const fetchLineupTeams = async () => {
       try {
@@ -114,6 +99,7 @@ export default function RosterPage() {
         const data = await res.json()
         if (res.ok) {
           setLineupTeams(data)
+          console.log('📋 已登錄打序的球隊:', data)
         } else {
           console.error('❌ 取得 lineup 球隊失敗:', data)
           setLineupTeams([])
@@ -153,7 +139,6 @@ export default function RosterPage() {
         const res = await fetch(`/api/starting-pitcher/load?date=${selectedDate}`)
         const data = await res.json()
         if (res.ok) {
-          // console.log('🎯 startingPitchers:', data) // ✅ 印出來檢查
           setStartingPitchers(data)
         } else {
           console.error('❌ 取得先發名單失敗:', data)
@@ -179,10 +164,6 @@ export default function RosterPage() {
   }, [])
 
   useEffect(() => {
-    if (selectedManager) fetchData()
-  }, [selectedManager, userId, fromDate, toDate])
-
-  useEffect(() => {
     applyDateRange(range)
   }, [range])
 
@@ -194,30 +175,12 @@ export default function RosterPage() {
 
   useEffect(() => {
     if (rosterReady) {
-      // console.log('📊 觸發 fetchStatsSummary (roster ready & date):', selectedDate)
+      console.log('📊 觸發 fetchStatsSummary (roster ready & date):', selectedDate)
       fetchStatsSummary()
     }
   }, [rosterReady, selectedDate])
   
-  useEffect(() => {
-    const fetchManagers = async () => {
-      try {
-        const res = await fetch('/api/managers')
-        const data = await res.json()
-        if (Array.isArray(data)) {
-          setManagers(data)
-        } else {
-          console.error('manager 資料格式錯誤:', data)
-        }
-      } catch (err) {
-        console.error('無法取得 managers:', err)
-      }
-    }
   
-    fetchManagers()
-  }, [userId])
-
-
   useEffect(() => {
     if (range === 'Today') {
       applyDateRange('Today')
@@ -256,26 +219,12 @@ export default function RosterPage() {
         
         const statsData = [...batterData, ...pitcherData]
 
-        console.log('📊 打者資料筆數:', batterData.length)
-        console.log('📊 投手資料筆數:', pitcherData.length)
-        console.log('📊 合併後 statsData:', statsData.map(s => s.name))
-
-        const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
-
         const merged = statusData.map(p => {
-          const pClean = cleanName(p.Name)
-
-          const stat = statsData.find(s => cleanName(s.name) === pClean)
-          const pos = positionData.find(pos => cleanName(pos.name) === pClean)
-          const reg = registerData.find(r => cleanName(r.name) === pClean)
-
-          if (!stat) console.warn('⚠️ 找不到 stat 對應:', p.Name)
-          if (!pos) console.warn('⚠️ 找不到 position 對應:', p.Name)
-          if (!reg) console.warn('⚠️ 找不到 register 對應:', p.Name)
-
+          const stat = statsData.find(s => s.name === p.Name)
+          const pos = positionData.find(pos => pos.name === p.Name)
           const finalPosition = pos?.finalPosition || []
+          const reg = registerData.find(r => r.name === p.Name)
           const registerStatus = reg?.status || '未知'
-
           return {
             ...p,
             ...(stat || {}),
@@ -284,16 +233,10 @@ export default function RosterPage() {
           }
         })
 
-
-        const myPlayers = merged.filter(p => String(p.manager_id) === String(selectedManager))
-
-        // 🐞 加上這幾行 debug
-        console.log('✅ selectedManager：', selectedManager)
-        console.log('📦 merged 中 manager_id 分布：', merged.map(p => p.manager_id))
-        console.log('🎯 myPlayers 名單：', myPlayers.map(p => p.Name))
+        const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
 
         setPlayers(myPlayers)
-        setMyPlayers(myPlayers)
+
         await loadAssigned(myPlayers)
         setPositionsLoaded(true)
         setRosterReady(true)
@@ -304,8 +247,24 @@ export default function RosterPage() {
       setLoading(false)
     }
 
-    if (selectedManager) fetchData()
-  }, [userId, fromDate, toDate, selectedManager]) 
+    if (userId) fetchData()
+  }, [userId, fromDate, toDate]) 
+
+  useEffect(() => {
+    const allForeign = players.filter(p => p.identity === '洋將')
+    const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+  
+    setForeignCount({
+      all: allForeign.length,
+      active: activeForeign.length
+    })
+
+    // ✅ 加在這裡！
+    const activePlayers = players.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+    setActiveCount(activePlayers.length)
+
+  }, [players, assignedPositions])
+  
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -333,10 +292,9 @@ export default function RosterPage() {
       } catch (err) {
         console.error('❌ 賽程讀取失敗:', err)
         setGameInfoMap({})
-        setGameInfoLoaded(true)
       }
     }
-  
+    
     setGameInfoLoaded(false)
     if (players.length > 0) {
       fetchGames()
@@ -440,40 +398,15 @@ export default function RosterPage() {
   
 
   const renderAssignedPositionSelect = (p) => {
-    
-    const getTaiwanTodayString = () => {
-      const now = new Date()
-      const taiwanOffset = 8 * 60 * 60 * 1000
-      const taiwanNow = new Date(now.getTime() + taiwanOffset)
-    
-      // console.log('🌐 UTC 現在時間:', now.toISOString())
-      // console.log('🇹🇼 台灣現在時間:', taiwanNow.toISOString())
-      // console.log('📅 台灣今天日期字串:', taiwanNow.toISOString().slice(0, 10))
-    
-      return taiwanNow.toISOString().slice(0, 10)
-    }
-    
     const currentValue = assignedPositions[p.Name] || 'BN'
-    const todayStr = getTaiwanTodayString()
-    const isEditable = selectedDate >= todayStr
-  
-    if (loading || !isEditable) {
-      // 過去日期：藍字純文字（不能點）
-      return (
-        <span className="text-[#004AAD] text-sm font-bold min-w-[36px] text-center">
-          {currentValue}
-        </span>
-      )
-    }
-    
-    // 今日或未來：原本的可互動圓圈按鈕
     return (
-        <span className="text-[#004AAD] text-sm font-bold min-w-[36px] text-center">
-          {currentValue}
-        </span>
-      )
-      
+      <span className="text-[#004AAD] text-sm font-bold min-w-[36px] text-center">
+        {currentValue}
+      </span>
+    )
   }
+  
+  
   
   const openMoveModal = (player) => {
     console.log('🔁 可選位置:', player.finalPosition)
@@ -545,7 +478,7 @@ export default function RosterPage() {
   
 
   const loadAssigned = async (playersList) => {
-    // console.log('📦 載入 assigned，用的 playersList:', playersList)
+    console.log('📦 載入 assigned，用的 playersList:', playersList)
   
     try {
       const res = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
@@ -560,32 +493,9 @@ export default function RosterPage() {
         }
       })
   
-      // console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
+      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
   
       setAssignedPositions(map)
-
-      // ✅ 加入洋將數量計算
-    const allForeign = playersList.filter(p => p.identity === '洋將')
-    const activeForeign = allForeign.filter(p => {
-      const pos = map[p.Name]
-      return !['NA', 'NA(備用)'].includes(pos)
-    })
-
-    const activeRoster = playersList.filter(p => {
-      const pos = map[p.Name]
-      return !['NA', 'NA(備用)'].includes(pos)
-    })
-
-    setForeignCount({
-      all: allForeign.length,
-      active: activeForeign.length
-    })
-
-    setActiveRosterCount(activeRoster.length)
-
-    console.log('🧮 洋將數：', { all: allForeign.length, active: activeForeign.length })
-
-
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
@@ -699,8 +609,6 @@ export default function RosterPage() {
   
 
   const renderRow = (p, type) => {
-
-    // console.log('🧪 檢查 p.Name:', p.Name, '是否在先發名單中？', startingPitchers.includes(p.Name))
     return (
       <>
         <tr>
@@ -768,6 +676,7 @@ export default function RosterPage() {
                     </span>
                   )}
                 </div>
+
               </div>
 
               {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
@@ -920,7 +829,7 @@ export default function RosterPage() {
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">
           <div>
             <span className="text-[#0155A0]">Active Roster：</span>
-            <span className="text-[#0155A0]">{activeRosterCount}</span>
+            <span className="text-[#0155A0]">{activeCount}</span>
           </div>
           <div>
             <span className="text-[#0155A0]">On team 洋將：</span>
@@ -935,38 +844,18 @@ export default function RosterPage() {
             <span className="text-[#0155A0]">{weeklyAddCount}</span>
           </div>
           <div>
-            <span className={`text-sm font-semibold ${parseFloat(weeklyIP) < 30 ? 'text-red-600' : 'text-[#0155A0]'}`}>
-              Weekly IP：
-            </span>
-            <span className={`font-bold ${parseFloat(weeklyIP) < 30 ? 'text-red-600' : 'text-[#0155A0]'}`}>
-              {weeklyIP}
+            <span className="text-[#0155A0]">Weekly IP：</span>
+            <span className={parseFloat(weeklyIP) < 30 ? 'text-red-600 font-bold' : 'text-[#0155A0]'}>
+              {weeklyIP ?? '-'}
             </span>
           </div>
 
+
         </div>
       </div>
-
-      <div className="mb-4">
-        <label className="text-sm font-semibold mr-2">選擇玩家：</label>
-        <select
-            value={selectedManager}
-            onChange={(e) => {
-                setSelectedManager(e.target.value)
-                setRosterReady(false)
-            }}
-            className="border px-2 py-1 rounded"
-            >
-            <option value="" disabled>請選擇玩家</option>
-            {managers.map(m => (
-                <option key={m.id} value={m.id}>
-                {m.team_name}
-                </option>
-            ))}
-        </select>
-      </div>  
       
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
-      <h1 className="text-xl font-bold mb-6">MANAGERS LINEUP</h1>
+      <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
       
       {batterSummary && pitcherSummary && (
         <div className="mb-6 space-y-6 text-sm text-gray-600">
@@ -1070,6 +959,33 @@ export default function RosterPage() {
                   <button
                     key={p.Name}
                     onClick={() => {
+                      const getGameDateTime = (team) => {
+                        const info = gameInfoMap[team]
+                        const timeMatch = info?.match(/\d{2}:\d{2}/)
+                        const timeStr = timeMatch ? timeMatch[0] : '23:59'
+                        return new Date(`${selectedDate}T${timeStr}:00+08:00`)
+                      }
+                    
+                      const now = new Date()
+                      const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+                    
+                      const moveGameTime = getGameDateTime(moveTarget.Team)
+                      const targetGameTime = getGameDateTime(p.Team)
+                    
+                      const moveLocked = taiwanNow >= moveGameTime
+                      const targetLocked = taiwanNow >= targetGameTime
+                    
+                      console.log('🕒 台灣時間:', taiwanNow.toISOString())
+                      console.log(`🔒 ${moveTarget.Team} 鎖定狀態:`, moveLocked, moveGameTime.toISOString())
+                      console.log(`🔒 ${p.Team} 鎖定狀態:`, targetLocked, targetGameTime.toISOString())
+                    
+                      if (moveLocked || targetLocked) {
+                        setMoveMessage(`❌ ${moveTarget.Team} 或 ${p.Team} 比賽已開始，禁止異動位置`)
+                        setTimeout(() => setMoveMessage(''), 3000)
+                        return
+                      }
+                    
+                      // ✅ 原本交換邏輯
                       const currentPos = assignedPositions[moveTarget.Name]
                       const canReturn = (p.finalPosition || []).includes(currentPos) ||
                                         (p.B_or_P === 'Batter' && currentPos === 'Util') ||
@@ -1080,22 +996,22 @@ export default function RosterPage() {
                       const fallback = 'BN'
                       const newPos = canReturn ? currentPos : fallback
                     
-                      // ✅ 先關掉 modal，避免 React state 延遲導致沒關
                       setMoveTarget(null)
                       setMoveSlots(null)
                     
-                      // ✅ 再更新位置
                       setAssignedPositions(prev => {
                         const updated = { ...prev }
                         updated[moveTarget.Name] = posKey
                         updated[p.Name] = newPos
-                        saveAssigned(updated) 
+                        saveAssigned(updated)
                         return updated
                       })
                     
                       setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}，${p.Name} 被移動到 ${newPos}`)
                       setTimeout(() => setMoveMessage(''), 3000)
                     }}
+                    
+                    
                     
                     className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"
                   >
@@ -1114,22 +1030,53 @@ export default function RosterPage() {
 
                 {slot.count < slot.max && (
                   <button
-                    onClick={() => {
-                      setAssignedPositions(prev => {
-                        const updated = {
-                          ...prev,
-                          [moveTarget.Name]: posKey
-                        }
-                        saveAssigned(updated) // 👈 新增這行
-                        return updated
-                      })
-
-                      setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}`)
-                      setTimeout(() => setMoveMessage(''), 2000)
-
-                      setMoveTarget(null)
-                      setMoveSlots(null)
-                    }}
+                  onClick={() => {
+                    const getGameDateTime = (team) => {
+                      const info = gameInfoMap[team]
+                      console.log('📋 gameInfoMap[team]:', info)
+                      const timeMatch = info?.match(/\d{2}:\d{2}/)
+                      const timeStr = timeMatch ? timeMatch[0] : '23:59'
+                      console.log('🕐 抓到的比賽時間字串:', timeStr)
+                      const dateObj = new Date(`${selectedDate}T${timeStr}:00+08:00`)
+                      console.log('📅 比賽預定時間:', dateObj.toISOString())
+                      return dateObj
+                    }
+                  
+                    const now = new Date()
+                    const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+                    console.log('🕒 現在台灣時間:', taiwanNow.toISOString())
+                  
+                    const gameDateTime = getGameDateTime(moveTarget.Team)
+                    const isLocked = taiwanNow >= gameDateTime
+                    console.log('🔒 是否鎖定:', isLocked)
+                  
+                    if (isLocked) {
+                      setMoveMessage(`${moveTarget.Team} 比賽已開始，禁止異動位置`)
+                      console.log('⛔ 鎖定，無法異動')
+                      setTimeout(() => setMoveMessage(''), 3000)
+                      return
+                    }
+                  
+                    console.log(`✅ 準備將 ${moveTarget.Name} 移動到 ${posKey}`)
+                    setAssignedPositions(prev => {
+                      const updated = {
+                        ...prev,
+                        [moveTarget.Name]: posKey
+                      }
+                      console.log('📝 更新後位置:', updated)
+                      saveAssigned(updated)
+                      return updated
+                    })
+                  
+                    setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}`)
+                    setTimeout(() => setMoveMessage(''), 2000)
+                  
+                    setMoveTarget(null)
+                    setMoveSlots(null)
+                  }}
+                  
+                  
+                  
                     className="w-full flex items-center justify-center text-blue-600 font-semibold border-2 border-dashed border-blue-400 p-3 rounded bg-white hover:bg-blue-50"
                   >
                     ➕ Empty

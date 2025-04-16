@@ -840,20 +840,20 @@ export default function RosterPage() {
 
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">
           <div>
-            <span className="text-[#004AAD]">Active Roster：</span>
-            <span className="text-[#004AAD]">{activeCount}</span>
+            <span className="text-[#0155A0]">Active Roster：</span>
+            <span className="text-[#0155A0]">{activeCount}</span>
           </div>
           <div>
             <span className="text-[#0155A0]">On team 洋將：</span>
             <span className="text-[#0155A0]">{foreignCount.all}</span>
           </div>
           <div>
-            <span className="text-green-700">Active 洋將：</span>
-            <span className="text-green-700">{foreignCount.active}</span>
+            <span className="text-[#0155A0]">Active 洋將：</span>
+            <span className="text-[#0155A0]">{foreignCount.active}</span>
           </div>
           <div>
-            <span className="text-purple-700">Weekly Adds：</span>
-            <span className="text-purple-700">{weeklyAddCount}</span>
+            <span className="text-[#0155A0]">Weekly Adds：</span>
+            <span className="text-[#0155A0]">{weeklyAddCount}</span>
           </div>
         </div>
       </div>

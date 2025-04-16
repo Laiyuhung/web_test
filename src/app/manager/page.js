@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [activeRosterCount, setActiveRosterCount] = useState(0)
   const [weeklyAddCount, setWeeklyAddCount] = useState(null)
   const [myPlayers, setMyPlayers] = useState([])
   const [selectedManager, setSelectedManager] = useState('1')
@@ -507,10 +508,17 @@ export default function RosterPage() {
       return !['NA', 'NA(備用)'].includes(pos)
     })
 
+    const activeRoster = playersList.filter(p => {
+      const pos = map[p.Name]
+      return !['NA', 'NA(備用)'].includes(pos)
+    })
+
     setForeignCount({
       all: allForeign.length,
       active: activeForeign.length
     })
+
+    setActiveRosterCount(activeRoster.length)
 
     console.log('🧮 洋將數：', { all: allForeign.length, active: activeForeign.length })
 
@@ -848,16 +856,20 @@ export default function RosterPage() {
 
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">
           <div>
+            <span className="text-blue-[#0155A0]">Active Roster：</span>
+            <span className="text-blue-[#0155A0]">{activeRosterCount}</span>
+          </div>
+          <div>
             <span className="text-[#0155A0]">On team 洋將：</span>
             <span className="text-[#0155A0]">{foreignCount.all}</span>
           </div>
           <div>
-            <span className="text-green-700">Active 洋將：</span>
-            <span className="text-green-700">{foreignCount.active}</span>
+            <span className="text-green-[#0155A0]">Active 洋將：</span>
+            <span className="text-green-[#0155A0]">{foreignCount.active}</span>
           </div>
           <div>
-            <span className="text-purple-700">Weekly Adds：</span>
-            <span className="text-purple-700">{weeklyAddCount}</span>
+            <span className="text-purple-[#0155A0]">Weekly Adds：</span>
+            <span className="text-purple-[#0155A0]">{weeklyAddCount}</span>
           </div>
         </div>
       </div>

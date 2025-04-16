@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [weeklyIP, setWeeklyIP] = useState(null)
   const [activeCount, setActiveCount] = useState(0)
   const [weeklyAddCount, setWeeklyAddCount] = useState(null)
   const [gameInfoMap, setGameInfoMap] = useState({})
@@ -36,6 +37,32 @@ export default function RosterPage() {
     const taiwanDate = new Date(nowUTC.getTime() + taiwanOffset)
     return taiwanDate.toISOString().slice(0, 10)
   })
+
+  useEffect(() => {
+    if (!userId) return
+  
+    const fetchWeeklyIP = async () => {
+      try {
+        const res = await fetch('/api/weekly_ip_by_manager', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ manager_id: parseInt(userId) })
+        })
+        const data = await res.json()
+        if (res.ok) {
+          setWeeklyIP(data.IP || '0.0')
+        } else {
+          console.error('❌ weekly_ip 查詢失敗:', data)
+          setWeeklyIP(null)
+        }
+      } catch (err) {
+        console.error('❌ 呼叫 weekly_ip_by_manager 失敗:', err)
+        setWeeklyIP(null)
+      }
+    }
+  
+    fetchWeeklyIP()
+  }, [userId])
 
   useEffect(() => {
     if (!userId) return
@@ -855,6 +882,14 @@ export default function RosterPage() {
             <span className="text-[#0155A0]">Weekly Adds：</span>
             <span className="text-[#0155A0]">{weeklyAddCount}</span>
           </div>
+          <div>
+            <span className="text-[#0155A0]">Weekly IP：</span>
+            <span className={parseFloat(weeklyIP) < 30 ? 'text-red-600 font-bold' : 'text-[#0155A0]'}>
+              {weeklyIP ?? '-'}
+            </span>
+          </div>
+
+
         </div>
       </div>
       

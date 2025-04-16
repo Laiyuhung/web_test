@@ -41,7 +41,7 @@ export async function POST(req) {
 
     let newPriority = 1
     if (priorityData.length > 0) {
-      const max = Math.max(...priorityData.map(r => r.priority || 0))
+      const max = Math.max(...priorityData.map(r => r.personal_priority || 0)) // ✅
       newPriority = max + 1
     }
 

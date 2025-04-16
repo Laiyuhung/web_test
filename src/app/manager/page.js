@@ -194,7 +194,13 @@ export default function RosterPage() {
     }
   }, [rosterReady, selectedDate])
   
-  
+  useEffect(() => {
+    if (selectedManager) {
+      console.log('🔍 選擇的 manager:', selectedManager)
+      console.log('📅 選擇的日期:', selectedDate)
+    }
+  }, [selectedManager, selectedDate])
+
   useEffect(() => {
     if (range === 'Today') {
       applyDateRange('Today')
@@ -248,6 +254,7 @@ export default function RosterPage() {
         })
 
         const myPlayers = merged.filter(p => p.manager_id?.toString() === selectedManager)
+        console.log('👥 撈到的 myPlayers:', myPlayers) // 👈 加這行
 
         setPlayers(myPlayers)
 
@@ -497,6 +504,7 @@ export default function RosterPage() {
     try {
       const res = await fetch(`/api/saveAssigned/load_manager?date=${selectedDate}&manager_id=${selectedManager}`)
       const data = await res.json()
+      console.log('👀 回傳資料內容:', data) // 👈 加這行
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
       const map = {}

@@ -8,7 +8,7 @@ export default function RosterPage() {
   const [activeRosterCount, setActiveRosterCount] = useState(0)
   const [weeklyAddCount, setWeeklyAddCount] = useState(null)
   const [myPlayers, setMyPlayers] = useState([])
-  const [selectedManager, setSelectedManager] = useState('1')
+  const [selectedManager, setSelectedManager] = useState('')
   const [managers, setManagers] = useState([]) // 儲存撈回來的 manager 名單
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)
@@ -40,6 +40,17 @@ export default function RosterPage() {
     const taiwanDate = new Date(nowUTC.getTime() + taiwanOffset)
     return taiwanDate.toISOString().slice(0, 10)
   })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedId = document.cookie.split('; ').find(row => row.startsWith('user_id='))?.split('=')[1]
+      if (storedId) {
+        setUserId(storedId)
+        setSelectedManager(prev => prev || storedId)  // 👈 若還沒選擇則預設為登入者
+      }
+    }
+  }, [])
+  
 
   useEffect(() => {
     if (!selectedManager) return
@@ -204,7 +215,7 @@ export default function RosterPage() {
     }
   
     fetchManagers()
-  }, [])
+  }, [userId])
 
 
   useEffect(() => {
@@ -945,6 +956,7 @@ export default function RosterPage() {
             }}
             className="border px-2 py-1 rounded"
             >
+            <option value="" disabled>請選擇玩家</option>
             {managers.map(m => (
                 <option key={m.id} value={m.id}>
                 {m.team_name}

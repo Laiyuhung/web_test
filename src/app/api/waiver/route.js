@@ -30,7 +30,7 @@ export async function POST(req) {
     // 📌 查目前 priority 最大值
     const { data: priorityData, error: priorityError } = await supabase
       .from('waiver')
-      .select('priority')
+      .select('personal_priority')
       .eq('manager', manager)
       .eq('off_waiver', off_waiver)
 

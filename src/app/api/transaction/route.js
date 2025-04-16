@@ -19,12 +19,10 @@ function getUTCFormat() {
 function getDateList(startStr, endStr) {
   const list = []
 
-  // 將字串切出年月日
   const [startY, startM, startD] = startStr.split('-').map(Number)
   const [endY, endM, endD] = endStr.split('-').map(Number)
 
-  // 從台灣時間轉為 UTC 開始點（手動減去 8 小時）
-  const start = new Date(Date.UTC(startY, startM - 1, startD, -8, 0, 0)) // UTC 00:00 - 8h = 台灣前一天 16:00
+  const start = new Date(Date.UTC(startY, startM - 1, startD, -8, 0, 0))
   const end = new Date(Date.UTC(endY, endM - 1, endD, -8, 0, 0))
 
   for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
@@ -33,19 +31,14 @@ function getDateList(startStr, endStr) {
     const month = String(taiwanTime.getMonth() + 1).padStart(2, '0')
     const day = String(taiwanTime.getDate()).padStart(2, '0')
     list.push(`${year}-${month}-${day}`)
-
-    console.log('📅 台灣時間日期列表：')
-    list.forEach(d => console.log(' -', d))
   }
 
   return list
 }
 
-
-
 export async function POST(req) {
   try {
-    const { playerName, type } = await req.json()
+    const { playerName, type, dropPlayer } = await req.json()
     const user_id = req.cookies.get('user_id')?.value
     const manager_id = parseInt(user_id, 10)
 
@@ -53,6 +46,41 @@ export async function POST(req) {
       return NextResponse.json({ error: '參數錯誤或未登入' }, { status: 400 })
     }
 
+    const todayStr = new Date().toISOString().slice(0, 10)
+    const endStr = '2025-11-30'
+    const transaction_time = getUTCFormat()
+
+    // 📌 若有 dropPlayer，先處理 Drop
+    if (dropPlayer) {
+      const { data: dropPlayerData, error: dropPlayerError } = await supabase
+        .from('playerslist')
+        .select('Player_no')
+        .eq('Name', dropPlayer)
+        .single()
+
+      if (dropPlayerError || !dropPlayerData) {
+        return NextResponse.json({ error: '找不到 Drop 的球員' }, { status: 404 })
+      }
+
+      const dropPlayerNo = dropPlayerData.Player_no
+      const dropDateList = getDateList(todayStr, endStr)
+
+      await supabase.from('transactions').insert([{
+        transaction_time,
+        manager_id,
+        type: 'Drop',
+        Player_no: dropPlayerNo
+      }])
+
+      await supabase
+        .from('assigned_position_history')
+        .delete()
+        .in('date', dropDateList)
+        .eq('manager_id', manager_id)
+        .eq('player_name', dropPlayer)
+    }
+
+    // 📌 查詢要 Add/Drop 的主球員
     const { data: playerData, error: playerError } = await supabase
       .from('playerslist')
       .select('Player_no')
@@ -64,9 +92,8 @@ export async function POST(req) {
     }
 
     const Player_no = playerData.Player_no
-    const transaction_time = getUTCFormat()
 
-    // ✅ 寫入交易
+    // ✅ 寫入本次交易
     const { error: insertError } = await supabase
       .from('transactions')
       .insert([{ transaction_time, manager_id, type, Player_no }])
@@ -75,11 +102,9 @@ export async function POST(req) {
       return NextResponse.json({ error: '交易寫入失敗' }, { status: 500 })
     }
 
-    const todayStr = new Date().toISOString().slice(0, 10)
-    const endStr = '2025-11-30'
+    const dateList = getDateList(todayStr, endStr)
 
     if (type === 'Add') {
-      const dateList = getDateList(todayStr, endStr)
       const rows = dateList.map(date => ({
         date,
         manager_id,
@@ -97,8 +122,6 @@ export async function POST(req) {
     }
 
     if (type === 'Drop') {
-      const dateList = getDateList(todayStr, endStr)
-
       const { error: deleteError } = await supabase
         .from('assigned_position_history')
         .delete()

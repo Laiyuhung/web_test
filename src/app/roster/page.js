@@ -998,25 +998,33 @@ export default function RosterPage() {
                   <button
                     key={p.Name}
                     onClick={() => {
-                      // 🔒 1. 檢查比賽是否已開打（非 PPD）
-                      const gameInfo = gameInfoMap[moveTarget.Team]
+                      const getGameDateTime = (team) => {
+                        const info = gameInfoMap[team]
+                        const timeMatch = info?.match(/\d{2}:\d{2}/)
+                        const timeStr = timeMatch ? timeMatch[0] : '23:59'
+                        return new Date(`${selectedDate}T${timeStr}:00+08:00`)
+                      }
+                    
                       const now = new Date()
                       const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
-
-                      const gameDateTime = new Date(`${selectedDate}T${timeStr}:00+08:00`)
-                      const isLocked = taiwanNow >= gameDateTime
-
-                      console.log(`🕓 比賽開打時間（gameDateTime）:`, gameDateTime.toISOString())
-                      console.log(`🕒 當前台灣時間（taiwanNow）:`, taiwanNow.toISOString())
-
                     
-                      if (isLocked) {
-                        setMoveMessage(`${moveTarget.Team} 比賽已開始，禁止異動位置`)
+                      const moveGameTime = getGameDateTime(moveTarget.Team)
+                      const targetGameTime = getGameDateTime(p.Team)
+                    
+                      const moveLocked = taiwanNow >= moveGameTime
+                      const targetLocked = taiwanNow >= targetGameTime
+                    
+                      console.log('🕒 台灣時間:', taiwanNow.toISOString())
+                      console.log(`🔒 ${moveTarget.Team} 鎖定狀態:`, moveLocked, moveGameTime.toISOString())
+                      console.log(`🔒 ${p.Team} 鎖定狀態:`, targetLocked, targetGameTime.toISOString())
+                    
+                      if (moveLocked || targetLocked) {
+                        setMoveMessage(`❌ ${moveTarget.Team} 或 ${p.Team} 比賽已開始，禁止異動位置`)
                         setTimeout(() => setMoveMessage(''), 3000)
                         return
                       }
                     
-                      // ✅ 2. 原本交換邏輯
+                      // ✅ 原本交換邏輯
                       const currentPos = assignedPositions[moveTarget.Name]
                       const canReturn = (p.finalPosition || []).includes(currentPos) ||
                                         (p.B_or_P === 'Batter' && currentPos === 'Util') ||
@@ -1041,6 +1049,7 @@ export default function RosterPage() {
                       setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}，${p.Name} 被移動到 ${newPos}`)
                       setTimeout(() => setMoveMessage(''), 3000)
                     }}
+                    
                     
                     
                     className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"

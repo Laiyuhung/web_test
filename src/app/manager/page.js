@@ -255,7 +255,12 @@ export default function RosterPage() {
           }
         })
 
-        const myPlayers = merged.filter(p => p.manager_id?.toString() === selectedManager)
+        const myPlayers = merged.filter(p => String(p.manager_id) === String(selectedManager))
+
+        // 🐞 加上這幾行 debug
+        console.log('✅ selectedManager：', selectedManager)
+        console.log('📦 merged 中 manager_id 分布：', merged.map(p => p.manager_id))
+        console.log('🎯 myPlayers 名單：', myPlayers.map(p => p.Name))
 
         setPlayers(myPlayers)
         setMyPlayers(myPlayers)

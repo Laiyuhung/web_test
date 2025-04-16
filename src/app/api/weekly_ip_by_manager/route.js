@@ -9,24 +9,35 @@ function formatIP(outs) {
 
 export async function POST(req) {
   try {
-    const { week, manager_id } = await req.json()
+    const { manager_id } = await req.json()
 
-    if (!week || !manager_id) {
-      return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
+    if (!manager_id) {
+      return NextResponse.json({ error: '缺少 manager_id' }, { status: 400 })
     }
 
-    // 🔹 找到週次對應的區間
-    const { data: weekData } = await supabase
+    // 取得今天（台灣時間）
+    const now = new Date()
+    const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+    const todayStr = taiwanNow.toISOString().slice(0, 10)
+
+    // 查詢 schedule_date 表，找出今天所在週
+    const { data: scheduleRows, error: scheduleError } = await supabase
       .from('schedule_date')
       .select('start, end')
-      .eq('week', week)
-      .single()
 
-    if (!weekData) return NextResponse.json({ error: '查無週次資料' }, { status: 404 })
+    if (scheduleError) throw scheduleError
 
-    const { start, end } = weekData
+    const currentWeek = scheduleRows.find(row => {
+      return todayStr >= row.start && todayStr <= row.end
+    })
 
-    // 🔹 抓出這位 manager 當週的先發投手名單
+    if (!currentWeek) {
+      return NextResponse.json({ IP: '0.0', message: '找不到本週區間' })
+    }
+
+    const { start, end } = currentWeek
+
+    // 撈出這個 manager 當週的先發名單
     const { data: assigned } = await supabase
       .from('assigned_position_history')
       .select('player_name, position, date')
@@ -35,8 +46,8 @@ export async function POST(req) {
       .lte('date', end)
 
     const starters = assigned.filter(row => !['BN', 'NA', 'NA(備用)'].includes(row.position))
-    const playerDatesMap = {}
 
+    const playerDatesMap = {}
     for (const row of starters) {
       if (!playerDatesMap[row.player_name]) playerDatesMap[row.player_name] = new Set()
       playerDatesMap[row.player_name].add(row.date)
@@ -48,7 +59,6 @@ export async function POST(req) {
       return NextResponse.json({ IP: '0.0' })
     }
 
-    // 🔹 撈出這些投手的紀錄
     const { data: pitchingStats } = await supabase
       .from('pitching_stats')
       .select('name, game_date, innings_pitched')

@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 export default function RosterPage() {
   const [weeklyIP, setWeeklyIP] = useState('0.0')
   const [activeCount, setActiveCount] = useState(0)
-  const [weeklyAddCount, setWeeklyAddCount] = useState(null)
+  const [weeklyAddCount, setWeeklyAddCount] = useState(0)
   const [gameInfoMap, setGameInfoMap] = useState({})
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)

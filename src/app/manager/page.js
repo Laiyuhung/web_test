@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [selectedManager, setSelectedManager] = useState(null)
+  const [managers, setManagers] = useState([])
   const [weeklyIP, setWeeklyIP] = useState('0.0')
   const [activeCount, setActiveCount] = useState(0)
-  const [weeklyAddCount, setWeeklyAddCount] = useState(null)
+  const [weeklyAddCount, setWeeklyAddCount] = useState(0)
   const [gameInfoMap, setGameInfoMap] = useState({})
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)
@@ -37,6 +39,18 @@ export default function RosterPage() {
     const taiwanDate = new Date(nowUTC.getTime() + taiwanOffset)
     return taiwanDate.toISOString().slice(0, 10)
   })
+
+  useEffect(() => {
+    const fetchManagers = async () => {
+      const res = await fetch('/api/managers')
+      const data = await res.json()
+      if (res.ok) setManagers(data)
+      else console.error('❌ 無法取得 managers 名單:', data)
+    }
+  
+    fetchManagers()
+  }, [])
+  
 
   useEffect(() => {
     if (!userId) return
@@ -825,6 +839,23 @@ export default function RosterPage() {
               <option>2025 Season</option>
           </select>
         </div>
+        <div className="mb-4">
+          <label className="text-sm font-semibold">Manager</label>
+          <select
+            value={selectedManager || ''}
+            onChange={(e) => {
+              setSelectedManager(e.target.value)
+              setUserId(e.target.value)  // 👈 同步改 userId 來載入對應球員
+            }}
+            className="ml-2 border px-2 py-1 rounded"
+          >
+            <option value="">請選擇...</option>
+            {managers.map(m => (
+              <option key={m.id} value={m.id}>{m.team_name}</option>
+            ))}
+          </select>
+        </div>
+
 
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">
           <div>
@@ -855,7 +886,7 @@ export default function RosterPage() {
       </div>
       
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
-      <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
+      <h1 className="text-xl font-bold mb-6">MANAGER LINEUP</h1>
       
       {batterSummary && pitcherSummary && (
         <div className="mb-6 space-y-6 text-sm text-gray-600">

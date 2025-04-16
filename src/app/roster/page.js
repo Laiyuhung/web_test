@@ -1072,28 +1072,37 @@ export default function RosterPage() {
                   onClick={() => {
                     const getGameDateTime = (team) => {
                       const info = gameInfoMap[team]
+                      console.log('📋 gameInfoMap[team]:', info)
                       const timeMatch = info?.match(/\d{2}:\d{2}/)
                       const timeStr = timeMatch ? timeMatch[0] : '23:59'
-                      return new Date(`${selectedDate}T${timeStr}:00+08:00`)
+                      console.log('🕐 抓到的比賽時間字串:', timeStr)
+                      const dateObj = new Date(`${selectedDate}T${timeStr}:00+08:00`)
+                      console.log('📅 比賽預定時間:', dateObj.toISOString())
+                      return dateObj
                     }
                   
                     const now = new Date()
                     const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+                    console.log('🕒 現在台灣時間:', taiwanNow.toISOString())
+                  
                     const gameDateTime = getGameDateTime(moveTarget.Team)
                     const isLocked = taiwanNow >= gameDateTime
+                    console.log('🔒 是否鎖定:', isLocked)
                   
                     if (isLocked) {
                       setMoveMessage(`${moveTarget.Team} 比賽已開始，禁止異動位置`)
+                      console.log('⛔ 鎖定，無法異動')
                       setTimeout(() => setMoveMessage(''), 3000)
                       return
                     }
                   
-                    // ✅ 原本的異動邏輯
+                    console.log(`✅ 準備將 ${moveTarget.Name} 移動到 ${posKey}`)
                     setAssignedPositions(prev => {
                       const updated = {
                         ...prev,
                         [moveTarget.Name]: posKey
                       }
+                      console.log('📝 更新後位置:', updated)
                       saveAssigned(updated)
                       return updated
                     })
@@ -1104,6 +1113,7 @@ export default function RosterPage() {
                     setMoveTarget(null)
                     setMoveSlots(null)
                   }}
+                  
                   
                   
                     className="w-full flex items-center justify-center text-blue-600 font-semibold border-2 border-dashed border-blue-400 p-3 rounded bg-white hover:bg-blue-50"

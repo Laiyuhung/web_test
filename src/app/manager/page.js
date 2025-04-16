@@ -856,7 +856,7 @@ export default function RosterPage() {
             <span className="text-green-700">{foreignCount.active}</span>
           </div>
           <div>
-            <span className="text-green-700">Weekly Adds：</span>
+            <span className="text-purple-700">Weekly Adds：</span>
             <span className="text-purple-700">{weeklyAddCount}</span>
           </div>
         </div>

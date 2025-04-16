@@ -837,7 +837,7 @@ export default function RosterPage() {
             <span className="text-green-700">{foreignCount.active}</span>
           </div>
           <div>
-            <span className="text-green-700">Weekly Adds：</span>
+            <span className="text-purple-700">Weekly Adds：</span>
             <span className="text-purple-700">{weeklyAddCount}</span>
           </div>
         </div>
@@ -950,8 +950,11 @@ export default function RosterPage() {
                     onClick={() => {
                       // 🔒 1. 檢查比賽是否已開打（非 PPD）
                       const gameInfo = gameInfoMap[moveTarget.Team]
-                      const isLocked = gameInfo && !gameInfo.startsWith('PPD') &&
-                        new Date(`${selectedDate}T${gameInfo.slice(0, 5)}:00+08:00`) <= new Date(new Date().getTime() + 8 * 60 * 60 * 1000)
+                      const now = new Date()
+                      const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+
+                      const gameDateTime = new Date(`${selectedDate}T${timeStr}:00+08:00`)
+                      const isLocked = taiwanNow >= gameDateTime
                     
                       if (isLocked) {
                         setMoveMessage(`${moveTarget.Team} 比賽已開始，禁止異動位置`)

@@ -44,8 +44,10 @@ export default function PlayerPage() {
   const [dropPlayer, setDropPlayer] = useState('');
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false);
   const [myRosterPlayers, setMyRosterPlayers] = useState([])
-  
 
+  const [forcedDropOptions, setForcedDropOptions] = useState([]) // 強制 drop 名單
+  const [forcedDropReason, setForcedDropReason] = useState('') // 顯示原因
+  const [forcedDropDialogOpen, setForcedDropDialogOpen] = useState(false)
 
   const today = new Date()
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
@@ -314,64 +316,108 @@ export default function PlayerPage() {
     : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
 
     
-    const renderActionButton = (p) => {
-      const status = (p.status || '').toLowerCase();
-      const ownerId = p.manager_id?.toString() || null;
-      const isOwner = ownerId === userId;
-    
-      const openConfirmDialog = () => {
-        setConfirmPlayer(p);
-        setDialogOpen(true);
-      };
-    
-      let borderColor = "border-gray-500";
-      let textColor = "text-gray-500";
-    
-      if (status === "free agent") {
-        borderColor = "border-green-600";
-        textColor = "text-green-600";
-      } else if (status.includes("on team") && p.owner && p.owner !== "-" && isOwner) {
-        borderColor = "border-red-600";
-        textColor = "text-red-600";
-      } else if (status.includes("waiver")) {
-        borderColor = "border-yellow-500";
-        textColor = "text-yellow-500";
-      } else {
-        borderColor = "border-blue-600";
-        textColor = "text-blue-600";
-      }
-    
-      return (
-        <div
-          className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
-          onClick={() => {
-            if (status === "waiver") {
-              setConfirmPlayer(p);
-              setDropPlayer('');
-              setWaiverDialogOpen(true); // 👈 打開 Waiver Dialog
-            } else {
-              openConfirmDialog();
-            }
-          }}
-        >
-          <span className={`${textColor} font-bold`}>
-            {status === "free agent"
-              ? "＋"
-              : status.includes("on team") && p.owner && p.owner !== "-" && isOwner
-              ? "－"
-              : status.includes("waiver")
-              ? "＋"
-              : "⇄"}
-          </span>
-        </div>
-      );
+  const renderActionButton = (p) => {
+    const status = (p.status || '').toLowerCase();
+    const ownerId = p.manager_id?.toString() || null;
+    const isOwner = ownerId === userId;
+  
+    const openConfirmDialog = () => {
+      setConfirmPlayer(p);
+      setDialogOpen(true);
     };
+  
+    let borderColor = "border-gray-500";
+    let textColor = "text-gray-500";
+  
+    if (status === "free agent") {
+      borderColor = "border-green-600";
+      textColor = "text-green-600";
+    } else if (status.includes("on team") && p.owner && p.owner !== "-" && isOwner) {
+      borderColor = "border-red-600";
+      textColor = "text-red-600";
+    } else if (status.includes("waiver")) {
+      borderColor = "border-yellow-500";
+      textColor = "text-yellow-500";
+    } else {
+      borderColor = "border-blue-600";
+      textColor = "text-blue-600";
+    }
+  
+    return (
+      <div
+        className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
+        onClick={() => {
+          if (status === "waiver") {
+            setConfirmPlayer(p);
+            setDropPlayer('');
+            setWaiverDialogOpen(true); // 👈 打開 Waiver Dialog
+          } else {
+            checkAddConstraints(p);
+          }
+        }}
+      >
+        <span className={`${textColor} font-bold`}>
+          {status === "free agent"
+            ? "＋"
+            : status.includes("on team") && p.owner && p.owner !== "-" && isOwner
+            ? "－"
+            : status.includes("waiver")
+            ? "＋"
+            : "⇄"}
+        </span>
+      </div>
+    );
+  };
     
-    
-    
-    
-    
-
+  const checkAddConstraints = (player) => {
+    const isForeign = player.identity === '洋將'
+    const weeklyAdds = myRosterPlayers.filter(p => p.addedThisWeek).length
+    const onTeamForeign = myRosterPlayers.filter(p => p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team')).length
+    const activeForeign = myRosterPlayers.filter(p => p.identity === '洋將' && !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || '')).length
+    const activeRoster = myRosterPlayers.filter(p => !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || '')).length
+  
+    if (weeklyAdds >= 6) {
+      setSuccessMessage('⚠️ 本週可加入次數已達上限（6 次）')
+      setSuccessDialogOpen(true)
+      return false
+    }
+  
+    // 若是洋將
+    if (isForeign) {
+      if (onTeamForeign >= 4) {
+        const options = myRosterPlayers.filter(p => p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team'))
+        setForcedDropReason('隊上洋將已達 4 位，請選擇一位洋將進行 Drop')
+        setForcedDropOptions(options)
+        setConfirmPlayer(player)
+        setForcedDropDialogOpen(true)
+        return false
+      }
+      if (activeForeign >= 3) {
+        const options = myRosterPlayers.filter(p => p.identity === '洋將' && !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || ''))
+        setForcedDropReason('Active 洋將已達 3 位，請選擇一位 Active 洋將進行 Drop')
+        setForcedDropOptions(options)
+        setConfirmPlayer(player)
+        setForcedDropDialogOpen(true)
+        return false
+      }
+    }
+  
+    if (activeRoster >= 26) {
+      const options = myRosterPlayers.filter(p => !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || ''))
+      setForcedDropReason('Active 名單已滿 26 位，請選擇一位 Active 球員進行 Drop')
+      setForcedDropOptions(options)
+      setConfirmPlayer(player)
+      setForcedDropDialogOpen(true)
+      return false
+    }
+  
+    // 沒有任何限制，直接進入確認 dialog
+    setConfirmPlayer(player)
+    setDialogOpen(true)
+    return true
+  }
+  
+ 
   return (
     <>
     <div className="p-6">
@@ -785,6 +831,64 @@ export default function PlayerPage() {
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
+
+  <AlertDialog open={forcedDropDialogOpen} onOpenChange={setForcedDropDialogOpen}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>⚠️ 限制條件：需要強制 Drop</AlertDialogTitle>
+      <AlertDialogDescription>
+        {forcedDropReason}<br />
+        <span className="text-sm text-gray-500">選擇一位球員進行 Drop：</span>
+        <select
+          className="border rounded px-2 py-1 w-full mt-2"
+          value={dropPlayer}
+          onChange={e => setDropPlayer(e.target.value)}
+        >
+          <option value="">請選擇一位要 Drop 的球員</option>
+          {forcedDropOptions.map(p => (
+            <option key={p.Name} value={p.Name}>
+              {p.Name}（{(p.finalPosition || []).join(', ') || '位置不明'}）
+            </option>
+          ))}
+        </select>
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>取消</AlertDialogCancel>
+      <AlertDialogAction
+        disabled={!dropPlayer}
+        onClick={async () => {
+          const res = await fetch('/api/transaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              playerName: confirmPlayer?.Name,
+              type: 'Add',
+              dropPlayer: dropPlayer
+            }),
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            setSuccessMessage(`✅ 成功加入球員並 Drop ${dropPlayer}`)
+            setSuccessDialogOpen(true)
+            await fetchStatsAndStatus()
+          } else {
+            setSuccessMessage(`❌ 錯誤: ${data.error}`)
+            setSuccessDialogOpen(true)
+          }
+
+          setForcedDropDialogOpen(false)
+          setConfirmPlayer(null)
+          setDropPlayer('')
+        }}
+      >
+        確定
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
 
     </>
   )

@@ -44,6 +44,7 @@ export default function PlayerPage() {
   const [dropPlayer, setDropPlayer] = useState('');
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false);
   const [myRosterPlayers, setMyRosterPlayers] = useState([])
+  const [gameInfoLoaded, setGameInfoLoaded] = useState(false)
 
 
 
@@ -143,6 +144,7 @@ export default function PlayerPage() {
   
   useEffect(() => {
     if (!taiwanToday || players.length === 0) return
+    setGameInfoLoaded(false)
     const fetchGameInfo = async () => {
       const teams = [...new Set(players.map(p => p.Team))]
       const map = {}
@@ -160,6 +162,7 @@ export default function PlayerPage() {
         }
       }
       setGameInfoMap(map)
+      setGameInfoLoaded(false)
     }
     fetchGameInfo()
   }, [players, taiwanToday])
@@ -482,7 +485,9 @@ export default function PlayerPage() {
 
       <span className="text-sm text-gray-600">Stats range：{fromDate} ~ {toDate}</span>
 
-      {loading && <div className="mb-4">Loading...</div>}
+      {loading || !gameInfoLoaded ? (
+        <div className="mb-4">Loading...</div>
+      ) : (
       
       <div className="overflow-auto max-h-[600px] w-full">
         <table className="text-sm w-full text-center whitespace-nowrap">
@@ -645,6 +650,8 @@ export default function PlayerPage() {
         </table>
 
       </div>
+
+      )}
     </div>
     <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <AlertDialogContent>

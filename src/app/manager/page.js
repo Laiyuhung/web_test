@@ -38,22 +38,6 @@ export default function RosterPage() {
     return taiwanDate.toISOString().slice(0, 10)
   })
 
-  useEffect(() => {
-    if (myPlayers.length === 0 || Object.keys(assignedPositions).length === 0) return
-  
-    const allForeign = myPlayers.filter(p => p.identity === '洋將')
-    const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
-  
-    console.log('🌐 所有洋將:', allForeign.map(p => p.Name))
-    console.log('✅ Active 洋將:', activeForeign.map(p => p.Name))
-  
-    setForeignCount({
-      all: allForeign.length,
-      active: activeForeign.length
-    })
-  }, [myPlayers, assignedPositions])
-  
-  
 
   useEffect(() => {
     const fetchLineupTeams = async () => {
@@ -487,6 +471,22 @@ export default function RosterPage() {
       // console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
   
       setAssignedPositions(map)
+
+      // ✅ 加入洋將數量計算
+    const allForeign = playersList.filter(p => p.identity === '洋將')
+    const activeForeign = allForeign.filter(p => {
+      const pos = map[p.Name]
+      return !['NA', 'NA(備用)'].includes(pos)
+    })
+
+    setForeignCount({
+      all: allForeign.length,
+      active: activeForeign.length
+    })
+
+    console.log('🧮 洋將數：', { all: allForeign.length, active: activeForeign.length })
+
+
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }

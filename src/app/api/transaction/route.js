@@ -15,12 +15,11 @@ function getUTCFormat() {
   )
 }
 
-// 🔧 回傳 [今天 ~ 2025-11-30] 所有日期字串
 function getDateList(startStr, endStr) {
   const list = []
 
-  const startDate = new Date(startStr + 'T00:00:00+08:00')
-  const endDate = new Date(endStr + 'T00:00:00+08:00')
+  const startDate = new Date(`${startStr}T00:00:00`)
+  const endDate = new Date(`${endStr}T00:00:00`)
 
   for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
     const year = d.getFullYear()

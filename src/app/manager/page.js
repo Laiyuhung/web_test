@@ -53,14 +53,14 @@ export default function RosterPage() {
   
 
   useEffect(() => {
-    if (!userId) return
+    if (!selectedManager) return
   
     const fetchWeeklyIP = async () => {
       try {
         const res = await fetch('/api/weekly_ip_by_manager', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ manager_id: parseInt(userId) })
+          body: JSON.stringify({ manager_id: parseInt(selectedManager) })
         })
         const data = await res.json()
         if (res.ok) {
@@ -76,17 +76,17 @@ export default function RosterPage() {
     }
   
     fetchWeeklyIP()
-  }, [userId])
+  }, [selectedManager])
 
   useEffect(() => {
-    if (!userId) return
+    if (!selectedManager) return
   
     const fetchWeeklyAddCount = async () => {
       try {
         const res = await fetch('/api/transaction/weekly_add_count', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ manager_id: userId })
+          body: JSON.stringify({ manager_id: selectedManager })
         })
   
         const data = await res.json()
@@ -103,7 +103,7 @@ export default function RosterPage() {
     }
   
     fetchWeeklyAddCount()
-  }, [userId])
+  }, [selectedManager])
   
   
   useEffect(() => {
@@ -495,7 +495,7 @@ export default function RosterPage() {
     console.log('📦 載入 assigned，用的 playersList:', playersList)
   
     try {
-      const res = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
+      const res = await fetch(`/api/saveAssigned/load_manager?date=${selectedDate}&manager_id=${selectedManager}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   

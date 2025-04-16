@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function PlayerPage() {
+  const [taiwanToday, setTaiwanToday] = useState('')
   const [gameInfoMap, setGameInfoMap] = useState({})
   const [startingPitchers, setStartingPitchers] = useState([])
   const [startingLineup, setStartingLineup] = useState([])
@@ -98,9 +99,19 @@ export default function PlayerPage() {
   }
 
   useEffect(() => {
+    const now = new Date()
+    const taiwanOffset = 8 * 60 * 60 * 1000
+    const taiwanNow = new Date(now.getTime() + taiwanOffset)
+    const todayStr = taiwanNow.toISOString().slice(0, 10)
+    setTaiwanToday(todayStr)
+  }, [])
+  
+
+  useEffect(() => {
+    if (!taiwanToday) return
     const fetchStartingPitchers = async () => {
       try {
-        const res = await fetch(`/api/starting-pitcher/load?date=${toDate}`)
+        const res = await fetch(`/api/starting-pitcher/load?date=${taiwanToday}`)
         const data = await res.json()
         setStartingPitchers(res.ok ? data : [])
       } catch (err) {
@@ -109,53 +120,50 @@ export default function PlayerPage() {
       }
     }
     fetchStartingPitchers()
-  }, [toDate])
+  }, [taiwanToday])
+  
   
   useEffect(() => {
+    if (!taiwanToday) return
     const fetchStartingLineup = async () => {
-      try {
-        const [lineupRes, teamRes] = await Promise.all([
-          fetch(`/api/starting-lineup/load?date=${toDate}`),
-          fetch(`/api/starting-lineup/teams?date=${toDate}`)
-        ])
-        const [lineup, teams] = await Promise.all([lineupRes.json(), teamRes.json()])
-        setStartingLineup(lineupRes.ok ? lineup : [])
-        setLineupTeams(teamRes.ok ? teams : [])
-      } catch (err) {
-        console.error('❌ 無法取得先發打序與球隊:', err)
-      }
+      const [lineupRes, teamRes] = await Promise.all([
+        fetch(`/api/starting-lineup/load?date=${taiwanToday}`),
+        fetch(`/api/starting-lineup/teams?date=${taiwanToday}`)
+      ])
+      const [lineup, teams] = await Promise.all([
+        lineupRes.json(),
+        teamRes.json()
+      ])
+      setStartingLineup(lineupRes.ok ? lineup : [])
+      setLineupTeams(teamRes.ok ? teams : [])
     }
     fetchStartingLineup()
-  }, [toDate])
+  }, [taiwanToday])
+  
   
   useEffect(() => {
+    if (!taiwanToday || players.length === 0) return
     const fetchGameInfo = async () => {
       const teams = [...new Set(players.map(p => p.Team))]
       const map = {}
-  
-      
       for (const team of teams) {
         try {
           const res = await fetch('/api/schedule', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ date: toDate, team })
+            body: JSON.stringify({ date: taiwanToday, team })
           })
           const data = await res.json()
-          console.log('🧪 查詢', team, '日期', toDate, '結果:', data)
           map[team] = data.info || 'No game'
-        } catch (err) {   
+        } catch (err) {
           map[team] = 'No game'
         }
       }
-  
       setGameInfoMap(map)
     }
+    fetchGameInfo()
+  }, [players, taiwanToday])
   
-    if (players.length > 0) {
-      fetchGameInfo()
-    }
-  }, [players, toDate])
   
 
 

@@ -261,8 +261,8 @@ export default function RosterPage() {
       setLoading(false)
     }
 
-    if (userId) fetchData()
-  }, [userId, fromDate, toDate]) 
+    if (selectedManager) fetchData()
+  }, [selectedManager, fromDate, toDate]) 
 
   useEffect(() => {
     const allForeign = players.filter(p => p.identity === '洋將')

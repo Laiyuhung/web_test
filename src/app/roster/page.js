@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [weeklyAddCount, setWeeklyAddCount] = useState(null)
   const [gameInfoMap, setGameInfoMap] = useState({})
   const [players, setPlayers] = useState([])
   const [userId, setUserId] = useState(null)
@@ -35,6 +36,34 @@ export default function RosterPage() {
     return taiwanDate.toISOString().slice(0, 10)
   })
 
+  useEffect(() => {
+    if (!userId) return
+  
+    const fetchWeeklyAddCount = async () => {
+      try {
+        const res = await fetch('/api/transaction/weekly_add_count', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ manager_id: userId })
+        })
+  
+        const data = await res.json()
+        if (res.ok) {
+          setWeeklyAddCount(data.count)
+        } else {
+          console.error('⚠️ 查詢失敗:', data)
+          setWeeklyAddCount(null)
+        }
+      } catch (err) {
+        console.error('❌ 呼叫 weekly_add_count 失敗:', err)
+        setWeeklyAddCount(null)
+      }
+    }
+  
+    fetchWeeklyAddCount()
+  }, [userId])
+  
+  
   useEffect(() => {
     const fetchLineupTeams = async () => {
       try {
@@ -806,6 +835,10 @@ export default function RosterPage() {
           <div>
             <span className="text-green-700">Active 洋將：</span>
             <span className="text-green-700">{foreignCount.active}</span>
+          </div>
+          <div>
+            <span className="text-green-700">Weekly Adds：</span>
+            <span className="text-purple-700">{weeklyAddCount}</span>
           </div>
         </div>
       </div>

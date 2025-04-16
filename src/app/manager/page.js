@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [weeklyAddCount, setWeeklyAddCount] = useState(null)
   const [myPlayers, setMyPlayers] = useState([])
   const [selectedManager, setSelectedManager] = useState('1')
   const [managers, setManagers] = useState([]) // 儲存撈回來的 manager 名單
@@ -38,6 +39,33 @@ export default function RosterPage() {
     return taiwanDate.toISOString().slice(0, 10)
   })
 
+  useEffect(() => {
+    if (!selectedManager) return
+  
+    const fetchWeeklyAddCount = async () => {
+      try {
+        const res = await fetch('/api/transaction/weekly_add_count', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ manager_id: selectedManager })
+        })
+  
+        const data = await res.json()
+        if (res.ok) {
+          setWeeklyAddCount(data.count)
+        } else {
+          console.error('⚠️ 查詢失敗:', data)
+          setWeeklyAddCount(null)
+        }
+      } catch (err) {
+        console.error('❌ 呼叫 weekly_add_count 失敗:', err)
+        setWeeklyAddCount(null)
+      }
+    }
+  
+    fetchWeeklyAddCount()
+  }, [selectedManager])
+  
 
   useEffect(() => {
     const fetchLineupTeams = async () => {
@@ -821,18 +849,17 @@ export default function RosterPage() {
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">
           <div>
             <span className="text-[#0155A0]">On team 洋將：</span>
-            <span className="text-[#0155A0]">
-              {foreignCount.all > 0 || foreignCount.all === 0 ? foreignCount.all : '-'}
-            </span>
+            <span className="text-[#0155A0]">{foreignCount.all}</span>
           </div>
           <div>
             <span className="text-green-700">Active 洋將：</span>
-            <span className="text-green-700">
-              {foreignCount.active > 0 || foreignCount.active === 0 ? foreignCount.active : '-'}
-            </span>
+            <span className="text-green-700">{foreignCount.active}</span>
+          </div>
+          <div>
+            <span className="text-green-700">Weekly Adds：</span>
+            <span className="text-purple-700">{weeklyAddCount}</span>
           </div>
         </div>
-
       </div>
 
       <div className="mb-4">

@@ -269,7 +269,7 @@ export default function RosterPage() {
       setLoading(false)
     }
 
-    if (userId) fetchData()
+    if (selectedManager) fetchData()
   }, [userId, fromDate, toDate, selectedManager]) 
 
   useEffect(() => {

@@ -19,22 +19,19 @@ function getUTCFormat() {
 function getDateList(startStr, endStr) {
   const list = []
 
-  const [startY, startM, startD] = startStr.split('-').map(Number)
-  const [endY, endM, endD] = endStr.split('-').map(Number)
+  const startDate = new Date(startStr + 'T00:00:00+08:00')
+  const endDate = new Date(endStr + 'T00:00:00+08:00')
 
-  const start = new Date(Date.UTC(startY, startM - 1, startD, -8, 0, 0))
-  const end = new Date(Date.UTC(endY, endM - 1, endD, -8, 0, 0))
-
-  for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
-    const taiwanTime = new Date(d.getTime() + 8 * 60 * 60 * 1000)
-    const year = taiwanTime.getFullYear()
-    const month = String(taiwanTime.getMonth() + 1).padStart(2, '0')
-    const day = String(taiwanTime.getDate()).padStart(2, '0')
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
     list.push(`${year}-${month}-${day}`)
   }
 
   return list
 }
+
 
 export async function POST(req) {
   try {

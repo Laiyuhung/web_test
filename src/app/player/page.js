@@ -14,6 +14,10 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function PlayerPage() {
+  const [gameInfoMap, setGameInfoMap] = useState({})
+  const [startingPitchers, setStartingPitchers] = useState([])
+  const [startingLineup, setStartingLineup] = useState([])
+  const [lineupTeams, setLineupTeams] = useState([])
   const [players, setPlayers] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -92,6 +96,66 @@ export default function PlayerPage() {
     setFromDate(from)
     setToDate(to)
   }
+
+  useEffect(() => {
+    const fetchStartingPitchers = async () => {
+      try {
+        const res = await fetch(`/api/starting-pitcher/load?date=${toDate}`)
+        const data = await res.json()
+        setStartingPitchers(res.ok ? data : [])
+      } catch (err) {
+        console.error('❌ 無法取得先發投手:', err)
+        setStartingPitchers([])
+      }
+    }
+    fetchStartingPitchers()
+  }, [toDate])
+  
+  useEffect(() => {
+    const fetchStartingLineup = async () => {
+      try {
+        const [lineupRes, teamRes] = await Promise.all([
+          fetch(`/api/starting-lineup/load?date=${toDate}`),
+          fetch(`/api/starting-lineup/teams?date=${toDate}`)
+        ])
+        const [lineup, teams] = await Promise.all([lineupRes.json(), teamRes.json()])
+        setStartingLineup(lineupRes.ok ? lineup : [])
+        setLineupTeams(teamRes.ok ? teams : [])
+      } catch (err) {
+        console.error('❌ 無法取得先發打序與球隊:', err)
+      }
+    }
+    fetchStartingLineup()
+  }, [toDate])
+  
+  useEffect(() => {
+    const fetchGameInfo = async () => {
+      const teams = [...new Set(players.map(p => p.Team))]
+      const map = {}
+  
+      for (const team of teams) {
+        try {
+          const res = await fetch('/api/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: toDate, team })
+          })
+          const data = await res.json()
+          map[team] = data.info || 'No game'
+        } catch (err) {
+          map[team] = 'No game'
+        }
+      }
+  
+      setGameInfoMap(map)
+    }
+  
+    if (players.length > 0) {
+      fetchGameInfo()
+    }
+  }, [players, toDate])
+  
+
 
   useEffect(() => {
     applyDateRange(range)
@@ -469,8 +533,46 @@ export default function PlayerPage() {
                       onError={(e) => e.target.src = '/photo/defaultPlayer.png'} // 若沒有圖片，顯示預設圖片
                     />
                   
-                    <span>{p.Name}</span>
-                    <span className="text-sm text-gray-500 ml-1">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
+                  <div className="flex flex-col">
+                    {/* 第一行：名字、隊伍、守位 */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>
+                      <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
+                    </div>
+
+                    {/* 第二行：game info、打序、先發標記 */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">{gameInfoMap[p.Team] ?? 'No game'}</span>
+
+                      {/* 打序：綠底號碼 or 紅底 X */}
+                      {(() => {
+                        const found = startingLineup.find(l => l.name === p.Name)
+                        if (found) {
+                          return (
+                            <span className="text-white bg-green-700 text-xs font-bold px-2 py-0.5 rounded">
+                              {found.batting_no}
+                            </span>
+                          )
+                        }
+
+                        if (p.B_or_P === 'Pitcher') return null
+
+                        if (lineupTeams.includes(p.Team)) {
+                          return (
+                            <span className="text-white bg-red-600 text-xs font-bold px-2 py-0.5 rounded">X</span>
+                          )
+                        }
+
+                        return null
+                      })()}
+
+                      {/* 投手先發 V 標記 */}
+                      {startingPitchers.some(sp => sp.name === p.Name) && (
+                        <span className="text-white bg-green-700 text-xs font-bold px-2 py-0.5 rounded">V</span>
+                      )}
+                    </div>
+                  </div>
+
                     {['二軍', '未註冊', '註銷'].includes(p.registerStatus) && (
                       <span className="ml-1 inline-block bg-[#FDEDEF] text-[#D10C28] text-[10px] font-bold px-2 py-0.5 rounded-full">
                         {p.registerStatus === '二軍' ? 'NA' : p.registerStatus}

@@ -953,8 +953,12 @@ export default function RosterPage() {
                       const now = new Date()
                       const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
 
-                      const gameDateTime = new Date(`${selectedDate}T${timeStr}:00+00:00`)
+                      const gameDateTime = new Date(`${selectedDate}T${timeStr}:00+08:00`)
                       const isLocked = taiwanNow >= gameDateTime
+
+                      console.log(`🕓 比賽開打時間（gameDateTime）:`, gameDateTime.toISOString())
+                      console.log(`🕒 當前台灣時間（taiwanNow）:`, taiwanNow.toISOString())
+
                     
                       if (isLocked) {
                         setMoveMessage(`${moveTarget.Team} 比賽已開始，禁止異動位置`)

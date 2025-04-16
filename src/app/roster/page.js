@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [activeCount, setActiveCount] = useState(0)
   const [weeklyAddCount, setWeeklyAddCount] = useState(null)
   const [gameInfoMap, setGameInfoMap] = useState({})
   const [players, setPlayers] = useState([])
@@ -230,6 +231,11 @@ export default function RosterPage() {
       all: allForeign.length,
       active: activeForeign.length
     })
+
+    // ✅ 加在這裡！
+    const activePlayers = players.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+    setActiveCount(activePlayers.length)
+
   }, [players, assignedPositions])
   
 
@@ -387,8 +393,8 @@ export default function RosterPage() {
       const gameDateTime = new Date(`${selectedDate}T${h}:${m}:00+08:00`)
       const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
     
-      console.log('🕓 gameDateTime:', gameDateTime.toISOString())
-      console.log('🕒 taiwanNow:', taiwanNow.toISOString())
+      // console.log('🕓 gameDateTime:', gameDateTime.toISOString())
+      // console.log('🕒 taiwanNow:', taiwanNow.toISOString())
     
       isLocked = taiwanNow >= gameDateTime
     }
@@ -833,6 +839,10 @@ export default function RosterPage() {
         </div>
 
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">
+          <div>
+            <span className="text-[#004AAD]">Active Roster：</span>
+            <span className="text-[#004AAD]">{activeCount}</span>
+          </div>
           <div>
             <span className="text-[#0155A0]">On team 洋將：</span>
             <span className="text-[#0155A0]">{foreignCount.all}</span>

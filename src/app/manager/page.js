@@ -241,6 +241,10 @@ export default function RosterPage() {
         
         const statsData = [...batterData, ...pitcherData]
 
+        console.log('📊 打者資料筆數:', batterData.length)
+        console.log('📊 投手資料筆數:', pitcherData.length)
+        console.log('📊 合併後 statsData:', statsData.map(s => s.name))
+
         const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
 
         const merged = statusData.map(p => {

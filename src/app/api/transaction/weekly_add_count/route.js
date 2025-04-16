@@ -13,23 +13,23 @@ export async function POST(req) {
     const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
     const todayStr = taiwanNow.toISOString().slice(0, 10) // '2025-04-17'
 
-    // 查詢 schedule_date，找出包含今天的週次
+    // 查詢 schedule，找出包含今天的週次
     const { data: scheduleRows, error: scheduleError } = await supabase
       .from('schedule_date')
-      .select('start_date, end_date')
+      .select('start, end')
     
     if (scheduleError) throw scheduleError
 
     const currentWeek = scheduleRows.find(row => {
-      return todayStr >= row.start_date && todayStr <= row.end_date
+      return todayStr >= row.start && todayStr <= row.end
     })
 
     if (!currentWeek) {
       return NextResponse.json({ count: 0, message: '找不到本週區間' })
     }
 
-    const startUtc = new Date(`${currentWeek.start_date}T00:00:00+08:00`).toISOString()
-    const endUtc = new Date(`${currentWeek.end_date}T23:59:59+08:00`).toISOString()
+    const startUtc = new Date(`${currentWeek.start}T00:00:00+08:00`).toISOString()
+    const endUtc = new Date(`${currentWeek.end}T23:59:59+08:00`).toISOString()
 
     const { count, error: countError } = await supabase
       .from('transactions')

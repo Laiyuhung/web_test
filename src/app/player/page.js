@@ -133,6 +133,7 @@ export default function PlayerPage() {
       const teams = [...new Set(players.map(p => p.Team))]
       const map = {}
   
+      
       for (const team of teams) {
         try {
           const res = await fetch('/api/schedule', {
@@ -143,7 +144,7 @@ export default function PlayerPage() {
           const data = await res.json()
           console.log('🧪 查詢', team, '日期', toDate, '結果:', data)
           map[team] = data.info || 'No game'
-        } catch (err) {
+        } catch (err) {   
           map[team] = 'No game'
         }
       }

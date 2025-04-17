@@ -191,61 +191,85 @@ export default function RosterPage() {
 
     const fetchData = async () => {
       setLoading(true)
+    
       try {
-        const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
-            fetch('/api/playerStatus'),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerPositionCaculate'),
-            fetch('/api/playerRegisterStatus')
+        const getTaiwanToday = () => {
+          const now = new Date()
+          return new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
+        }
+    
+        const isToday = selectedDate === getTaiwanToday()
+    
+        let rawPlayers = []
+    
+        if (isToday) {
+          // ✅ 今天：從 playerStatus
+          const res = await fetch('/api/playerStatus')
+          const statusData = await res.json()
+          rawPlayers = statusData.filter(p => p.manager_id?.toString() === userId)
+        } else {
+          // ✅ 過去日期：從 /api/saveAssigned/load 撈有位置者
+          const res = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
+          const assigned = await res.json()
+          const playerNames = assigned.map(p => p.player_name)
+    
+          // 接著從 /api/playerList 撈出全體 player，過濾出有登錄位置的名單
+          const allPlayerRes = await fetch('/api/playerList')
+          const allPlayers = await allPlayerRes.json()
+    
+          rawPlayers = allPlayers.filter(p =>
+            playerNames.includes(p.Name) && p.manager_id?.toString() === userId
+          )
+        }
+    
+        // 補上統計、守位、註冊
+        const [batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
+          fetch('/api/playerStats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
+          }),
+          fetch('/api/playerStats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
+          }),
+          fetch('/api/playerPositionCaculate'),
+          fetch('/api/playerRegisterStatus')
         ])
-
-        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
-            statusRes.json(),
-            batterRes.ok ? batterRes.json() : [],
-            pitcherRes.ok ? pitcherRes.json() : [],
-            positionRes.ok ? positionRes.json() : [],
-            registerRes.ok ? registerRes.json() : []
+    
+        const [batterData, pitcherData, positionData, registerData] = await Promise.all([
+          batterRes.ok ? batterRes.json() : [],
+          pitcherRes.ok ? pitcherRes.json() : [],
+          positionRes.ok ? positionRes.json() : [],
+          registerRes.ok ? registerRes.json() : []
         ])
-
-        
+    
         const statsData = [...batterData, ...pitcherData]
-
-        const merged = statusData.map(p => {
+    
+        const merged = rawPlayers.map(p => {
           const stat = statsData.find(s => s.name === p.Name)
           const pos = positionData.find(pos => pos.name === p.Name)
-          const finalPosition = pos?.finalPosition || []
           const reg = registerData.find(r => r.name === p.Name)
-          const registerStatus = reg?.status || '未知'
           return {
             ...p,
             ...(stat || {}),
-            finalPosition,
-            registerStatus
+            finalPosition: pos?.finalPosition || [],
+            registerStatus: reg?.status || '未知',
           }
         })
-
-        const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
-
-        setPlayers(myPlayers)
-
-        await loadAssigned(myPlayers)
+    
+        setPlayers(merged)
+        await loadAssigned(merged)
         setPositionsLoaded(true)
         setRosterReady(true)
-
       } catch (err) {
-        console.error('讀取錯誤:', err)
+        console.error('❌ fetchData 錯誤:', err)
       }
+    
       setLoading(false)
     }
+    
 
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 

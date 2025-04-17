@@ -202,7 +202,7 @@ export default function RosterPage() {
     
         const statusRes = isToday
           ? await fetch('/api/playerStatus')
-          : await fetch(`/api/playerFromAssigned?date=${selectedDate}`)
+          : await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
     
         const batterRes = await fetch('/api/playerStats', {
           method: 'POST',

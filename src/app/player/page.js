@@ -364,7 +364,8 @@ export default function PlayerPage() {
   const isStarter = !['NA', 'NA(備用)', 'BN'].includes(assignedPosition)
   const gameInfo = gameInfoMap[p.Team] || ''
   const gameTimeMatch = gameInfo.match(/(\d{1,2}):(\d{2})/)
-  const now = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+  const now = new Date()
+	const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
 
   // 不限制 Drop 的情況：沒比賽或延賽
   const isPostponedOrNoGame = gameInfo.includes('No game') || gameInfo.includes('PPD')
@@ -376,7 +377,7 @@ export default function PlayerPage() {
     gameTime.setHours(Number(hour))
     gameTime.setMinutes(Number(minute))
     gameTime.setSeconds(0)
-    if (now >= gameTime) {
+    if (taiwanNow >= gameTime) {
       isGameStarted = true
     }
   }

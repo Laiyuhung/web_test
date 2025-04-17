@@ -237,7 +237,7 @@ export default function RosterPage() {
 
         setPlayers(myPlayers)
 
-        await loadAssigned(myPlayers)
+        await loadAssigned()
         setPositionsLoaded(true)
         setRosterReady(true)
 
@@ -516,29 +516,23 @@ export default function RosterPage() {
   }
   
 
-  const loadAssigned = async (playersList) => {
-    console.log('📦 載入 assigned，用的 playersList:', playersList)
-  
+  const loadAssigned = async () => {
     try {
       const res = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
       const map = {}
-      playersList.forEach(p => {
-        const record = data.find(r => r.player_name === p.Name)
-        if (record) {
-          map[p.Name] = record.position
-        }
+      data.forEach(r => {
+        map[r.player_name] = r.position
       })
-  
-      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
   
       setAssignedPositions(map)
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
   }
+  
 
   // ✅ 加入這段：
   const saveAssigned = async (updatedMap) => {

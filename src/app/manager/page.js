@@ -848,8 +848,6 @@ export default function RosterPage() {
               <option>Last 30 days</option>
               <option>2025 Season</option>
           </select>
-        </div>
-        <div className="mb-4">
           <label className="text-sm font-semibold">Manager</label>
           <select
             value={selectedManager || ''}

@@ -19,6 +19,27 @@ export default function HomePage() {
   const [rewardTab, setRewardTab] = useState('summary')
   const [rewardSummary, setRewardSummary] = useState([])
   const [rewardList, setRewardList] = useState([])
+  const [recentTransactions, setRecentTransactions] = useState([])
+  const [transactionMode, setTransactionMode] = useState('recent')
+
+
+  useEffect(() => {
+    async function fetchRecentTransactions() {
+      try {
+        const res = await fetch('/api/transactions/load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: transactionMode }),
+        })
+        const data = await res.json()
+        if (res.ok) setRecentTransactions(data)
+      } catch (err) {
+        console.error('❌ 載入交易紀錄失敗', err)
+      }
+    }
+    fetchRecentTransactions()
+  }, [transactionMode])
+  
 
   useEffect(() => {
     const cookie = document.cookie.split('; ').find(row => row.startsWith('user_id='))
@@ -117,6 +138,30 @@ export default function HomePage() {
     if (week === '') setFiltered(schedules)
     else setFiltered(schedules.filter(s => s.week === week))
   }
+
+  const renderRecentTransactions = () => (
+    <table className="w-full text-sm text-center mt-4">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="p-2">時間</th>
+          <th className="p-2">隊伍</th>
+          <th className="p-2">操作</th>
+          <th className="p-2">球員</th>
+        </tr>
+      </thead>
+      <tbody>
+        {recentTransactions.map((t, i) => (
+          <tr key={i} className="border-t">
+            <td className="p-2">{t.transaction_time?.replace('T', ' ').slice(0, 16)}</td>
+            <td className="p-2">{t.team_name}</td>
+            <td className="p-2">{t.type}</td>
+            <td className="p-2">{t.detail}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+  
 
   const renderStandings = (type) => (
     <table className="w-full text-sm text-center mt-4">
@@ -247,6 +292,27 @@ export default function HomePage() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">近期交易紀錄</h2>
+      <div className="flex gap-2 mb-2">
+        <Button
+          variant={transactionMode === 'recent' ? 'default' : 'outline'}
+          onClick={() => setTransactionMode('recent')}
+        >
+          L5
+        </Button>
+        <Button
+          variant={transactionMode === 'all' ? 'default' : 'outline'}
+          onClick={() => setTransactionMode('all')}
+        >
+          All
+        </Button>
+      </div>
+      <Card className="mt-2">
+        <CardContent>{renderRecentTransactions()}</CardContent>
+      </Card>
+
+
 
       <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">獎金統計</h2>
       <Card className="mt-6">

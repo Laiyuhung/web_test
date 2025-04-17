@@ -351,7 +351,12 @@ export default function PlayerPage() {
             setConfirmPlayer(p);
             setDropPlayer('');
             setWaiverDialogOpen(true); // 👈 打開 Waiver Dialog
-          } else {
+          }else if (status.includes("on team") && isOwner) {
+            // 🧨 如果是自己隊上的球員，直接開 Drop 確認 Dialog
+            setConfirmPlayer(p);
+            setDialogOpen(true);
+          }
+          else {
             checkAddConstraints(p);
           }
         }}

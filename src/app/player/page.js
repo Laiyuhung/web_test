@@ -325,7 +325,9 @@ export default function PlayerPage() {
     const isPostponedOrNoGame = gameInfo.includes('No game') || gameInfo.includes('PPD')
     const gameTimeMatch = gameInfo.match(/(\d{1,2}):(\d{2})/)
   
-    const now = new Date()  // UTC 時間
+    const nowUTC = new Date()
+    const taiwanNow = new Date(nowUTC.getTime() + 8 * 60 * 60 * 1000)
+
   
     if (!isPostponedOrNoGame && isStarter && gameTimeMatch) {
       const [_, hour, minute] = gameTimeMatch
@@ -347,11 +349,11 @@ export default function PlayerPage() {
         isStarter,
         gameInfo,
         gameTime: gameTime.toISOString(),
-        nowUTC: now.toISOString(),
-        result: now >= gameTime
+        nowtime: taiwanNow.toISOString(),
+        result: taiwanNow >= gameTime
       })
   
-      return now >= gameTime
+      return nowtime >= gameTime
     }
   
     console.log('✅ 無 Drop 限制 (未開賽或非先發)', {

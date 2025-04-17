@@ -140,9 +140,6 @@ export async function POST(req) {
       'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'
     ]
 
-    const batterLowerBetter = ['K', 'GIDP']
-    const pitcherLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
-
     const batterStats = ['R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
 
     for (const stat of batterStats) {

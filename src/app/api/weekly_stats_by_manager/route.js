@@ -69,7 +69,9 @@ export async function POST(req) {
         for (const date of dates) {
           if (isBatter) {
             const rows = batStats.filter(r => r.name === name && r.game_date === date)
+            if (rows.length === 0) console.log(`🈳 ${date} 無 ${name} 打者數據`)
             for (const r of rows) {
+              console.log(`📅 ${date} 打者 ${name} 數據:`, r)
               batterSum.AB += r.at_bats || 0
               batterSum.R += r.runs || 0
               batterSum.H += r.hits || 0
@@ -86,7 +88,9 @@ export async function POST(req) {
 
           if (isPitcher) {
             const rows = pitStats.filter(r => r.name === name && r.game_date === date)
+            if (rows.length === 0) console.log(`🈳 ${date} 無 ${name} 投手數據`)
             for (const r of rows) {
+              console.log(`📅 ${date} 投手 ${name} 數據:`, r)
               const ip = r.innings_pitched || 0
               const outs = Math.floor(ip) * 3 + Math.round((ip % 1) * 10)
               pitcherSum.OUT += outs
@@ -103,6 +107,9 @@ export async function POST(req) {
           }
         }
       }
+
+      console.log(`📊 Manager ${managerId} Batters 總和:`, batterSum)
+      console.log(`📊 Manager ${managerId} Pitchers 總和:`, pitcherSum)
 
       const AB = batterSum.AB || 1
       const IP = pitcherSum.OUT / 3 || 1
@@ -149,7 +156,6 @@ export async function POST(req) {
       const isLowerBetter = isBatter ? batterLowerBetter.includes(stat) : pitcherLowerBetter.includes(stat)
 
       values.sort((a, b) => isLowerBetter ? a.value - b.value : b.value - a.value)
-
       console.log(`📊 排名計算 - ${stat}:`, values)
 
       let i = 0
@@ -173,7 +179,9 @@ export async function POST(req) {
     }
 
     result.forEach(r => {
-      r.fantasyPoints.Total = Object.values(r.fantasyPoints).reduce((a, b) => a + b, 0).toFixed(1)
+      const total = Object.values(r.fantasyPoints).reduce((a, b) => a + b, 0)
+      r.fantasyPoints.Total = total.toFixed(1)
+      console.log(`✨ ${r.team_name} 總得分：${total.toFixed(1)}`, r.fantasyPoints)
     })
 
     return NextResponse.json(result)

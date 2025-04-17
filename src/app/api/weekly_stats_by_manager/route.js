@@ -210,10 +210,14 @@ export async function POST(req) {
     result.forEach(r => {
       const batterTotal = Object.values(r.batters.fantasyPoints || {}).reduce((a, b) => a + b, 0)
       const pitcherTotal = Object.values(r.pitchers.fantasyPoints || {}).reduce((a, b) => a + b, 0)
+    
       r.fantasyPoints = {
-        Total: (batterTotal + pitcherTotal).toFixed(1)
+        ...r.batters.fantasyPoints,
+        ...r.pitchers.fantasyPoints,
+        Total: (batterTotal + pitcherTotal).toFixed(1),
       }
     })
+    
 
     return NextResponse.json(result)
   } catch (err) {

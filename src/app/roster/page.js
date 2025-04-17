@@ -219,31 +219,25 @@ export default function RosterPage() {
         
         const statsData = [...batterData, ...pitcherData]
 
-        const assignedNames = Object.keys(assignedPositions)
-
-        const merged = assignedNames.map(name => {
-          const base = statusData.find(p => p.Name === name) || {}
-          const stat = statsData.find(s => s.name === name) || {}
-          const pos = positionData.find(pos => pos.name === name)
+        const merged = statusData.map(p => {
+          const stat = statsData.find(s => s.name === p.Name)
+          const pos = positionData.find(pos => pos.name === p.Name)
           const finalPosition = pos?.finalPosition || []
-          const reg = registerData.find(r => r.name === name)
+          const reg = registerData.find(r => r.name === p.Name)
           const registerStatus = reg?.status || '未知'
           return {
-            Name: name,
-            ...base,
-            ...stat,
+            ...p,
+            ...(stat || {}),
             finalPosition,
             registerStatus
           }
         })
-        
-
 
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
 
         setPlayers(myPlayers)
 
-        await loadAssigned()
+        await loadAssigned(myPlayers)
         setPositionsLoaded(true)
         setRosterReady(true)
 
@@ -276,7 +270,7 @@ export default function RosterPage() {
     const fetchGames = async () => {
       try {
         const map = {}
-        const teams = [...new Set(players.map(p => p.Team).filter(Boolean))]
+        const teams = [...new Set(players.map(p => p.Team))]
   
         for (const team of teams) {
           const res = await fetch('/api/schedule', {
@@ -309,19 +303,13 @@ export default function RosterPage() {
   
 
   const fetchStatsSummary = async () => {
-    const batterNames = assignedNames
-    .filter(name => {
-      const p = players.find(p => p.Name === name)
-      return (p?.B_or_P === 'Batter') && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[name])
-    })
+    const batterNames = players
+      .filter(p => p.B_or_P === 'Batter' && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+      .map(p => p.Name)
 
-
-    const pitcherNames = assignedNames
-    .filter(name => {
-      const p = players.find(p => p.Name === name)
-      return (p?.B_or_P === 'Pitcher') && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[name])
-    })
-
+    const pitcherNames = players
+      .filter(p => p.B_or_P === 'Pitcher' && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
+      .map(p => p.Name)
   
     try {
       const [batterRes, pitcherRes] = await Promise.all([
@@ -528,23 +516,29 @@ export default function RosterPage() {
   }
   
 
-  const loadAssigned = async () => {
+  const loadAssigned = async (playersList) => {
+    console.log('📦 載入 assigned，用的 playersList:', playersList)
+  
     try {
       const res = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
       const map = {}
-      data.forEach(r => {
-        map[r.player_name] = r.position
+      playersList.forEach(p => {
+        const record = data.find(r => r.player_name === p.Name)
+        if (record) {
+          map[p.Name] = record.position
+        }
       })
+  
+      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
   
       setAssignedPositions(map)
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
   }
-  
 
   // ✅ 加入這段：
   const saveAssigned = async (updatedMap) => {
@@ -616,35 +610,21 @@ export default function RosterPage() {
   
   
 
-  const assignedNames = Object.keys(assignedPositions)
-
-  const batters = assignedNames
-  .map(name => {
-    const p = players.find(p => p.Name === name)
-    if (!p) return { Name: name, B_or_P: 'Batter', finalPosition: [], registerStatus: '未知' }
-    return p
-  })
-  .filter(p => p.B_or_P === 'Batter')
+  const batters = players
+  .filter(p => p.B_or_P === 'Batter' && assignedPositions[p.Name] !== undefined)
   .sort((a, b) => {
     const posA = assignedPositions[a.Name] || 'BN'
     const posB = assignedPositions[b.Name] || 'BN'
     return batterPositionOrder.indexOf(posA) - batterPositionOrder.indexOf(posB)
   })
-
-const pitchers = assignedNames
-  .map(name => {
-    const p = players.find(p => p.Name === name)
-    if (!p) return { Name: name, B_or_P: 'Pitcher', finalPosition: [], registerStatus: '未知' }
-    return p
-  })
-  .filter(p => p.B_or_P === 'Pitcher')
+  
+  const pitchers = players
+  .filter(p => p.B_or_P === 'Pitcher' && assignedPositions[p.Name] !== undefined)
   .sort((a, b) => {
     const posA = assignedPositions[a.Name] || 'BN'
     const posB = assignedPositions[b.Name] || 'BN'
     return pitcherPositionOrder.indexOf(posA) - pitcherPositionOrder.indexOf(posB)
   })
-
-
 
 
   const renderHeader = (type, zIndex = 'z-40') => {

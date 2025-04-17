@@ -63,18 +63,59 @@ export async function POST(req) {
         const isBatter = typeMap[name] === 'Batter'
         const isPitcher = typeMap[name] === 'Pitcher'
 
+        let batterSum = { AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0, K: 0, BB: 0, GIDP: 0, XBH: 0, TB: 0 }
+        let pitcherSum = { OUT: 0, W: 0, L: 0, HLD: 0, SV: 0, H: 0, ER: 0, K: 0, BB: 0, QS: 0 }
+
         for (const date of dates) {
           console.log(`📅 ${date} ➜ Manager ${managerId} 登錄 ${name}，類型: ${isBatter ? 'Batter' : isPitcher ? 'Pitcher' : '未知'}`)
 
           if (isBatter) {
             const rows = batStats.filter(r => r.name === name && r.game_date === date)
             console.log(`🔍 ${name} @ ${date} 打者原始數據:`, rows)
+            for (const r of rows) {
+              batterSum.AB += r.at_bats || 0
+              batterSum.R += r.runs || 0
+              batterSum.H += r.hits || 0
+              batterSum.HR += r.home_runs || 0
+              batterSum.RBI += r.rbis || 0
+              batterSum.SB += r.stolen_bases || 0
+              batterSum.K += r.strikeouts || 0
+              batterSum.BB += r.walks || 0
+              batterSum.GIDP += r.double_plays || 0
+              batterSum.XBH += (r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0)
+              const singles = (r.hits || 0) - ((r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0))
+              batterSum.TB += singles + (r.doubles || 0) * 2 + (r.triples || 0) * 3 + (r.home_runs || 0) * 4
+            }
           }
 
           if (isPitcher) {
             const rows = pitStats.filter(r => r.name === name && r.game_date === date)
             console.log(`🔍 ${name} @ ${date} 投手原始數據:`, rows)
+            for (const r of rows) {
+              const ip = r.innings_pitched || 0
+              const outs = Math.floor(ip) * 3 + Math.round((ip % 1) * 10)
+              pitcherSum.OUT += outs
+              pitcherSum.H += r.hits_allowed || 0
+              pitcherSum.ER += r.earned_runs || 0
+              pitcherSum.K += r.strikeouts || 0
+              pitcherSum.BB += r.walks || 0
+              if (r.record === 'W') pitcherSum.W += 1
+              if (r.record === 'L') pitcherSum.L += 1
+              if (r.record === 'H') pitcherSum.HLD += 1
+              if (r.record === 'S') pitcherSum.SV += 1
+              if (ip >= 6 && r.earned_runs <= 3) pitcherSum.QS += 1
+            }
           }
+        }
+
+        const isEmpty = (obj) => Object.values(obj).every(val => val === 0)
+
+        if (isBatter && !isEmpty(batterSum)) {
+          console.log(`📌 Manager ${managerId} / ${name} 打者加總:`, batterSum)
+        }
+
+        if (isPitcher && !isEmpty(pitcherSum)) {
+          console.log(`📌 Manager ${managerId} / ${name} 投手加總:`, pitcherSum)
         }
       }
     }

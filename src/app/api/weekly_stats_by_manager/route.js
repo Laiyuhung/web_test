@@ -70,6 +70,7 @@ export async function POST(req) {
           if (isBatter) {
             const rows = batStats.filter(r => r.name === name && r.game_date === date)
             for (const r of rows) {
+              const before = { ...batterSum } // ✅ 加這行
               batterSum.AB += r.at_bats || 0
               batterSum.R += r.runs || 0
               batterSum.H += r.hits || 0
@@ -95,6 +96,7 @@ export async function POST(req) {
           if (isPitcher) {
             const rows = pitStats.filter(r => r.name === name && r.game_date === date)
             for (const r of rows) {
+              const before = { ...pitcherSum } // ✅ 加這行
               const ip = r.innings_pitched || 0
               const outs = Math.floor(ip) * 3 + Math.round((ip % 1) * 10)
               pitcherSum.OUT += outs

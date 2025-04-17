@@ -356,7 +356,10 @@ export default function PlayerPage() {
       isStarter,
       gameInfo,
       isPostponedOrNoGame,
-      gameTimeMatch
+      gameTimeMatch,
+      gameTime: gameTime.toISOString(),
+      taiwanNow: taiwanNow.toISOString(),
+      result: taiwanNow >= gameTime
     })
   
     return false

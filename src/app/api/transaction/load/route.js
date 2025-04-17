@@ -31,8 +31,8 @@ export async function POST(req) {
   const mapped = data.map(row => ({
     type: row.type,
     transaction_time: row.transaction_time,
-    player_name: playerMap[row.player_id] || row.player_id,
-    manager: managerMap[row.manager] || row.manager
+    player_name: playerMap[row.Player_no] || row.Player_no,
+    manager: managerMap[row.manager_id] || row.manager_id
   }))
 
   return NextResponse.json(mapped)

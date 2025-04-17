@@ -326,7 +326,8 @@ export default function PlayerPage() {
     const gameTimeMatch = gameInfo.match(/(\d{1,2}):(\d{2})/)
   
     const now = new Date()
-    const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+    const taiwanNow = now  // ✅ 直接用 UTC，不要加 8 小時
+
   
     if (!isPostponedOrNoGame && isStarter && gameTimeMatch) {
       const [_, hour, minute] = gameTimeMatch

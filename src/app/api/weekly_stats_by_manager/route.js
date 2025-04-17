@@ -79,6 +79,7 @@ export async function POST(req) {
               batterSum.K += r.strikeouts || 0
               batterSum.BB += r.walks || 0
               batterSum.GIDP += r.double_plays || 0
+              batterSum.XBH +=  ((r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0))
               const singles = (r.hits || 0) - ((r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0))
               batterSum.TB += singles + (r.doubles || 0) * 2 + (r.triples || 0) * 3 + (r.home_runs || 0) * 4
 

@@ -130,8 +130,8 @@ export async function POST(req) {
       result.push({
         manager_id: managerId,
         team_name: managerData?.team_name || `Manager #${managerId}`,
-        batters: { ...batterSum, AVG, OPS },
-        pitchers: { ...pitcherSum, ERA, WHIP, IP: `${Math.floor(IP)}.${pitcherSum.OUT % 3}` }
+        batters: { ...batterSum, AVG, OPS, fantasyPoints: {} },     // 加上空殼
+        pitchers: { ...pitcherSum, ERA, WHIP, IP: `${Math.floor(IP)}.${pitcherSum.OUT % 3}`, fantasyPoints: {} }
       })
     }
 

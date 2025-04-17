@@ -155,7 +155,7 @@ export default function HomePage() {
             <td className="p-2">{t.transaction_time?.replace('T', ' ').slice(0, 16)}</td>
             <td className="p-2">{t.team_name}</td>
             <td className="p-2">{t.type}</td>
-            <td className="p-2">{t.detail}</td>
+            <td className="p-2">{t.summary}</td>
           </tr>
         ))}
       </tbody>

@@ -82,7 +82,13 @@ export async function POST(req) {
               const singles = (r.hits || 0) - ((r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0))
               batterSum.TB += singles + (r.doubles || 0) * 2 + (r.triples || 0) * 3 + (r.home_runs || 0) * 4
 
+              console.log('🟦 加總變化:', Object.keys(before).reduce((acc, key) => {
+                acc[key] = `${before[key]} ➜ ${batterSum[key]}`
+                return acc
+              }, {}))
+
             }
+            console.log(`📈 Manager ${managerId} 本輪累計打者數據（含 ${name}）:`, batterSum)
           }
 
           if (isPitcher) {
@@ -100,7 +106,14 @@ export async function POST(req) {
               if (r.record === 'H') pitcherSum.HLD += 1
               if (r.record === 'S') pitcherSum.SV += 1
               if (ip >= 6 && r.earned_runs <= 3) pitcherSum.QS += 1
+
+              console.log('🟥 加總變化:', Object.keys(before).reduce((acc, key) => {
+                acc[key] = `${before[key]} ➜ ${pitcherSum[key]}`
+                return acc
+              }, {}))
             }
+            console.log(`📈 Manager ${managerId} 本輪累計投手數據（含 ${name}）:`, pitcherSum)
+
           }
         }
       }

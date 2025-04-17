@@ -43,7 +43,7 @@ export async function GET(req) {
 
   // Step 3: player_register_status
   const { data: register, error: registerError } = await supabase
-    .from('player_register_status')
+    .from('registerlist')
     .select('name, status')
     .in('name', playerNames)
 
@@ -53,33 +53,134 @@ export async function GET(req) {
   }
   console.log('✅ Step 3: register_status', register)
 
+
+
   // Step 4: player_position_caculate
-  const { data: posData, error: posError } = await supabase
-    .from('player_position_caculate')
-    .select('name, final_position')
-    .in('name', playerNames)
+  const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
+    const validPositions = ['C', '1B', '2B', '3B', 'SS', 'OF']
+    const isValidPosition = (p) => validPositions.includes(p)
 
-  if (posError) {
-    console.log('❌ player_position_caculate 錯誤:', posError)
-    return NextResponse.json({ error: 'position_caculate 錯誤', detail: posError }, { status: 500 })
-  }
-  console.log('✅ Step 4: positionData', posData)
+    // 撈出 position2024、batting_stats、pitching_stats
+    const [{ data: posTable }, { data: battingStats }, { data: pitchingStats }] = await Promise.all([
+    supabase.from('position2024').select('Player_no, Position'),
+    supabase.from('batting_stats').select('name, position').eq('game_date', date),
+    supabase.from('pitching_stats').select('name, sequence').eq('game_date', date),
+    ])
 
-  // Step 5: batting_stats
-  const { data: batterStats } = await supabase
-    .from('batting_stats')
-    .select()
-    .eq('game_date', date)
-    .in('name', playerNames)
-  console.log('✅ Step 5: batterStats', batterStats)
+    // name ↔ player_no 對照表
+    const nameToPlayerNo = {}
+    const playerNoToName = {}
+    const playerNoToType = {}
+    basic.forEach(p => {
+    const cleaned = cleanName(p.Name)
+    nameToPlayerNo[cleaned] = p.Player_no
+    playerNoToName[p.Player_no] = p.Name
+    playerNoToType[p.Player_no] = p.B_or_P
+    })
 
-  // Step 6: pitching_stats
-  const { data: pitcherStats } = await supabase
-    .from('pitching_stats')
-    .select()
-    .eq('game_date', date)
-    .in('name', playerNames)
-  console.log('✅ Step 6: pitcherStats', pitcherStats)
+    // 靜態守位（position2024）
+    const staticPositions = {}
+    posTable.forEach(row => {
+    const raw = row.Position?.split(',').map(p => p.trim()).filter(Boolean) || []
+    const playerNo = row.Player_no
+    const type = playerNoToType[playerNo]
+    if (!type) return
+
+    let mapped
+    if (type === 'Batter') {
+        mapped = raw.map(p => isValidPosition(p) ? p : 'Util')
+        const hasValid = mapped.some(p => validPositions.includes(p))
+        if (!hasValid) mapped.push('Util')
+    } else {
+        mapped = raw.includes('SP') || raw.includes('RP')
+        ? raw.filter(p => ['SP', 'RP'].includes(p))
+        : ['P']
+    }
+
+    staticPositions[playerNo] = Array.from(new Set(mapped))
+    })
+
+    // 出賽位置：打者（打過哪個守位幾次）
+    const batterGamePosition = {}
+    battingStats.forEach(row => {
+    const cleaned = cleanName(row.name)
+    const playerNo = nameToPlayerNo[cleaned]
+    if (!playerNo || !Array.isArray(row.position)) return
+    if (!batterGamePosition[playerNo]) batterGamePosition[playerNo] = {}
+    row.position.forEach(pos => {
+        const p = isValidPosition(pos) ? pos : 'Util'
+        batterGamePosition[playerNo][p] = (batterGamePosition[playerNo][p] || 0) + 1
+    })
+    })
+
+    // 出賽次數：投手（SP or RP）
+    const pitcherGameCounts = {}
+    pitchingStats.forEach(row => {
+    const cleaned = cleanName(row.name)
+    const playerNo = nameToPlayerNo[cleaned]
+    if (!playerNo) return
+    if (!pitcherGameCounts[playerNo]) pitcherGameCounts[playerNo] = { SP: 0, RP: 0 }
+    if (row.sequence === 1) {
+        pitcherGameCounts[playerNo].SP++
+    } else {
+        pitcherGameCounts[playerNo].RP++
+    }
+    })
+
+    // 最終位置合成
+    const nameToFinalPosition = {}
+
+    playerNames.forEach(name => {
+    const cleaned = cleanName(name)
+    const playerNo = nameToPlayerNo[cleaned]
+    const type = playerNoToType[playerNo]
+    const finalPos = new Set(staticPositions[playerNo] || [])
+
+    if (type === 'Batter') {
+        const stats = batterGamePosition[playerNo] || {}
+        for (const pos in stats) {
+        if (stats[pos] >= 8) finalPos.add(pos)
+        }
+        const hasValid = [...finalPos].some(p => validPositions.includes(p))
+        if (!hasValid) finalPos.add('Util')
+        if (finalPos.has('Util') && hasValid) finalPos.delete('Util')
+
+    } else if (type === 'Pitcher') {
+        const stat = pitcherGameCounts[playerNo] || {}
+        if (stat.SP >= 3) finalPos.add('SP')
+        if (stat.RP >= 2) finalPos.add('RP')
+
+        if ((finalPos.has('SP') || finalPos.has('RP')) && finalPos.has('P')) {
+        finalPos.delete('P')
+        }
+        if (!finalPos.has('SP') && !finalPos.has('RP')) {
+        finalPos.add('P')
+        }
+    }
+
+    nameToFinalPosition[name] = Array.from(finalPos)
+    })
+
+    console.log('✅ Step 4: nameToFinalPosition', nameToFinalPosition)
+
+
+  // Step 5: batting_stats（僅撈一軍）
+const { data: batterStats } = await supabase
+.from('batting_stats')
+.select()
+.eq('game_date', date)
+.eq('is_major', true)  // ✅ 僅限一軍
+.in('name', playerNames)
+console.log('✅ Step 5: batterStats', batterStats)
+
+// Step 6: pitching_stats（僅撈一軍）
+const { data: pitcherStats } = await supabase
+.from('pitching_stats')
+.select()
+.eq('game_date', date)
+.eq('is_major', true)  // ✅ 僅限一軍
+.in('name', playerNames)
+console.log('✅ Step 6: pitcherStats', pitcherStats)
 
   // Step 7: 整合每位球員資料
   const merged = []
@@ -102,7 +203,7 @@ export async function GET(req) {
       type: base.B_or_P || '',
       identity: base.identity || '',
       registerStatus: reg.status || '未註冊',
-      finalPosition: pos.final_position || [],
+      finalPosition: nameToFinalPosition[name] || [],
       stats
     }
 

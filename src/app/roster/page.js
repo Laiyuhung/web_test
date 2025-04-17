@@ -219,19 +219,25 @@ export default function RosterPage() {
         
         const statsData = [...batterData, ...pitcherData]
 
-        const merged = statusData.map(p => {
-          const stat = statsData.find(s => s.name === p.Name)
-          const pos = positionData.find(pos => pos.name === p.Name)
+        const assignedNames = Object.keys(assignedPositions)
+
+        const merged = assignedNames.map(name => {
+          const base = statusData.find(p => p.Name === name) || {}
+          const stat = statsData.find(s => s.name === name) || {}
+          const pos = positionData.find(pos => pos.name === name)
           const finalPosition = pos?.finalPosition || []
-          const reg = registerData.find(r => r.name === p.Name)
+          const reg = registerData.find(r => r.name === name)
           const registerStatus = reg?.status || '未知'
+
           return {
-            ...p,
-            ...(stat || {}),
+            Name: name,
+            ...base,
+            ...stat,
             finalPosition,
             registerStatus
           }
         })
+
 
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
 
@@ -270,7 +276,7 @@ export default function RosterPage() {
     const fetchGames = async () => {
       try {
         const map = {}
-        const teams = [...new Set(players.map(p => p.Team))]
+        const teams = [...new Set(players.map(p => p.Team).filter(Boolean))]
   
         for (const team of teams) {
           const res = await fetch('/api/schedule', {

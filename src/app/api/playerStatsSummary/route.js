@@ -45,7 +45,7 @@ export async function POST(req) {
         total.BB += row.walks || 0
         total.GIDP += row.double_plays || 0
         total.XBH += (row.doubles || 0) + (row.triples || 0) + (row.home_runs || 0)
-        total.TB += (row.singles || 0) + (row.doubles || 0) * 2 + (row.triples || 0) * 3 + (row.home_runs || 0) * 4
+        total.TB += (row.hits - row.doubles - row.triples - row.home_runs ) + (row.doubles || 0) * 2 + (row.triples || 0) * 3 + (row.home_runs || 0) * 4
         total.HBP += row.hit_by_pitch || 0
         total.SF += row.sacrifice_flies || 0
       }

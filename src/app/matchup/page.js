@@ -86,11 +86,19 @@ export default function MatchupTable() {
                 <tr key={d.team_name} className="text-sm">
                 <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">{d.rank}</td>
                 <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
-                {pointKeys.map((key) => (
-                    <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                        {d.fantasyPoints?.[key] ?? '0.0'}
-                    </td>
-                ))}
+                {pointKeys.map((key) => {
+                    const value =
+                      d.fantasyPoints?.[key] ??
+                      d.batters?.fantasyPoints?.[key] ??
+                      d.pitchers?.fantasyPoints?.[key] ??
+                      '0.0'
+                    return (
+                      <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
+                        {value}
+                      </td>
+                    )
+                  })}
+
                 <td className="border px-3 py-2 text-center font-bold">{d.fantasyPoints?.Total || '0.0'}</td>
                 </tr>
             ))}

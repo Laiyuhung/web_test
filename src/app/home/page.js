@@ -26,7 +26,7 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchRecentTransactions() {
       try {
-        const res = await fetch('/api/transactions/load', {
+        const res = await fetch('/api/transaction/load', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: transactionMode }),

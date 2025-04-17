@@ -192,48 +192,33 @@ export default function RosterPage() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        // ✅ 判斷是否為台灣今日
-        const getTaiwanToday = () => {
-          const now = new Date()
-          const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
-          return taiwanNow.toISOString().slice(0, 10)
-        }
-    
-        const isToday = selectedDate === getTaiwanToday()
-    
-        // ✅ 根據日期抓對應的 player list
-        const statusRes = isToday
-          ? await fetch('/api/playerStatus')
-          : await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
-    
-        // ✅ 撈統計與位置資料
-        const batterRes = await fetch('/api/playerStats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-        })
-    
-        const pitcherRes = await fetch('/api/playerStats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-        })
-    
-        const positionRes = await fetch('/api/playerPositionCaculate')
-        const registerRes = await fetch('/api/playerRegisterStatus')
-    
-        // ✅ 統一解析 JSON
-        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
-          statusRes.json(),
-          batterRes.ok ? batterRes.json() : [],
-          pitcherRes.ok ? pitcherRes.json() : [],
-          positionRes.ok ? positionRes.json() : [],
-          registerRes.ok ? registerRes.json() : []
+        const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
+            fetch('/api/playerStatus'),
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
+            }),
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
+            }),
+            fetch('/api/playerPositionCaculate'),
+            fetch('/api/playerRegisterStatus')
         ])
-    
+
+        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
+            statusRes.json(),
+            batterRes.ok ? batterRes.json() : [],
+            pitcherRes.ok ? pitcherRes.json() : [],
+            positionRes.ok ? positionRes.json() : [],
+            registerRes.ok ? registerRes.json() : []
+        ])
+
+        
         const statsData = [...batterData, ...pitcherData]
-    
-        // ✅ 合併資料：Stat + FinalPosition + 註冊狀態
+
         const merged = statusData.map(p => {
           const stat = statsData.find(s => s.name === p.Name)
           const pos = positionData.find(pos => pos.name === p.Name)
@@ -247,23 +232,20 @@ export default function RosterPage() {
             registerStatus
           }
         })
-    
-        // ✅ 過濾自己球員（根據 manager_id）
+
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
-    
+
         setPlayers(myPlayers)
-    
-        // ✅ 載入該日的位置設定
+
         await loadAssigned(myPlayers)
         setPositionsLoaded(true)
         setRosterReady(true)
-    
+
       } catch (err) {
         console.error('讀取錯誤:', err)
       }
       setLoading(false)
     }
-    
 
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 

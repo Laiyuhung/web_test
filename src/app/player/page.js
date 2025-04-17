@@ -314,9 +314,10 @@ export default function PlayerPage() {
     )
   }
   const isDropBlocked = (p) => {
+    const clean = (name) => name.replace(/[#◎＊*]/g, '')
     const assigned = assignedPositions.find(pos =>
       pos.manager_id?.toString() === userId &&
-      pos.name === p.Name
+      clean(pos.player_name) === clean(p.Name)  // ✅ 用 player_name
     )
     const assignedPosition = assigned?.position || 'BN'
     const isStarter = !['NA', 'NA(備用)', 'BN'].includes(assignedPosition)

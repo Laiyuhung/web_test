@@ -607,22 +607,31 @@ export default function RosterPage() {
   const assignedNames = Object.keys(assignedPositions)
 
   const batters = assignedNames
-    .map(name => players.find(p => p.Name === name && p.B_or_P === 'Batter'))
-    .filter(p => p !== undefined)
-    .sort((a, b) => {
-      const posA = assignedPositions[a.Name] || 'BN'
-      const posB = assignedPositions[b.Name] || 'BN'
-      return batterPositionOrder.indexOf(posA) - batterPositionOrder.indexOf(posB)
-    })
+  .map(name => {
+    const p = players.find(p => p.Name === name)
+    if (!p) return { Name: name, B_or_P: 'Batter', finalPosition: [], registerStatus: '未知' }
+    return p
+  })
+  .filter(p => p.B_or_P === 'Batter')
+  .sort((a, b) => {
+    const posA = assignedPositions[a.Name] || 'BN'
+    const posB = assignedPositions[b.Name] || 'BN'
+    return batterPositionOrder.indexOf(posA) - batterPositionOrder.indexOf(posB)
+  })
 
-  const pitchers = assignedNames
-    .map(name => players.find(p => p.Name === name && p.B_or_P === 'Pitcher'))
-    .filter(p => p !== undefined)
-    .sort((a, b) => {
-      const posA = assignedPositions[a.Name] || 'BN'
-      const posB = assignedPositions[b.Name] || 'BN'
-      return pitcherPositionOrder.indexOf(posA) - pitcherPositionOrder.indexOf(posB)
-    })
+const pitchers = assignedNames
+  .map(name => {
+    const p = players.find(p => p.Name === name)
+    if (!p) return { Name: name, B_or_P: 'Pitcher', finalPosition: [], registerStatus: '未知' }
+    return p
+  })
+  .filter(p => p.B_or_P === 'Pitcher')
+  .sort((a, b) => {
+    const posA = assignedPositions[a.Name] || 'BN'
+    const posB = assignedPositions[b.Name] || 'BN'
+    return pitcherPositionOrder.indexOf(posA) - pitcherPositionOrder.indexOf(posB)
+  })
+
 
 
 

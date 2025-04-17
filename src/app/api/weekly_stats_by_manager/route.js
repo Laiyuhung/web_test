@@ -84,7 +84,8 @@ export async function POST(req) {
               batterSum.BB += r.walks || 0
               batterSum.GIDP += r.double_plays || 0
               batterSum.XBH += (r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0)
-              batterSum.TB += (r.singles || 0) + (r.doubles || 0) * 2 + (r.triples || 0) * 3 + (r.home_runs || 0) * 4
+              const singles = (r.hits || 0) - ((r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0))
+              batterSum.TB += singles + (r.doubles || 0) * 2 + (r.triples || 0) * 3 + (r.home_runs || 0) * 4
               console.log('🟦 加總變化:', Object.keys(before).reduce((acc, key) => {
                 acc[key] = `${before[key]} ➜ ${batterSum[key]}`
                 return acc

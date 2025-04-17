@@ -74,11 +74,11 @@ export async function POST(req) {
               batterSum.R += r.runs || 0
               batterSum.H += r.hits || 0
               batterSum.HR += r.home_runs || 0
-              batterSum.RBI += r.runs_batted_in || 0
+              batterSum.RBI += r.rbis || 0
               batterSum.SB += r.stolen_bases || 0
               batterSum.K += r.strikeouts || 0
               batterSum.BB += r.walks || 0
-              batterSum.GIDP += r.ground_into_double_play || 0
+              batterSum.GIDP += r.double_plays || 0
               batterSum.XBH += (r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0)
               batterSum.TB += (r.singles || 0) + (r.doubles || 0) * 2 + (r.triples || 0) * 3 + (r.home_runs || 0) * 4
             }
@@ -96,8 +96,8 @@ export async function POST(req) {
               pitcherSum.BB += r.walks || 0
               if (r.record === 'W') pitcherSum.W += 1
               if (r.record === 'L') pitcherSum.L += 1
-              if (r.record === 'HLD') pitcherSum.HLD += 1
-              if (r.record === 'SV') pitcherSum.SV += 1
+              if (r.record === 'H') pitcherSum.HLD += 1
+              if (r.record === 'S') pitcherSum.SV += 1
               if (ip >= 6 && r.earned_runs <= 3) pitcherSum.QS += 1
             }
           }

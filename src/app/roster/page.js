@@ -228,7 +228,6 @@ export default function RosterPage() {
           const finalPosition = pos?.finalPosition || []
           const reg = registerData.find(r => r.name === name)
           const registerStatus = reg?.status || '未知'
-
           return {
             Name: name,
             ...base,
@@ -237,6 +236,7 @@ export default function RosterPage() {
             registerStatus
           }
         })
+        
 
 
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
@@ -309,13 +309,19 @@ export default function RosterPage() {
   
 
   const fetchStatsSummary = async () => {
-    const batterNames = players
-      .filter(p => p.B_or_P === 'Batter' && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
-      .map(p => p.Name)
+    const batterNames = assignedNames
+    .filter(name => {
+      const p = players.find(p => p.Name === name)
+      return (p?.B_or_P === 'Batter') && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[name])
+    })
 
-    const pitcherNames = players
-      .filter(p => p.B_or_P === 'Pitcher' && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
-      .map(p => p.Name)
+
+    const pitcherNames = assignedNames
+    .filter(name => {
+      const p = players.find(p => p.Name === name)
+      return (p?.B_or_P === 'Pitcher') && !['BN', 'NA', 'NA(備用)'].includes(assignedPositions[name])
+    })
+
   
     try {
       const [batterRes, pitcherRes] = await Promise.all([

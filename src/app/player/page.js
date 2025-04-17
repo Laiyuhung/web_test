@@ -196,12 +196,16 @@ export default function PlayerPage() {
   			fetch(`/api/saveAssigned/load?date=${taiwanToday}`)
 			])
 
-      const [statusData, statsData, registerData, positionData] = await Promise.all([
+      const [statusData, statsData, registerData, positionData, assignedData] = await Promise.all([
         statusRes.json(),
         statsRes.ok ? statsRes.json() : [],
         registerRes.ok ? registerRes.json() : [],
-        positionRes.ok ? positionRes.json() : []
+        positionRes.ok ? positionRes.json() : [],
+        assignedRes.ok ? assignedRes.json() : []
       ])
+      
+      setAssignedPositions(assignedData) // ⬅️ 要補這行，才會讓 isDropBlocked 拿到最新資料
+      
 
       const merged = statusData.map(p => {
         const stat = statsData.find(s => s.name === p.Name)

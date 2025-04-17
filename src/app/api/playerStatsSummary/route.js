@@ -39,11 +39,11 @@ export async function POST(req) {
         total.R += row.runs || 0
         total.H += row.hits || 0
         total.HR += row.home_runs || 0
-        total.RBI += row.runs_batted_in || 0
+        total.RBI += row.rbis || 0
         total.SB += row.stolen_bases || 0
         total.K += row.strikeouts || 0
         total.BB += row.walks || 0
-        total.GIDP += row.ground_into_double_play || 0
+        total.GIDP += row.double_plays || 0
         total.XBH += (row.doubles || 0) + (row.triples || 0) + (row.home_runs || 0)
         total.TB += (row.singles || 0) + (row.doubles || 0) * 2 + (row.triples || 0) * 3 + (row.home_runs || 0) * 4
         total.HBP += row.hit_by_pitch || 0
@@ -93,8 +93,8 @@ export async function POST(req) {
         const record = row.record
         if (record === 'W') total.W += 1
         if (record === 'L') total.L += 1
-        if (record === 'HLD') total.HLD += 1
-        if (record === 'SV') total.SV += 1
+        if (record === 'H') total.HLD += 1
+        if (record === 'S') total.SV += 1
         if (rawIP >= 6 && row.earned_runs <= 3) total.QS += 1
       }
 

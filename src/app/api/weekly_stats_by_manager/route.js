@@ -45,12 +45,14 @@ export async function POST(req) {
       .select('*')
       .gte('game_date', start)
       .lte('game_date', end)
+      .eq('is_major', true)
 
     const { data: pitStats } = await supabase
       .from('pitching_stats')
       .select('*')
       .gte('game_date', start)
       .lte('game_date', end)
+      .eq('is_major', true)
 
     const result = []
     const allManagerIds = [1, 2, 3, 4]

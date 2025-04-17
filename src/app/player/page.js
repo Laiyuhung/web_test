@@ -307,7 +307,33 @@ export default function PlayerPage() {
       </td>
     )
   }
-  
+  const isDropBlocked = (p) => {
+  const assigned = assignedPositions.find(pos =>
+    pos.manager_id?.toString() === userId &&
+    pos.name === p.Name
+  )
+  const assignedPosition = assigned?.position || 'NA'
+  const isStarter = !['NA', 'NA(備用)', 'BN'].includes(assignedPosition)
+
+  const gameInfo = gameInfoMap[p.Team] || ''
+  const isPostponedOrNoGame = gameInfo.includes('No game') || gameInfo.includes('PPD')
+
+  const gameTimeMatch = gameInfo.match(/(\d{1,2}):(\d{2})/)
+  const now = new Date()
+  const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+
+  if (!isPostponedOrNoGame && isStarter && gameTimeMatch) {
+    const [_, hour, minute] = gameTimeMatch
+    const gameTime = new Date(taiwanNow)
+    gameTime.setHours(Number(hour))
+    gameTime.setMinutes(Number(minute))
+    gameTime.setSeconds(0)
+
+    return taiwanNow >= gameTime // true 表示已開賽，不能 Drop
+  }
+
+  return false // 沒有限制
+}
 
   const positionOptions = type === 'Batter'
     ? ['Util', 'C', '1B', '2B', '3B', 'SS', 'OF']
@@ -349,52 +375,22 @@ export default function PlayerPage() {
       <div
         className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
         onClick={() => {
-          if (status === "waiver") {
-            setConfirmPlayer(p);
-            setDropPlayer('');
-            setWaiverDialogOpen(true); // 👈 打開 Waiver Dialog
-          
-          } else if (status.includes("on team") && p.owner && p.owner !== "-" && isOwner) {
-  const assigned = assignedPositions.find(pos =>
-    pos.manager_id?.toString() === userId &&
-    pos.name === p.Name
-  )
-  const assignedPosition = assigned?.position || 'NA'
-
-  const isStarter = !['NA', 'NA(備用)', 'BN'].includes(assignedPosition)
-  const gameInfo = gameInfoMap[p.Team] || ''
-  const gameTimeMatch = gameInfo.match(/(\d{1,2}):(\d{2})/)
-  const now = new Date()
-	const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
-
-  // 不限制 Drop 的情況：沒比賽或延賽
-  const isPostponedOrNoGame = gameInfo.includes('No game') || gameInfo.includes('PPD')
-  let isGameStarted = false
-
-  if (!isPostponedOrNoGame && isStarter && gameTimeMatch) {
-    const [_, hour, minute] = gameTimeMatch
-    const gameTime = new Date()
-    gameTime.setHours(Number(hour))
-    gameTime.setMinutes(Number(minute))
-    gameTime.setSeconds(0)
-    if (taiwanNow >= gameTime) {
-      isGameStarted = true
+  if (status === "waiver") {
+    setConfirmPlayer(p);
+    setDropPlayer('');
+    setWaiverDialogOpen(true);
+  } else if (status.includes("on team") && p.owner && p.owner !== "-" && isOwner) {
+    if (isDropBlocked(p)) {
+      setSuccessMessage('⚠️ 該球員已開賽，無法進行 Drop 操作')
+      setSuccessDialogOpen(true)
+      return
     }
+    setConfirmPlayer(p);
+    setDialogOpen(true);
+  } else {
+    checkAddConstraints(p);
   }
-
-  if (isGameStarted) {
-    setSuccessMessage('⚠️ 該球員已開賽，無法進行 Drop 操作')
-    setSuccessDialogOpen(true)
-    return
-  }
-
-  setConfirmPlayer(p)
-  setDialogOpen(true)
-}
-          else {
-            checkAddConstraints(p);
-          }
-        }}
+}}
       >
         <span className={`${textColor} font-bold`}>
           {status === "free agent"

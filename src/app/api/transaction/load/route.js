@@ -8,6 +8,7 @@ export async function POST(req) {
   const { data, error } = await supabase
     .from('transactions')
     .select('*')
+    .not('type', 'eq', 'Trade Drop')
     .order('transaction_time', { ascending: false })
     .limit(limit ?? undefined)
 

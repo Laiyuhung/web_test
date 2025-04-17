@@ -308,32 +308,53 @@ export default function PlayerPage() {
     )
   }
   const isDropBlocked = (p) => {
-  const assigned = assignedPositions.find(pos =>
-    pos.manager_id?.toString() === userId &&
-    pos.name === p.Name
-  )
-  const assignedPosition = assigned?.position || 'NA'
-  const isStarter = !['NA', 'NA(備用)', 'BN'].includes(assignedPosition)
-
-  const gameInfo = gameInfoMap[p.Team] || ''
-  const isPostponedOrNoGame = gameInfo.includes('No game') || gameInfo.includes('PPD')
-
-  const gameTimeMatch = gameInfo.match(/(\d{1,2}):(\d{2})/)
-  const now = new Date()
-  const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
-
-  if (!isPostponedOrNoGame && isStarter && gameTimeMatch) {
-    const [_, hour, minute] = gameTimeMatch
-    const gameTime = new Date(taiwanNow)
-    gameTime.setHours(Number(hour))
-    gameTime.setMinutes(Number(minute))
-    gameTime.setSeconds(0)
-
-    return taiwanNow >= gameTime // true 表示已開賽，不能 Drop
+    const assigned = assignedPositions.find(pos =>
+      pos.manager_id?.toString() === userId &&
+      pos.name === p.Name
+    )
+    const assignedPosition = assigned?.position || 'BN'
+    const isStarter = !['NA', 'NA(備用)', 'BN'].includes(assignedPosition)
+  
+    const gameInfo = gameInfoMap[p.Team] || ''
+    const isPostponedOrNoGame = gameInfo.includes('No game') || gameInfo.includes('PPD')
+    const gameTimeMatch = gameInfo.match(/(\d{1,2}):(\d{2})/)
+  
+    const now = new Date()
+    const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+  
+    if (!isPostponedOrNoGame && isStarter && gameTimeMatch) {
+      const [_, hour, minute] = gameTimeMatch
+      const gameTime = new Date(taiwanNow)
+      gameTime.setHours(Number(hour))
+      gameTime.setMinutes(Number(minute))
+      gameTime.setSeconds(0)
+      gameTime.setMilliseconds(0)
+  
+      console.log('🧪 判斷是否已開賽 (Drop Blocked)', {
+        name: p.Name,
+        assignedPosition,
+        isStarter,
+        gameInfo,
+        gameTime: gameTime.toISOString(),
+        taiwanNow: taiwanNow.toISOString(),
+        result: taiwanNow >= gameTime
+      })
+  
+      return taiwanNow >= gameTime
+    }
+  
+    console.log('✅ 無 Drop 限制 (未開賽或非先發)', {
+      name: p.Name,
+      assignedPosition,
+      isStarter,
+      gameInfo,
+      isPostponedOrNoGame,
+      gameTimeMatch
+    })
+  
+    return false
   }
-
-  return false // 沒有限制
-}
+  
 
   const positionOptions = type === 'Batter'
     ? ['Util', 'C', '1B', '2B', '3B', 'SS', 'OF']

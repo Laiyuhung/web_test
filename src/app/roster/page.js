@@ -217,19 +217,17 @@ export default function RosterPage() {
         ])
 
         
-        const assignedNames = Object.keys(assignedPositions)
+        const statsData = [...batterData, ...pitcherData]
 
-        const merged = assignedNames.map(name => {
-          const base = statusData.find(p => p.Name === name) || {}
-          const stat = statsData.find(s => s.name === name) || {}
-          const pos = positionData.find(pos => pos.name === name)
+        const merged = statusData.map(p => {
+          const stat = statsData.find(s => s.name === p.Name)
+          const pos = positionData.find(pos => pos.name === p.Name)
           const finalPosition = pos?.finalPosition || []
-          const reg = registerData.find(r => r.name === name)
+          const reg = registerData.find(r => r.name === p.Name)
           const registerStatus = reg?.status || '未知'
           return {
-            Name: name,
-            ...base,
-            ...stat,
+            ...p,
+            ...(stat || {}),
             finalPosition,
             registerStatus
           }

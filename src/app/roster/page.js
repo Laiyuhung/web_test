@@ -192,87 +192,60 @@ export default function RosterPage() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const getTaiwanToday = () => {
-          const now = new Date()
-          const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
-          return taiwanNow.toISOString().slice(0, 10)
-        }
-        
-        const isToday = selectedDate === getTaiwanToday()
-        
-        const [
-          statusRes,
-          batterRes,
-          pitcherRes,
-          positionRes,
-          registerRes
-        ] = await Promise.all([
-          isToday
-            ? fetch('/api/playerStatus')
-            : fetch(`/api/saveAssigned/load?date=${selectedDate}`), // 雖然不會用到，但保留呼叫避免報錯
-          fetch('/api/playerStats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate }),
-          }),
-          fetch('/api/playerStats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate }),
-          }),
-          fetch('/api/playerPositionCaculate'),
-          fetch('/api/playerRegisterStatus'),
+        const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
+            fetch('/api/playerStatus'),
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
+            }),
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
+            }),
+            fetch('/api/playerPositionCaculate'),
+            fetch('/api/playerRegisterStatus')
         ])
-        
-        const batterData = batterRes.ok ? await batterRes.json() : []
-        const pitcherData = pitcherRes.ok ? await pitcherRes.json() : []
-        const positionData = positionRes.ok ? await positionRes.json() : []
-        const registerData = registerRes.ok ? await registerRes.json() : []
+
+        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
+            statusRes.json(),
+            batterRes.ok ? batterRes.json() : [],
+            pitcherRes.ok ? pitcherRes.json() : [],
+            positionRes.ok ? positionRes.json() : [],
+            registerRes.ok ? registerRes.json() : []
+        ])
+
         
         const statsData = [...batterData, ...pitcherData]
-        
-        let merged = []
-        
-        if (isToday) {
-          const statusData = await statusRes.json()
-          merged = statusData.map(p => {
-            const stat = statsData.find(s => s.name === p.Name)
-            const pos = positionData.find(pos => pos.name === p.Name)
-            const finalPosition = pos?.finalPosition || []
-            const reg = registerData.find(r => r.name === p.Name)
-            const registerStatus = reg?.status || '未知'
-            return {
-              ...p,
-              ...(stat || {}),
-              finalPosition,
-              registerStatus,
-            }
-          })
-        } else {
-          // ❗️從 /api/playerList 取得完整名單，只撈自己隊上的
-          const playerListRes = await fetch('/api/playerList')
-          const playerList = await playerListRes.json()
-          merged = playerList
-            .filter(p => p.manager_id?.toString() === userId)
-            .map(p => ({
-              ...p,
-              finalPosition: [],
-              registerStatus: '未知',
-            }))
-        }
-        
-        setPlayers(merged)
-        await loadAssigned(merged) // ✅ 不管 today 或過去都傳 merged
-        
 
+        const merged = statusData.map(p => {
+          const stat = statsData.find(s => s.name === p.Name)
+          const pos = positionData.find(pos => pos.name === p.Name)
+          const finalPosition = pos?.finalPosition || []
+          const reg = registerData.find(r => r.name === p.Name)
+          const registerStatus = reg?.status || '未知'
+          return {
+            ...p,
+            ...(stat || {}),
+            finalPosition,
+            registerStatus
+          }
+        })
+
+        const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
+
+        setPlayers(myPlayers)
+
+        await loadAssigned(myPlayers)
         setPositionsLoaded(true)
         setRosterReady(true)
+
       } catch (err) {
         console.error('讀取錯誤:', err)
       }
       setLoading(false)
     }
-    
 
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 
@@ -543,7 +516,7 @@ export default function RosterPage() {
   }
   
 
-  const loadAssigned = async (playersList = []) => {
+  const loadAssigned = async (playersList) => {
     console.log('📦 載入 assigned，用的 playersList:', playersList)
   
     try {
@@ -552,37 +525,20 @@ export default function RosterPage() {
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
       const map = {}
-      data.forEach(r => {
-        map[r.player_name] = r.position
+      playersList.forEach(p => {
+        const record = data.find(r => r.player_name === p.Name)
+        if (record) {
+          map[p.Name] = record.position
+        }
       })
   
-      console.log('📋 載入完成的球員位置對應:', map)
-  
-      // ✅ 判斷是否為過去日期
-      const getTaiwanToday = () => {
-        const now = new Date()
-        const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
-        return taiwanNow.toISOString().slice(0, 10)
-      }
-  
-      const isToday = selectedDate === getTaiwanToday()
-  
-      if (!isToday) {
-        // 👇 撈 playerslist，自行補足 players
-        const playerListRes = await fetch('/api/playerList')
-        const playerList = await playerListRes.json()
-  
-        const myPlayers = playerList.filter(p => p.manager_id?.toString() === userId)
-  
-        setPlayers(myPlayers)
-      }
+      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
   
       setAssignedPositions(map)
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
   }
-  
 
   // ✅ 加入這段：
   const saveAssigned = async (updatedMap) => {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 export default function MatchupTable() {
-  const [week, setWeek] = useState('W1')
+  const [week, setWeek] = useState('')
   const [dateRange, setDateRange] = useState('')  // 用來顯示日期區間
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
@@ -169,8 +169,9 @@ export default function MatchupTable() {
       {!loading && data.length > 0 && (
         <div className="overflow-x-auto space-y-12">
           {renderScoreTable()}
-          {renderStatTable('Batters', batterKeys, 'batters')}
-          {renderStatTable('Pitchers', pitcherKeys, 'pitchers')}
+          {renderStatTable('Batters', ['AB', ...batterKeys], 'batters')}
+          {renderStatTable('Pitchers', ['IP', ...pitcherKeys], 'pitchers')}
+
         </div>
       )}
     </div>

@@ -143,18 +143,18 @@ export async function POST(req) {
     const batterLowerBetter = ['K', 'GIDP']
     const pitcherLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
 
-    for (const stat of allStats) {
-      const values = result.map(r => {
-        const val = r.batters[stat] ?? r.pitchers[stat]
-        return { team: r.team_name, value: isNaN(val) ? 0 : parseFloat(val) }
-      })
+    const batterStats = ['R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
 
-      const isBatter = stat in result[0].batters
-      const isLowerBetter = isBatter ? batterLowerBetter.includes(stat) : pitcherLowerBetter.includes(stat)
+    for (const stat of batterStats) {
+      const isLowerBetter = ['K', 'GIDP'].includes(stat)
+
+      const values = result.map(r => ({
+        team: r.team_name,
+        value: isNaN(r.batters[stat]) ? 0 : parseFloat(r.batters[stat]),
+      }))
 
       values.sort((a, b) => isLowerBetter ? a.value - b.value : b.value - a.value)
-
-      console.log(`📊 排名計算 - ${stat}:`, values)
+      console.log(`📊 [打者] 排名計算 - ${stat}:`, values)
 
       let i = 0
       const scores = {}
@@ -165,19 +165,57 @@ export async function POST(req) {
         const avg = total / (j - i + 1)
         for (let k = i; k <= j; k++) {
           scores[values[k].team] = avg
-          console.log(`🏅 ${stat} ➜ ${values[k].team} 獲得 ${avg.toFixed(1)} 分（原始值: ${values[k].value}）`)
         }
         i = j + 1
       }
 
       result.forEach(r => {
-        if (!r.fantasyPoints) r.fantasyPoints = {}
-        r.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(1) || '0.0')
+        if (!r.batters.fantasyPoints) r.batters.fantasyPoints = {}
+        r.batters.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(1) || '0.0')
       })
     }
 
+    const pitcherStats = ['W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
+    const pitcherLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
+
+    for (const stat of pitcherStats) {
+      const isLowerBetter = pitcherLowerBetter.includes(stat)
+
+      const values = result.map(r => ({
+        team: r.team_name,
+        value: isNaN(r.pitchers[stat]) ? 0 : parseFloat(r.pitchers[stat]),
+      }))
+
+      values.sort((a, b) => isLowerBetter ? a.value - b.value : b.value - a.value)
+      console.log(`📊 [投手] 排名計算 - ${stat}:`, values)
+
+      let i = 0
+      const scores = {}
+      while (i < values.length) {
+        let j = i
+        while (j + 1 < values.length && values[j + 1].value === values[i].value) j++
+        const total = [...Array(j - i + 1)].reduce((sum, _, k) => sum + (4 - i - k), 0)
+        const avg = total / (j - i + 1)
+        for (let k = i; k <= j; k++) {
+          scores[values[k].team] = avg
+        }
+        i = j + 1
+      }
+
+      result.forEach(r => {
+        if (!r.pitchers.fantasyPoints) r.pitchers.fantasyPoints = {}
+        r.pitchers.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(1) || '0.0')
+      })
+    }
+
+
+
     result.forEach(r => {
-      r.fantasyPoints.Total = Object.values(r.fantasyPoints).reduce((a, b) => a + b, 0).toFixed(1)
+      const batterTotal = Object.values(r.batters.fantasyPoints || {}).reduce((a, b) => a + b, 0)
+      const pitcherTotal = Object.values(r.pitchers.fantasyPoints || {}).reduce((a, b) => a + b, 0)
+      r.fantasyPoints = {
+        Total: (batterTotal + pitcherTotal).toFixed(1)
+      }
     })
 
     return NextResponse.json(result)

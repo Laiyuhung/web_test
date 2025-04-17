@@ -191,85 +191,61 @@ export default function RosterPage() {
 
     const fetchData = async () => {
       setLoading(true)
-    
       try {
-        const getTaiwanToday = () => {
-          const now = new Date()
-          return new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
-        }
-    
-        const isToday = selectedDate === getTaiwanToday()
-    
-        let rawPlayers = []
-    
-        if (isToday) {
-          // ✅ 今天：從 playerStatus
-          const res = await fetch('/api/playerStatus')
-          const statusData = await res.json()
-          rawPlayers = statusData.filter(p => p.manager_id?.toString() === userId)
-        } else {
-          // ✅ 過去日期：從 /api/saveAssigned/load 撈有位置者
-          const res = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
-          const assigned = await res.json()
-          const playerNames = assigned.map(p => p.player_name)
-    
-          // 接著從 /api/playerList 撈出全體 player，過濾出有登錄位置的名單
-          const allPlayerRes = await fetch('/api/playerList')
-          const allPlayers = await allPlayerRes.json()
-    
-          rawPlayers = allPlayers.filter(p =>
-            playerNames.includes(p.Name) && p.manager_id?.toString() === userId
-          )
-        }
-    
-        // 補上統計、守位、註冊
-        const [batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
-          fetch('/api/playerStats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-          }),
-          fetch('/api/playerStats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-          }),
-          fetch('/api/playerPositionCaculate'),
-          fetch('/api/playerRegisterStatus')
+        const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
+            fetch('/api/playerStatus'),
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
+            }),
+            fetch('/api/playerStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
+            }),
+            fetch('/api/playerPositionCaculate'),
+            fetch('/api/playerRegisterStatus')
         ])
-    
-        const [batterData, pitcherData, positionData, registerData] = await Promise.all([
-          batterRes.ok ? batterRes.json() : [],
-          pitcherRes.ok ? pitcherRes.json() : [],
-          positionRes.ok ? positionRes.json() : [],
-          registerRes.ok ? registerRes.json() : []
+
+        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
+            statusRes.json(),
+            batterRes.ok ? batterRes.json() : [],
+            pitcherRes.ok ? pitcherRes.json() : [],
+            positionRes.ok ? positionRes.json() : [],
+            registerRes.ok ? registerRes.json() : []
         ])
-    
+
+        
         const statsData = [...batterData, ...pitcherData]
-    
-        const merged = rawPlayers.map(p => {
+
+        const merged = statusData.map(p => {
           const stat = statsData.find(s => s.name === p.Name)
           const pos = positionData.find(pos => pos.name === p.Name)
+          const finalPosition = pos?.finalPosition || []
           const reg = registerData.find(r => r.name === p.Name)
+          const registerStatus = reg?.status || '未知'
           return {
             ...p,
             ...(stat || {}),
-            finalPosition: pos?.finalPosition || [],
-            registerStatus: reg?.status || '未知',
+            finalPosition,
+            registerStatus
           }
         })
-    
-        setPlayers(merged)
-        await loadAssigned(merged)
+
+        const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
+
+        setPlayers(myPlayers)
+
+        await loadAssigned(myPlayers)
         setPositionsLoaded(true)
         setRosterReady(true)
+
       } catch (err) {
-        console.error('❌ fetchData 錯誤:', err)
+        console.error('讀取錯誤:', err)
       }
-    
       setLoading(false)
     }
-    
 
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 
@@ -634,55 +610,21 @@ export default function RosterPage() {
   
   
 
-  const assignedNames = Object.keys(assignedPositions)
-
-  const getTaiwanToday = () => {
-    const now = new Date()
-    return new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
-  }
-  const isToday = selectedDate === getTaiwanToday()
-
-  console.log('📅 選擇日期:', selectedDate)
-  console.log('🟢 是否為今天:', isToday)
-  console.log('📦 assignedPositions:', assignedPositions)
-  console.log('📦 players:', players)
-
-  // 🔍 如果是 past day，顯示被過濾掉的玩家（沒被載入但在 assignedPositions）
-  if (!isToday) {
-    const playerNames = players.map(p => p.Name)
-    const missing = assignedNames.filter(name => !playerNames.includes(name))
-    if (missing.length > 0) {
-      console.warn('⚠️ players 中缺少以下 assigned player：', missing)
-    }
-  }
-
-  const batters = (isToday ? players : players.filter(p => assignedNames.includes(p.Name)))
-    .filter(p =>
-      p.B_or_P === 'Batter' &&
-      assignedPositions[p.Name] !== undefined
-    )
-    .sort((a, b) => {
-      const posA = assignedPositions[a.Name] || 'BN'
-      const posB = assignedPositions[b.Name] || 'BN'
-      return batterPositionOrder.indexOf(posA) - batterPositionOrder.indexOf(posB)
-    })
-
-  console.log('✅ 顯示 batters：', batters.map(p => `${p.Name}(${assignedPositions[p.Name]})`))
-
-  const pitchers = (isToday ? players : players.filter(p => assignedNames.includes(p.Name)))
-    .filter(p =>
-      p.B_or_P === 'Pitcher' &&
-      assignedPositions[p.Name] !== undefined
-    )
-    .sort((a, b) => {
-      const posA = assignedPositions[a.Name] || 'BN'
-      const posB = assignedPositions[b.Name] || 'BN'
-      return pitcherPositionOrder.indexOf(posA) - pitcherPositionOrder.indexOf(posB)
-    })
-
-  console.log('✅ 顯示 pitchers：', pitchers.map(p => `${p.Name}(${assignedPositions[p.Name]})`))
-
-
+  const batters = players
+  .filter(p => p.B_or_P === 'Batter' && assignedPositions[p.Name] !== undefined)
+  .sort((a, b) => {
+    const posA = assignedPositions[a.Name] || 'BN'
+    const posB = assignedPositions[b.Name] || 'BN'
+    return batterPositionOrder.indexOf(posA) - batterPositionOrder.indexOf(posB)
+  })
+  
+  const pitchers = players
+  .filter(p => p.B_or_P === 'Pitcher' && assignedPositions[p.Name] !== undefined)
+  .sort((a, b) => {
+    const posA = assignedPositions[a.Name] || 'BN'
+    const posB = assignedPositions[b.Name] || 'BN'
+    return pitcherPositionOrder.indexOf(posA) - pitcherPositionOrder.indexOf(posB)
+  })
 
 
   const renderHeader = (type, zIndex = 'z-40') => {

@@ -327,21 +327,14 @@ export default function PlayerPage() {
   
     const nowUTC = new Date()
     const taiwanNow = new Date(nowUTC.getTime() + 8 * 60 * 60 * 1000)
-
   
     if (!isPostponedOrNoGame && isStarter && gameTimeMatch) {
       const [_, hour, minute] = gameTimeMatch
-  
-      // 正確以 UTC 設定今天的比賽時間
-      const gameTime = new Date(Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        Number(hour),
-        Number(minute),
-        0,
-        0
-      ))
+      const gameTime = new Date(taiwanNow)
+      gameTime.setHours(Number(hour))
+      gameTime.setMinutes(Number(minute))
+      gameTime.setSeconds(0)
+      gameTime.setMilliseconds(0)
   
       console.log('🧪 判斷是否已開賽 (Drop Blocked)', {
         name: p.Name,
@@ -349,11 +342,11 @@ export default function PlayerPage() {
         isStarter,
         gameInfo,
         gameTime: gameTime.toISOString(),
-        nowtime: taiwanNow.toISOString(),
+        taiwanNow: taiwanNow.toISOString(),
         result: taiwanNow >= gameTime
       })
   
-      return nowtime >= gameTime
+      return taiwanNow >= gameTime
     }
   
     console.log('✅ 無 Drop 限制 (未開賽或非先發)', {
@@ -367,6 +360,7 @@ export default function PlayerPage() {
   
     return false
   }
+  
   
   
   

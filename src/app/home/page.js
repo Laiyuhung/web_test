@@ -32,6 +32,7 @@ export default function HomePage() {
           body: JSON.stringify({ mode: transactionMode }), // ✅ 改這裡！
         })
         const data = await res.json()
+        console.log('📦 交易資料', data) // 👈 這行加進來！
         if (res.ok) setRecentTransactions(data)
       } catch (err) {
         console.error('❌ 載入交易紀錄失敗', err)
@@ -313,13 +314,13 @@ export default function HomePage() {
         </CardContent>
       </Card>
 
-      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">近期交易紀錄</h2>
+      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">TRANSACTIONS</h2>
       <div className="flex gap-2 mb-2">
         <Button
           variant={transactionMode === 'recent' ? 'default' : 'outline'}
           onClick={() => setTransactionMode('recent')}
         >
-          L5
+          Recent
         </Button>
         <Button
           variant={transactionMode === 'all' ? 'default' : 'outline'}
@@ -334,7 +335,7 @@ export default function HomePage() {
 
 
 
-      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">獎金統計</h2>
+      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">REWARDS</h2>
       <Card className="mt-6">
         <CardContent>
           <Tabs defaultValue="summary" value={rewardTab} onValueChange={setRewardTab}>

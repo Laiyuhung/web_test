@@ -568,7 +568,7 @@ export default function RosterPage() {
       setMoveMessage('✅ 自動儲存成功')
       setTimeout(() => setMoveMessage(''), 2000)
   
-      await loadAssigned(players)
+      // await loadAssigned(players)
     } catch (err) {
       console.error('❌ 自動儲存錯誤:', err.message)
       setMoveMessage('❌ 自動儲存失敗，請稍後再試')

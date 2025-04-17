@@ -192,33 +192,43 @@ export default function RosterPage() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
-            fetch('/api/playerStatus'),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerPositionCaculate'),
-            fetch('/api/playerRegisterStatus')
-        ])
-
+        const getTaiwanToday = () => {
+          const now = new Date()
+          const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+          return taiwanNow.toISOString().slice(0, 10)
+        }
+    
+        const isToday = selectedDate === getTaiwanToday()
+    
+        const statusRes = isToday
+          ? await fetch('/api/playerStatus')
+          : await fetch(`/api/playerFromAssigned?date=${selectedDate}`)
+    
+        const batterRes = await fetch('/api/playerStats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate }),
+        })
+    
+        const pitcherRes = await fetch('/api/playerStats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate }),
+        })
+    
+        const positionRes = await fetch('/api/playerPositionCaculate')
+        const registerRes = await fetch('/api/playerRegisterStatus')
+    
         const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
-            statusRes.json(),
-            batterRes.ok ? batterRes.json() : [],
-            pitcherRes.ok ? pitcherRes.json() : [],
-            positionRes.ok ? positionRes.json() : [],
-            registerRes.ok ? registerRes.json() : []
+          statusRes.json(),
+          batterRes.ok ? batterRes.json() : [],
+          pitcherRes.ok ? pitcherRes.json() : [],
+          positionRes.ok ? positionRes.json() : [],
+          registerRes.ok ? registerRes.json() : [],
         ])
-
-        
+    
         const statsData = [...batterData, ...pitcherData]
-
+    
         const merged = statusData.map(p => {
           const stat = statsData.find(s => s.name === p.Name)
           const pos = positionData.find(pos => pos.name === p.Name)
@@ -229,23 +239,23 @@ export default function RosterPage() {
             ...p,
             ...(stat || {}),
             finalPosition,
-            registerStatus
+            registerStatus,
           }
         })
-
+    
         const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
-
+    
         setPlayers(myPlayers)
-
+    
         await loadAssigned(myPlayers)
         setPositionsLoaded(true)
         setRosterReady(true)
-
       } catch (err) {
         console.error('讀取錯誤:', err)
       }
       setLoading(false)
     }
+    
 
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 

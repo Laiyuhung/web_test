@@ -247,7 +247,7 @@ export default function RosterPage() {
     
         setPlayers(myPlayers)
     
-        await loadAssigned(myPlayers)
+        await loadAssigned(isToday ? myPlayers : [])
         setPositionsLoaded(true)
         setRosterReady(true)
       } catch (err) {
@@ -526,7 +526,7 @@ export default function RosterPage() {
   }
   
 
-  const loadAssigned = async (playersList) => {
+  const loadAssigned = async (playersList = []) => {
     console.log('📦 載入 assigned，用的 playersList:', playersList)
   
     try {
@@ -535,20 +535,37 @@ export default function RosterPage() {
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
       const map = {}
-      playersList.forEach(p => {
-        const record = data.find(r => r.player_name === p.Name)
-        if (record) {
-          map[p.Name] = record.position
-        }
+      data.forEach(r => {
+        map[r.player_name] = r.position
       })
   
-      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
+      console.log('📋 載入完成的球員位置對應:', map)
+  
+      // ✅ 判斷是否為過去日期
+      const getTaiwanToday = () => {
+        const now = new Date()
+        const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+        return taiwanNow.toISOString().slice(0, 10)
+      }
+  
+      const isToday = selectedDate === getTaiwanToday()
+  
+      if (!isToday) {
+        // 👇 撈 playerslist，自行補足 players
+        const playerListRes = await fetch('/api/playerList')
+        const playerList = await playerListRes.json()
+  
+        const myPlayers = playerList.filter(p => p.manager_id?.toString() === userId)
+  
+        setPlayers(myPlayers)
+      }
   
       setAssignedPositions(map)
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
   }
+  
 
   // ✅ 加入這段：
   const saveAssigned = async (updatedMap) => {

@@ -29,7 +29,7 @@ export default function HomePage() {
         const res = await fetch('/api/transaction/load', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: transactionMode }),
+          body: JSON.stringify({ mode: transactionMode }), // ✅ 改這裡！
         })
         const data = await res.json()
         if (res.ok) setRecentTransactions(data)
@@ -140,27 +140,47 @@ export default function HomePage() {
   }
 
   const renderRecentTransactions = () => (
-    <table className="w-full text-sm text-center mt-4">
-      <thead className="bg-gray-100">
-        <tr>
-          <th className="p-2">時間</th>
-          <th className="p-2">隊伍</th>
-          <th className="p-2">操作</th>
-          <th className="p-2">球員</th>
-        </tr>
-      </thead>
-      <tbody>
-        {recentTransactions.map((t, i) => (
-          <tr key={i} className="border-t">
-            <td className="p-2">{t.transaction_time?.replace('T', ' ').slice(0, 16)}</td>
-            <td className="p-2">{t.team_name}</td>
-            <td className="p-2">{t.type}</td>
-            <td className="p-2">{t.summary}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="space-y-2 mt-4">
+      {recentTransactions.map((t, i) => {
+        let symbol = '⇄'
+        let color = 'text-blue-600'
+        if (t.type === 'Add') {
+          symbol = '＋'
+          color = 'text-green-600'
+        } else if (t.type === 'Drop') {
+          symbol = '－'
+          color = 'text-red-600'
+        } else if (t.type === 'Waiver Add') {
+          symbol = '＋'
+          color = 'text-yellow-500'
+        }
+  
+        const formattedTime = new Date(t.transaction_time)
+          .toLocaleString('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+  
+        return (
+          <div
+            key={i}
+            className="flex items-center justify-between border rounded px-4 py-2 bg-white shadow-sm"
+          >
+            <div className={`text-2xl font-bold ${color}`}>{symbol}</div>
+            <div className="flex-1 text-left ml-4 font-semibold">{t.player_name}</div>
+            <div className="text-right text-sm text-gray-600 whitespace-nowrap">
+              <div>{t.manager}</div>
+              <div>{formattedTime}</div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
+  
   
 
   const renderStandings = (type) => (

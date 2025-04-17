@@ -3,8 +3,7 @@ import supabase from '@/lib/supabaseServer'
 
 export async function POST(req) {
   const { mode } = await req.json()
-
-  const limit = mode === 'recent' ? 20 : null
+  const limit = mode === 'recent' ? 5 : null
 
   const { data, error } = await supabase
     .from('transactions')
@@ -17,38 +16,24 @@ export async function POST(req) {
     return NextResponse.json({ error: '資料讀取失敗' }, { status: 500 })
   }
 
-  const merged = []
-  let i = 0
+  const { data: managerData } = await supabase
+    .from('managers')
+    .select('id, team_name')
 
-  while (i < data.length) {
-    const current = data[i]
+  const managerMap = Object.fromEntries(managerData.map(m => [String(m.id), m.team_name]))
 
-    // 若是 Trade，合併連續的所有 Trade
-    if (current.type === 'Trade') {
-      const tradeGroup = []
-      while (i < data.length && data[i].type === 'Trade') {
-        tradeGroup.push(data[i])
-        i++
-      }
+  const { data: playerData } = await supabase
+    .from('playerslist')
+    .select('Player_no, Name')
 
-      merged.push({
-        type: 'TradeGroup',
-        transaction_time: tradeGroup[0].transaction_time,
-        summary: `🔁 交易合併事件（共 ${tradeGroup.length} 筆）` +
-          tradeGroup.map(t => `｜${t.details || `${t.type} ${t.player_id}`}`).join(' ')
-      })
-    } else {
-      // 非 Trade 單筆處理
-      merged.push({
-        type: current.type,
-        transaction_time: current.transaction_time,
-        summary: `${current.type} 玩家 ${current.player_id}`
-      })
-      i++
-    }
+  const playerMap = Object.fromEntries(playerData.map(p => [p.Player_no, p.Name]))
 
-    if (mode === 'recent' && merged.length >= 5) break
-  }
+  const mapped = data.map(row => ({
+    type: row.type,
+    transaction_time: row.transaction_time,
+    player_name: playerMap[row.player_id] || row.player_id,
+    manager: managerMap[row.manager] || row.manager
+  }))
 
-  return NextResponse.json(merged)
+  return NextResponse.json(mapped)
 }

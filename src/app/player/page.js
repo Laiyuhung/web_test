@@ -380,6 +380,13 @@ export default function PlayerPage() {
     const onTeamForeign = myRosterPlayers.filter(p => p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team')).length
     const activeForeign = myRosterPlayers.filter(p => p.identity === '洋將' && !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || '')).length
     const activeRoster = myRosterPlayers.filter(p => !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || '')).length
+    
+    // ✅ 檢查 myRosterPlayers 是否已載入
+  	if (!myRosterPlayers.length) {
+    	setSuccessMessage('⚠️ 請稍候，球隊名單尚未載入完成')
+    	setSuccessDialogOpen(true)
+    	return false
+    }
   
     if (weeklyAdds >= 6) {
       setSuccessMessage('⚠️ 本週可加入次數已達上限（6 次）')

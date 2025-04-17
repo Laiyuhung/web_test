@@ -40,6 +40,7 @@ export default function PlayerPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [assignedPositions, setAssignedPositions] = useState([])
 
   const [dropPlayer, setDropPlayer] = useState('');
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false);
@@ -183,16 +184,17 @@ export default function PlayerPage() {
     setLoading(true)
     setError('')
     try {
-      const [statusRes, statsRes, registerRes, positionRes] = await Promise.all([
-        fetch('/api/playerStatus'),
-        fetch('/api/playerStats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: type.toLowerCase(), from: fromDate, to: toDate })
-        }),
-        fetch('/api/playerRegisterStatus'),
-        fetch('/api/playerPositionCaculate')
-      ])
+      const [statusRes, statsRes, registerRes, positionRes, assignedRes] = await Promise.all([
+  			fetch('/api/playerStatus'),
+  			fetch('/api/playerStats', {
+    			method: 'POST',
+    			headers: { 'Content-Type': 'application/json' },
+    			body: JSON.stringify({ type: type.toLowerCase(), from: fromDate, to: toDate })
+  			}),
+  			fetch('/api/playerRegisterStatus'),
+  			fetch('/api/playerPositionCaculate'),
+  			fetch(`/api/saveAssigned/load?date=${taiwanToday}`)
+			])
 
       const [statusData, statsData, registerData, positionData] = await Promise.all([
         statusRes.json(),
@@ -378,8 +380,15 @@ export default function PlayerPage() {
     const isForeign = player.identity === '洋將'
     const weeklyAdds = myRosterPlayers.filter(p => p.addedThisWeek).length
     const onTeamForeign = myRosterPlayers.filter(p => p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team')).length
-    const activeForeign = myRosterPlayers.filter(p => p.identity === '洋將' && !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || '')).length
-    const activeRoster = myRosterPlayers.filter(p => !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || '')).length
+    const activeForeign = assignedPositions.filter(p =>
+  			p.manager_id?.toString() === userId &&
+  			p.identity === '洋將' &&
+  			!['NA', 'NA(備用)'].includes(p.position)
+			).length
+    const activeRoster = assignedPositions.filter(p =>
+  			p.manager_id?.toString() === userId &&
+			  !['NA', 'NA(備用)'].includes(p.position)
+			).length
     
     // ✅ 檢查 myRosterPlayers 是否已載入
   	if (!myRosterPlayers.length) {
@@ -397,15 +406,23 @@ export default function PlayerPage() {
     // 若是洋將
     if (isForeign) {
       if (onTeamForeign >= 4) {
-        const options = myRosterPlayers.filter(p => p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team'))
-        setForcedDropReason('隊上洋將已達 4 位，請選擇一位洋將進行 Drop')
+        const activeForeignOptions = assignedPositions.filter(p =>
+  			p.manager_id?.toString() === userId &&
+  			p.identity === '洋將' &&
+  			!['NA', 'NA(備用)'].includes(p.position)
+			)
+        setForcedDropReason('隊上洋將已達 4 位，請選擇一位 Active 洋將進行 Drop')
         setForcedDropOptions(options)
         setConfirmPlayer(player)
         setForcedDropDialogOpen(true)
         return false
       }
       if (activeForeign >= 3) {
-        const options = myRosterPlayers.filter(p => p.identity === '洋將' && !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || ''))
+        const activeForeignOptions = assignedPositions.filter(p =>
+  			p.manager_id?.toString() === userId &&
+  			p.identity === '洋將' &&
+  			!['NA', 'NA(備用)'].includes(p.position)
+			)
         setForcedDropReason('Active 洋將已達 3 位，請選擇一位 Active 洋將進行 Drop')
         setForcedDropOptions(options)
         setConfirmPlayer(player)
@@ -415,7 +432,10 @@ export default function PlayerPage() {
     }
   
     if (activeRoster >= 26) {
-      const options = myRosterPlayers.filter(p => !['NA', 'NA(備用)'].includes(p.finalPosition?.[0] || ''))
+      const activeForeignOptions = assignedPositions.filter(p =>
+  			p.manager_id?.toString() === userId &&
+  			!['NA', 'NA(備用)'].includes(p.position)
+			)
       setForcedDropReason('Active 名單已滿 26 位，請選擇一位 Active 球員進行 Drop')
       setForcedDropOptions(options)
       setConfirmPlayer(player)

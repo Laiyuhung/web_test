@@ -67,11 +67,11 @@ export async function POST(req) {
         let pitcherSum = { OUT: 0, W: 0, L: 0, HLD: 0, SV: 0, H: 0, ER: 0, K: 0, BB: 0, QS: 0 }
 
         for (const date of dates) {
-          console.log(`📅 ${date} ➜ Manager ${managerId} 登錄 ${name}，類型: ${isBatter ? 'Batter' : isPitcher ? 'Pitcher' : '未知'}`)
+          // console.log(`📅 ${date} ➜ Manager ${managerId} 登錄 ${name}，類型: ${isBatter ? 'Batter' : isPitcher ? 'Pitcher' : '未知'}`)
 
           if (isBatter) {
             const rows = batStats.filter(r => r.name === name && r.game_date === date)
-            console.log(`🔍 ${name} @ ${date} 打者原始數據:`, rows)
+            // console.log(`🔍 ${name} @ ${date} 打者原始數據:`, rows)
             for (const r of rows) {
               batterSum.AB += r.at_bats || 0
               batterSum.R += r.runs || 0
@@ -90,7 +90,7 @@ export async function POST(req) {
 
           if (isPitcher) {
             const rows = pitStats.filter(r => r.name === name && r.game_date === date)
-            console.log(`🔍 ${name} @ ${date} 投手原始數據:`, rows)
+            // console.log(`🔍 ${name} @ ${date} 投手原始數據:`, rows)
             for (const r of rows) {
               const ip = r.innings_pitched || 0
               const outs = Math.floor(ip) * 3 + Math.round((ip % 1) * 10)

@@ -636,10 +636,29 @@ export default function RosterPage() {
 
   const assignedNames = Object.keys(assignedPositions)
 
-  const batters = players
-    .filter(p => 
+  const getTaiwanToday = () => {
+    const now = new Date()
+    return new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  }
+  const isToday = selectedDate === getTaiwanToday()
+
+  console.log('📅 選擇日期:', selectedDate)
+  console.log('🟢 是否為今天:', isToday)
+  console.log('📦 assignedPositions:', assignedPositions)
+  console.log('📦 players:', players)
+
+  // 🔍 如果是 past day，顯示被過濾掉的玩家（沒被載入但在 assignedPositions）
+  if (!isToday) {
+    const playerNames = players.map(p => p.Name)
+    const missing = assignedNames.filter(name => !playerNames.includes(name))
+    if (missing.length > 0) {
+      console.warn('⚠️ players 中缺少以下 assigned player：', missing)
+    }
+  }
+
+  const batters = (isToday ? players : players.filter(p => assignedNames.includes(p.Name)))
+    .filter(p =>
       p.B_or_P === 'Batter' &&
-      assignedNames.includes(p.Name) &&
       assignedPositions[p.Name] !== undefined
     )
     .sort((a, b) => {
@@ -648,10 +667,11 @@ export default function RosterPage() {
       return batterPositionOrder.indexOf(posA) - batterPositionOrder.indexOf(posB)
     })
 
-  const pitchers = players
-    .filter(p => 
+  console.log('✅ 顯示 batters：', batters.map(p => `${p.Name}(${assignedPositions[p.Name]})`))
+
+  const pitchers = (isToday ? players : players.filter(p => assignedNames.includes(p.Name)))
+    .filter(p =>
       p.B_or_P === 'Pitcher' &&
-      assignedNames.includes(p.Name) &&
       assignedPositions[p.Name] !== undefined
     )
     .sort((a, b) => {
@@ -659,6 +679,9 @@ export default function RosterPage() {
       const posB = assignedPositions[b.Name] || 'BN'
       return pitcherPositionOrder.indexOf(posA) - pitcherPositionOrder.indexOf(posB)
     })
+
+  console.log('✅ 顯示 pitchers：', pitchers.map(p => `${p.Name}(${assignedPositions[p.Name]})`))
+
 
 
 

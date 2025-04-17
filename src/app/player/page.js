@@ -353,11 +353,42 @@ export default function PlayerPage() {
             setConfirmPlayer(p);
             setDropPlayer('');
             setWaiverDialogOpen(true); // 👈 打開 Waiver Dialog
-          }else if (status.includes("on team") && p.owner && p.owner !== "-" && isOwner) {
-            // 🧨 如果是自己隊上的球員，直接開 Drop 確認 Dialog
-            setConfirmPlayer(p);
-            setDialogOpen(true);
-          }
+          }} else if (status.includes("on team") && p.owner && p.owner !== "-" && isOwner) {
+  const assigned = assignedPositions.find(pos =>
+    pos.manager_id?.toString() === userId &&
+    pos.name === p.Name
+  )
+  const assignedPosition = assigned?.position || 'BN'
+
+  const isStarter = !['NA', 'NA(備用)', 'BN'].includes(assignedPosition)
+  const gameInfo = gameInfoMap[p.Team] || ''
+  const gameTimeMatch = gameInfo.match(/(\d{1,2}):(\d{2})/)
+  const now = new Date()
+
+  // 不限制 Drop 的情況：沒比賽或延賽
+  const isPostponedOrNoGame = gameInfo.includes('No game') || gameInfo.includes('PPD')
+  let isGameStarted = false
+
+  if (!isPostponedOrNoGame && isStarter && gameTimeMatch) {
+    const [_, hour, minute] = gameTimeMatch
+    const gameTime = new Date()
+    gameTime.setHours(Number(hour))
+    gameTime.setMinutes(Number(minute))
+    gameTime.setSeconds(0)
+    if (now >= gameTime) {
+      isGameStarted = true
+    }
+  }
+
+  if (isGameStarted) {
+    setSuccessMessage('⚠️ 該球員已開賽，無法進行 Drop 操作')
+    setSuccessDialogOpen(true)
+    return
+  }
+
+  setConfirmPlayer(p)
+  setDialogOpen(true)
+}
           else {
             checkAddConstraints(p);
           }

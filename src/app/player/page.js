@@ -353,12 +353,13 @@ export default function PlayerPage() {
             setConfirmPlayer(p);
             setDropPlayer('');
             setWaiverDialogOpen(true); // 👈 打開 Waiver Dialog
-          }} else if (status.includes("on team") && p.owner && p.owner !== "-" && isOwner) {
+          
+          } else if (status.includes("on team") && p.owner && p.owner !== "-" && isOwner) {
   const assigned = assignedPositions.find(pos =>
     pos.manager_id?.toString() === userId &&
     pos.name === p.Name
   )
-  const assignedPosition = assigned?.position || 'BN'
+  const assignedPosition = assigned?.position || 'NA'
 
   const isStarter = !['NA', 'NA(備用)', 'BN'].includes(assignedPosition)
   const gameInfo = gameInfoMap[p.Team] || ''

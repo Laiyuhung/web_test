@@ -67,11 +67,13 @@ export async function POST(req) {
         const isPitcher = typeMap[name] === 'Pitcher'
 
         for (const date of dates) {
+          console.log(`\n📅 ${date} ➕ Manager ${managerId} 加入 ${name} (${isBatter ? 'Batter' : 'Pitcher'})`)
+
           if (isBatter) {
             const rows = batStats.filter(r => r.name === name && r.game_date === date)
-            if (rows.length === 0) console.log(`🈳 ${date} 無 ${name} 打者數據`)
+            if (rows.length === 0) console.log(`🈳 無打者數據`)
             for (const r of rows) {
-              console.log(`📅 ${date} 打者 ${name} 數據:`, r)
+              const before = { ...batterSum }
               batterSum.AB += r.at_bats || 0
               batterSum.R += r.runs || 0
               batterSum.H += r.hits || 0
@@ -83,14 +85,18 @@ export async function POST(req) {
               batterSum.GIDP += r.double_plays || 0
               batterSum.XBH += (r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0)
               batterSum.TB += (r.singles || 0) + (r.doubles || 0) * 2 + (r.triples || 0) * 3 + (r.home_runs || 0) * 4
+              console.log('🟦 加總變化:', Object.keys(before).reduce((acc, key) => {
+                acc[key] = `${before[key]} ➜ ${batterSum[key]}`
+                return acc
+              }, {}))
             }
           }
 
           if (isPitcher) {
             const rows = pitStats.filter(r => r.name === name && r.game_date === date)
-            if (rows.length === 0) console.log(`🈳 ${date} 無 ${name} 投手數據`)
+            if (rows.length === 0) console.log(`🈳 無投手數據`)
             for (const r of rows) {
-              console.log(`📅 ${date} 投手 ${name} 數據:`, r)
+              const before = { ...pitcherSum }
               const ip = r.innings_pitched || 0
               const outs = Math.floor(ip) * 3 + Math.round((ip % 1) * 10)
               pitcherSum.OUT += outs
@@ -103,88 +109,17 @@ export async function POST(req) {
               if (r.record === 'H') pitcherSum.HLD += 1
               if (r.record === 'S') pitcherSum.SV += 1
               if (ip >= 6 && r.earned_runs <= 3) pitcherSum.QS += 1
+              console.log('🟥 加總變化:', Object.keys(before).reduce((acc, key) => {
+                acc[key] = `${before[key]} ➜ ${pitcherSum[key]}`
+                return acc
+              }, {}))
             }
           }
         }
       }
-
-      console.log(`📊 Manager ${managerId} Batters 總和:`, batterSum)
-      console.log(`📊 Manager ${managerId} Pitchers 總和:`, pitcherSum)
-
-      const AB = batterSum.AB || 1
-      const IP = pitcherSum.OUT / 3 || 1
-
-      const rawAVG = batterSum.H / AB
-      const AVG = isNaN(rawAVG) ? '.000' : rawAVG.toFixed(3).replace(/^0\./, '.')
-      const OBP = (AB + batterSum.BB) ? ((batterSum.H + batterSum.BB) / (AB + batterSum.BB)) : 0
-      const SLG = batterSum.TB / AB
-      const rawOPS = OBP + SLG
-      const OPS = isNaN(rawOPS) ? '.000' : rawOPS.toFixed(3).replace(/^0\./, '.')
-
-      const ERA = (9 * pitcherSum.ER / IP).toFixed(2)
-      const WHIP = ((pitcherSum.H + pitcherSum.BB) / IP).toFixed(2)
-
-      const { data: managerData } = await supabase
-        .from('managers')
-        .select('team_name')
-        .eq('id', managerId)
-        .single()
-
-      result.push({
-        manager_id: managerId,
-        team_name: managerData?.team_name || `Manager #${managerId}`,
-        batters: { ...batterSum, AVG, OPS },
-        pitchers: { ...pitcherSum, ERA, WHIP, IP: `${Math.floor(IP)}.${pitcherSum.OUT % 3}` }
-      })
     }
 
-    const allStats = [
-      'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS',
-      'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'
-    ]
-
-    const batterLowerBetter = ['K', 'GIDP']
-    const pitcherLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
-
-    for (const stat of allStats) {
-      const values = result.map(r => {
-        const val = r.batters[stat] ?? r.pitchers[stat]
-        return { team: r.team_name, value: isNaN(val) ? 0 : parseFloat(val) }
-      })
-
-      const isBatter = stat in result[0].batters
-      const isLowerBetter = isBatter ? batterLowerBetter.includes(stat) : pitcherLowerBetter.includes(stat)
-
-      values.sort((a, b) => isLowerBetter ? a.value - b.value : b.value - a.value)
-      console.log(`📊 排名計算 - ${stat}:`, values)
-
-      let i = 0
-      const scores = {}
-      while (i < values.length) {
-        let j = i
-        while (j + 1 < values.length && values[j + 1].value === values[i].value) j++
-        const total = [...Array(j - i + 1)].reduce((sum, _, k) => sum + (4 - i - k), 0)
-        const avg = total / (j - i + 1)
-        for (let k = i; k <= j; k++) {
-          scores[values[k].team] = avg
-          console.log(`🏅 ${stat} ➜ ${values[k].team} 獲得 ${avg.toFixed(1)} 分（原始值: ${values[k].value}）`)
-        }
-        i = j + 1
-      }
-
-      result.forEach(r => {
-        if (!r.fantasyPoints) r.fantasyPoints = {}
-        r.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(1) || '0.0')
-      })
-    }
-
-    result.forEach(r => {
-      const total = Object.values(r.fantasyPoints).reduce((a, b) => a + b, 0)
-      r.fantasyPoints.Total = total.toFixed(1)
-      console.log(`✨ ${r.team_name} 總得分：${total.toFixed(1)}`, r.fantasyPoints)
-    })
-
-    return NextResponse.json(result)
+    return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('❌ weekSummary 錯誤:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })

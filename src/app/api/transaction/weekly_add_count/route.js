@@ -39,6 +39,9 @@ export async function POST(req) {
       .gte('transaction_time', startUtc)
       .lte('transaction_time', endUtc)
 
+    
+    console.log('📊 查詢結果 count:', count)
+
     if (countError) throw countError
 
     return NextResponse.json({ count })

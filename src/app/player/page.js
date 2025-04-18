@@ -437,19 +437,19 @@ export default function PlayerPage() {
     
   const checkAddConstraints = (player) => {
     const isForeign = player.identity === '洋將'
+  
     const weeklyAdds = myRosterPlayers.filter(p => p.addedThisWeek).length
     const onTeamForeign = myRosterPlayers.filter(p =>
       p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team')
     ).length
-    const activeForeign = assignedPositions.filter(p =>
-      p.manager_id?.toString() === userId &&
-      p.identity === '洋將' &&
-      !['NA', 'NA(備用)'].includes(p.position)
-    ).length
-    const activeRoster = assignedPositions.filter(p =>
-      p.manager_id?.toString() === userId &&
-      !['NA', 'NA(備用)'].includes(p.position)
-    ).length
+  
+    // 抓出我隊上的 active 洋將與 active 所有球員（從 myRosterPlayers 名字比對 assignedPositions）
+    const myNames = myRosterPlayers.map(p => p.Name)
+    const activeAssigned = assignedPositions.filter(p =>
+      myNames.includes(p.player_name) && !['NA', 'NA(備用)'].includes(p.position)
+    )
+    const activeForeign = activeAssigned.filter(p => p.identity === '洋將').length
+    const activeRoster = activeAssigned.length
   
     console.log('📊 檢查資料:', {
       player,
@@ -477,11 +477,7 @@ export default function PlayerPage() {
     if (isForeign) {
       if (onTeamForeign >= 4) {
         console.log('❌ 隊上洋將已滿 4 位（On Team）')
-        const options = assignedPositions.filter(p =>
-          p.manager_id?.toString() === userId &&
-          p.identity === '洋將' &&
-          !['NA', 'NA(備用)'].includes(p.position)
-        )
+        const options = activeAssigned.filter(p => p.identity === '洋將')
         setForcedDropReason('隊上洋將已達 4 位，請選擇一位 Active 洋將進行 Drop')
         setForcedDropOptions(options)
         setConfirmPlayer(player)
@@ -490,11 +486,7 @@ export default function PlayerPage() {
       }
       if (activeForeign >= 3) {
         console.log('❌ Active 洋將已滿 3 位')
-        const options = assignedPositions.filter(p =>
-          p.manager_id?.toString() === userId &&
-          p.identity === '洋將' &&
-          !['NA', 'NA(備用)'].includes(p.position)
-        )
+        const options = activeAssigned.filter(p => p.identity === '洋將')
         setForcedDropReason('Active 洋將已達 3 位，請選擇一位 Active 洋將進行 Drop')
         setForcedDropOptions(options)
         setConfirmPlayer(player)
@@ -505,12 +497,8 @@ export default function PlayerPage() {
   
     if (activeRoster >= 26) {
       console.log('❌ Active 名單已滿 26 位')
-      const options = assignedPositions.filter(p =>
-        p.manager_id?.toString() === userId &&
-        !['NA', 'NA(備用)'].includes(p.position)
-      )
       setForcedDropReason('Active 名單已滿 26 位，請選擇一位 Active 球員進行 Drop')
-      setForcedDropOptions(options)
+      setForcedDropOptions(activeAssigned)
       setConfirmPlayer(player)
       setForcedDropDialogOpen(true)
       return false
@@ -521,6 +509,7 @@ export default function PlayerPage() {
     setDialogOpen(true)
     return true
   }
+  
   
   
  

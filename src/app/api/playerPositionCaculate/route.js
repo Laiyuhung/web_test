@@ -81,14 +81,14 @@ Object.entries(batterStats).forEach(([playerNo, posStats]) => {
 })
 
 // 投手個別統計
-Object.entries(pitcherStats).forEach(([playerNo, stat]) => {
-  const playerName = playerNoToInfo[playerNo]?.name || '(unknown)'
-  const details = []
-  if (stat.SP) details.push(`SP: ${stat.SP}`)
-  if (stat.RP) details.push(`RP: ${stat.RP}`)
-  const detail = details.join(', ')
-  console.log(`🔴 ${playerName}（投手）：${detail}`)
-})
+// Object.entries(pitcherStats).forEach(([playerNo, stat]) => {
+//   const playerName = playerNoToInfo[playerNo]?.name || '(unknown)'
+//   const details = []
+//   if (stat.SP) details.push(`SP: ${stat.SP}`)
+//   if (stat.RP) details.push(`RP: ${stat.RP}`)
+//   const detail = details.join(', ')
+//   console.log(`🔴 ${playerName}（投手）：${detail}`)
+// })
 
 
   const results = Object.entries(playerNoToInfo).map(([playerNo, info]) => {

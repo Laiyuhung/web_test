@@ -69,36 +69,26 @@ export async function GET() {
     }
   })
 
-    // 🔢 統計各守備位置 2025 出場場數（僅從 batting_stats / pitching_stats 推論）
-  const positionCounts = {
-    Batter: {},
-    Pitcher: {}
-  }
+  console.log('📋 每位球員的出場統計：')
 
-  // 打者位置計數
-  for (const [playerNo, stats] of Object.entries(batterStats)) {
-    for (const pos in stats) {
-      const key = isValidPosition(pos) ? pos : 'Util'
-      positionCounts.Batter[key] = (positionCounts.Batter[key] || 0) + stats[pos]
-    }
-  }
+// 打者個別統計
+Object.entries(batterStats).forEach(([playerNo, posStats]) => {
+  const playerName = playerNoToInfo[playerNo]?.name || '(unknown)'
+  const detail = Object.entries(posStats)
+    .map(([pos, count]) => `${pos}: ${count}`)
+    .join(', ')
+  console.log(`🔵 ${playerName}（打者）：${detail}`)
+})
 
-  // 投手位置計數
-  for (const [playerNo, stat] of Object.entries(pitcherStats)) {
-    if (stat.SP) positionCounts.Pitcher['SP'] = (positionCounts.Pitcher['SP'] || 0) + stat.SP
-    if (stat.RP) positionCounts.Pitcher['RP'] = (positionCounts.Pitcher['RP'] || 0) + stat.RP
-  }
-
-  // ✅ 印出統計 log
-  console.log('📊 2025年各守備位置出場統計（依實戰數據推論）')
-  console.log('🔵 打者位置：')
-  Object.entries(positionCounts.Batter).forEach(([pos, count]) => {
-    console.log(`  ${pos}: ${count} 場`)
-  })
-  console.log('🔴 投手位置：')
-  Object.entries(positionCounts.Pitcher).forEach(([pos, count]) => {
-    console.log(`  ${pos}: ${count} 場`)
-  })
+// 投手個別統計
+Object.entries(pitcherStats).forEach(([playerNo, stat]) => {
+  const playerName = playerNoToInfo[playerNo]?.name || '(unknown)'
+  const details = []
+  if (stat.SP) details.push(`SP: ${stat.SP}`)
+  if (stat.RP) details.push(`RP: ${stat.RP}`)
+  const detail = details.join(', ')
+  console.log(`🔴 ${playerName}（投手）：${detail}`)
+})
 
 
   const results = Object.entries(playerNoToInfo).map(([playerNo, info]) => {

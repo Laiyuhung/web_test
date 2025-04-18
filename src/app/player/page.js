@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -56,6 +57,39 @@ export default function PlayerPage() {
 
   const today = new Date()
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
+
+  const fetchPlayerStatSummary = async (playerName, type) => {
+    const ranges = {
+      Today: [taiwanToday, taiwanToday],
+      Yesterday: [formatDateInput(new Date(today.getTime() - 1 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      'Last 7 days': [formatDateInput(new Date(today.getTime() - 7 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      'Last 14 days': [formatDateInput(new Date(today.getTime() - 14 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      'Last 30 days': [formatDateInput(new Date(today.getTime() - 30 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      '2025 Season': ['2025-03-27', '2025-11-30'],
+    }
+    
+  
+    const result = {}
+  
+    for (const [label, [from, to]] of Object.entries(ranges)) {
+      try {
+        const res = await fetch('/api/playerStats/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, from, to })
+        })
+        const data = await res.json()
+        const playerData = data.find(p => p.name === playerName)
+        result[label] = playerData || null
+      } catch (e) {
+        console.error(`❌ 無法取得 ${label} 區間資料:`, e)
+        result[label] = null
+      }
+    }
+  
+    return result
+  }
+  
 
   const fetchWeeklyAddCount = async () => {
     if (!userId) return
@@ -752,13 +786,21 @@ export default function PlayerPage() {
                     <div className="flex items-center gap-2">
                       <span
                         className="text-base font-bold text-[#0155A0] cursor-pointer underline"
-                        onClick={() => {
+                        onClick={async () => {
                           setSelectedPlayerDetail(p)
                           setDetailDialogOpen(true)
+                          
+                          // 👇 取得多區間數據
+                          const summary = await fetchPlayerStatSummary(p.Name, type.toLowerCase())
+                          setSelectedPlayerDetail(prev => ({
+                            ...prev,
+                            statSummary: summary,
+                          }))
                         }}
                       >
                         {p.Name}
                       </span>
+
                       <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
                     </div>
 
@@ -1004,43 +1046,55 @@ export default function PlayerPage() {
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
       <AlertDialogDescription>
         <div className="text-sm text-gray-700 space-y-1">
-          <div>隊伍：{selectedPlayerDetail?.Team}</div>
-          <div>守位：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
-          <div>身分：{selectedPlayerDetail?.identity}</div>
-          <div>狀態：{selectedPlayerDetail?.status}</div>
+          <div>team：{selectedPlayerDetail?.Team}</div>
+          <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
+          <div>identity：{selectedPlayerDetail?.identity}</div>
+          <div>status：{selectedPlayerDetail?.status}</div>
           <div>升降：{selectedPlayerDetail?.registerStatus}</div>
           {/* 你也可以加更多欄位 */}
         </div>
 
         {/* 整合所有區間統計 */}
-        <div className="mt-4">
-          {/* 你可用 Tabs 呈現不同區間的資料，例如：Today, L7, Season */}
-          <div className="text-gray-600 font-semibold mb-2">數據（目前區間）</div>
-          <table className="w-full text-xs text-center border">
-            <thead className="bg-gray-100">
-              <tr>
-                {type === 'Batter'
-                  ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'AVG', 'OPS'].map(key => (
-                      <th key={key} className="border px-2">{key}</th>
-                    ))
-                  : ['IP', 'W', 'L', 'ERA', 'WHIP', 'K'].map(key => (
-                      <th key={key} className="border px-2">{key}</th>
-                    ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {type === 'Batter'
-                  ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'AVG', 'OPS'].map(k => (
-                      <td key={k} className="border px-2">{selectedPlayerDetail?.[k] ?? '-'}</td>
-                    ))
-                  : ['IP', 'W', 'L', 'ERA', 'WHIP', 'K'].map(k => (
-                      <td key={k} className="border px-2">{selectedPlayerDetail?.[k] ?? '-'}</td>
-                    ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        {selectedPlayerDetail?.statSummary && (
+          <div className="mt-4">
+            <Tabs defaultValue="Today" className="w-full">
+              <TabsList>
+                {Object.keys(selectedPlayerDetail.statSummary).map(label => (
+                  <TabsTrigger key={label} value={label}>{label}</TabsTrigger>
+                ))}
+              </TabsList>
+
+              {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
+                <TabsContent key={label} value={label}>
+                  <table className="w-full text-xs text-center border mt-2">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        {type === 'Batter'
+                          ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'AVG', 'OPS'].map(k => (
+                              <th key={k} className="border px-2">{k}</th>
+                            ))
+                          : ['IP', 'W', 'L', 'ERA', 'WHIP', 'K'].map(k => (
+                              <th key={k} className="border px-2">{k}</th>
+                            ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        {type === 'Batter'
+                          ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'AVG', 'OPS'].map(k => (
+                              <td key={k} className="border px-2">{stats?.[k] ?? '-'}</td>
+                            ))
+                          : ['IP', 'W', 'L', 'ERA', 'WHIP', 'K'].map(k => (
+                              <td key={k} className="border px-2">{stats?.[k] ?? '-'}</td>
+                            ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </TabsContent>
+              ))}
+            </Tabs>
+          </div>
+        )}
       </AlertDialogDescription>
     </AlertDialogHeader>
     <AlertDialogFooter>

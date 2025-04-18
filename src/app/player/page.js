@@ -1221,9 +1221,10 @@ export default function PlayerPage() {
             // ⬇️ ✅✅✅ 加在這裡（寄信通知）
             await sendEmailNotification(
               `Add ${confirmPlayer?.Name} / Drop ${dropPlayer}`,
-              confirmPlayer?.Name,
+              confirmPlayer?.Name, 
               managerMap[userId] || '未知玩家'
             )
+
             
           } else {
             setSuccessMessage(`❌ 錯誤: ${data.error}`)

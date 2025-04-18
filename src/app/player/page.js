@@ -1134,10 +1134,11 @@ export default function PlayerPage() {
         >
           <option value="">請選擇一位要 Drop 的球員</option>
           {forcedDropOptions.map(p => (
-            <option key={p.Name} value={p.Name}>
-              {p.Name}（{(p.finalPosition || []).join(', ') || '位置不明'}）
+            <option key={p.player_name} value={p.player_name}>
+              {p.player_name}（{p.position || '位置不明'}）
             </option>
           ))}
+
         </select>
       </AlertDialogDescription>
     </AlertDialogHeader>

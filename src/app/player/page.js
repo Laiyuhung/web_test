@@ -463,6 +463,8 @@ export default function PlayerPage() {
       </div>
     );
   };
+
+  
     
   const checkAddConstraints = (player) => {
     const isForeign = player.identity === '洋將'
@@ -485,6 +487,30 @@ export default function PlayerPage() {
     }).length
     
     const activeRoster = activeAssigned.length
+
+    const oneGunNAPlayers = assignedPositions.filter(pos => {
+      const player = myRosterPlayers.find(p => p.Name === pos.player_name)
+
+       // 🧪 印出每位檢查球員的資訊
+      console.log('🔍 檢查球員:', {
+        name: pos.player_name,
+        registerStatus: player?.registerStatus,
+        assignedPosition: pos.position
+      })
+
+      return (
+        player?.registerStatus === '一軍' &&
+        ['NA'].includes(pos.position)
+      )
+    })
+    
+    if (oneGunNAPlayers.length > 0 && player.status?.toLowerCase() === 'free agent') {
+      console.log('❌ 有一軍球員在 NA，不可 Add 自由球員')
+      setSuccessMessage('⚠️ 請先將一軍球員移出 NA，再加入自由球員')
+      setSuccessDialogOpen(true)
+      return false
+    }
+    
   
     console.log('📊 檢查資料:', {
       player,

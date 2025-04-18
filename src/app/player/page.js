@@ -438,38 +438,50 @@ export default function PlayerPage() {
   const checkAddConstraints = (player) => {
     const isForeign = player.identity === '洋將'
     const weeklyAdds = myRosterPlayers.filter(p => p.addedThisWeek).length
-    const onTeamForeign = myRosterPlayers.filter(p => p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team')).length
+    const onTeamForeign = myRosterPlayers.filter(p =>
+      p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team')
+    ).length
     const activeForeign = assignedPositions.filter(p =>
-  			p.manager_id?.toString() === userId &&
-  			p.identity === '洋將' &&
-  			!['NA', 'NA(備用)'].includes(p.position)
-			).length
+      p.manager_id?.toString() === userId &&
+      p.identity === '洋將' &&
+      !['NA', 'NA(備用)'].includes(p.position)
+    ).length
     const activeRoster = assignedPositions.filter(p =>
-  			p.manager_id?.toString() === userId &&
-			  !['NA', 'NA(備用)'].includes(p.position)
-			).length
-    
-    // ✅ 檢查 myRosterPlayers 是否已載入
-  	if (!myRosterPlayers.length) {
-    	setSuccessMessage('⚠️ 請稍候，球隊名單尚未載入完成')
-    	setSuccessDialogOpen(true)
-    	return false
+      p.manager_id?.toString() === userId &&
+      !['NA', 'NA(備用)'].includes(p.position)
+    ).length
+  
+    console.log('📊 檢查資料:', {
+      player,
+      isForeign,
+      weeklyAdds,
+      onTeamForeign,
+      activeForeign,
+      activeRoster
+    })
+  
+    if (!myRosterPlayers.length) {
+      console.log('⏳ 名單尚未載入')
+      setSuccessMessage('⚠️ 請稍候，球隊名單尚未載入完成')
+      setSuccessDialogOpen(true)
+      return false
     }
   
     if (weeklyAdds >= 6) {
+      console.log('❌ 本週加入已滿 6 次')
       setSuccessMessage('⚠️ 本週可加入次數已達上限（6 次）')
       setSuccessDialogOpen(true)
       return false
     }
   
-    // 若是洋將
     if (isForeign) {
       if (onTeamForeign >= 4) {
-        const activeForeignOptions = assignedPositions.filter(p =>
-  			p.manager_id?.toString() === userId &&
-  			p.identity === '洋將' &&
-  			!['NA', 'NA(備用)'].includes(p.position)
-			)
+        console.log('❌ 隊上洋將已滿 4 位（On Team）')
+        const options = assignedPositions.filter(p =>
+          p.manager_id?.toString() === userId &&
+          p.identity === '洋將' &&
+          !['NA', 'NA(備用)'].includes(p.position)
+        )
         setForcedDropReason('隊上洋將已達 4 位，請選擇一位 Active 洋將進行 Drop')
         setForcedDropOptions(options)
         setConfirmPlayer(player)
@@ -477,11 +489,12 @@ export default function PlayerPage() {
         return false
       }
       if (activeForeign >= 3) {
-        const activeForeignOptions = assignedPositions.filter(p =>
-  			p.manager_id?.toString() === userId &&
-  			p.identity === '洋將' &&
-  			!['NA', 'NA(備用)'].includes(p.position)
-			)
+        console.log('❌ Active 洋將已滿 3 位')
+        const options = assignedPositions.filter(p =>
+          p.manager_id?.toString() === userId &&
+          p.identity === '洋將' &&
+          !['NA', 'NA(備用)'].includes(p.position)
+        )
         setForcedDropReason('Active 洋將已達 3 位，請選擇一位 Active 洋將進行 Drop')
         setForcedDropOptions(options)
         setConfirmPlayer(player)
@@ -491,10 +504,11 @@ export default function PlayerPage() {
     }
   
     if (activeRoster >= 26) {
-      const activeForeignOptions = assignedPositions.filter(p =>
-  			p.manager_id?.toString() === userId &&
-  			!['NA', 'NA(備用)'].includes(p.position)
-			)
+      console.log('❌ Active 名單已滿 26 位')
+      const options = assignedPositions.filter(p =>
+        p.manager_id?.toString() === userId &&
+        !['NA', 'NA(備用)'].includes(p.position)
+      )
       setForcedDropReason('Active 名單已滿 26 位，請選擇一位 Active 球員進行 Drop')
       setForcedDropOptions(options)
       setConfirmPlayer(player)
@@ -502,11 +516,12 @@ export default function PlayerPage() {
       return false
     }
   
-    // 沒有任何限制，直接進入確認 dialog
+    console.log('✅ 通過所有限制，可加入')
     setConfirmPlayer(player)
     setDialogOpen(true)
     return true
   }
+  
   
  
   return (

@@ -439,9 +439,15 @@ export default function PlayerPage() {
     const isForeign = player.identity === '洋將'
   
     const weeklyAdds = myRosterPlayers.filter(p => p.addedThisWeek).length
-    const onTeamForeign = myRosterPlayers.filter(p =>
-      p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team')
-    ).length
+    const activeForeign = myRosterPlayers.filter(p => {
+      const isForeign = p.identity === '洋將'
+      const isOnTeam = (p.status || '').toLowerCase().includes('on team')
+      const assigned = assignedPositions.find(pos =>
+        pos.player_name === p.Name && !['NA', 'NA(備用)'].includes(pos.position)
+      )
+      return isForeign && isOnTeam && assigned
+    }).length
+    
   
     // 抓出我隊上的 active 洋將與 active 所有球員（從 myRosterPlayers 名字比對 assignedPositions）
     const myNames = myRosterPlayers.map(p => p.Name)

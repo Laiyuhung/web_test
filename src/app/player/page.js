@@ -58,7 +58,7 @@ export default function PlayerPage() {
   const fetchWeeklyAddCount = async () => {
     if (!userId) return
     try {
-      const res = await fetch('/api/transaction/weely_add_count', {
+      const res = await fetch('/api/transaction/weekly_add_count', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ manager_id: userId }),

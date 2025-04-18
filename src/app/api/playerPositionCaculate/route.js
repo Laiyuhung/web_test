@@ -48,13 +48,23 @@ export async function GET() {
   batting.forEach(row => {
     const cleaned = cleanName(row.name)
     const playerNo = nameToPlayerNo[cleaned]
-    if (!playerNo || !Array.isArray(row.position)) return
+    if (!playerNo) return
+
+    let positions
+    try {
+      positions = JSON.parse(row.position)
+      if (!Array.isArray(positions)) return
+    } catch (e) {
+      return
+    }
+
     if (!batterStats[playerNo]) batterStats[playerNo] = {}
-    row.position.forEach(pos => {
+    positions.forEach(pos => {
       const p = isValidPosition(pos) ? pos : 'Util'
       batterStats[playerNo][p] = (batterStats[playerNo][p] || 0) + 1
     })
   })
+
 
   const pitcherStats = {}
   pitching.forEach(row => {

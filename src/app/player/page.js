@@ -533,9 +533,13 @@ export default function PlayerPage() {
     }
     setConfirmPlayer(p);
     setDialogOpen(true);
-  } else {
+  } else if (status === "free agent") {
     checkAddConstraints(p);
+  } else {
+    setSuccessMessage('⚠️ 此功能尚未啟用，如需交易請通知管理員');
+    setSuccessDialogOpen(true);
   }
+  
 }}
       >
         <span className={`${textColor} font-bold`}>
@@ -1225,7 +1229,7 @@ export default function PlayerPage() {
               managerMap[userId] || '未知玩家'
             )
 
-            
+
           } else {
             setSuccessMessage(`❌ 錯誤: ${data.error}`)
             setSuccessDialogOpen(true)

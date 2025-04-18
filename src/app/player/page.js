@@ -1054,42 +1054,38 @@ export default function PlayerPage() {
           {/* 你也可以加更多欄位 */}
         </div>
 
-        {/* 整合所有區間統計 */}
+        {/* 整合所有區間統計（表格列出） */}
         {selectedPlayerDetail?.statSummary && (
-          <div className="mt-4">
-            <Tabs defaultValue="Today" className="w-full">
-              <TabsList>
-                {Object.keys(selectedPlayerDetail.statSummary).map(label => (
-                  <TabsTrigger key={label} value={label}>{label}</TabsTrigger>
-                ))}
-              </TabsList>
-
-              <div className="overflow-x-auto">
-                <table className="text-xs text-center border w-full min-w-[850px] mt-2">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="border px-2">區間</th>
-                      {['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
-                        <th key={k} className="border px-2">{k}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
-                      <tr key={label}>
-                        <td className="border px-2 font-bold">{label}</td>
-                        {['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
-                          <td key={k} className="border px-2">{stats?.[k] ?? '-'}</td>
-                        ))}
-                      </tr>
+          <div className="mt-4 overflow-x-auto">
+            <table className="text-xs text-center border w-full min-w-[950px]">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border px-2">區間</th>
+                  {(type === 'Batter'
+                    ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
+                    : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
+                  ).map(k => (
+                    <th key={k} className="border px-2">{k}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
+                  <tr key={label}>
+                    <td className="border px-2 font-bold">{label}</td>
+                    {(type === 'Batter'
+                      ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
+                      : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
+                    ).map(k => (
+                      <td key={k} className="border px-2">{stats?.[k] ?? '-'}</td>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-
-            </Tabs>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
+
       </AlertDialogDescription>
     </AlertDialogHeader>
     <AlertDialogFooter>

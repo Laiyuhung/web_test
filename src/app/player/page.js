@@ -582,12 +582,14 @@ export default function PlayerPage() {
           )
           return isForeign && isOnTeam && assigned
         })
+        console.log('🔍 可選 Drop 洋將名單（4上限）:', options)
         setForcedDropReason('隊上洋將已達 4 位，請選擇一位 Active 洋將進行 Drop')
         setForcedDropOptions(options)
         setConfirmPlayer(player)
         setForcedDropDialogOpen(true)
         return false
       }
+      
       if (activeForeign >= 3) {
         console.log('❌ Active 洋將已滿 3 位')
         const options = myRosterPlayers.filter(p => {
@@ -598,26 +600,29 @@ export default function PlayerPage() {
           )
           return isForeign && isOnTeam && assigned
         })
+        console.log('🔍 可選 Drop 洋將名單（3 active 限制）:', options)
         setForcedDropReason('Active 洋將已達 3 位，請選擇一位 Active 洋將進行 Drop')
         setForcedDropOptions(options)
         setConfirmPlayer(player)
         setForcedDropDialogOpen(true)
         return false
       }
+      
     }
   
     if (activeRoster >= 26) {
-
       const options = assignedPositions.filter(p =>
         myNames.includes(p.player_name) && !['NA', 'NA(備用)'].includes(p.position)
       )
       console.log('❌ Active 名單已滿 26 位')
+      console.log('🔍 可選 Drop Active 名單:', options)
       setForcedDropReason('Active 名單已滿 26 位，請選擇一位 Active 球員進行 Drop')
       setForcedDropOptions(options)
       setConfirmPlayer(player)
       setForcedDropDialogOpen(true)
       return false
     }
+    
   
     console.log('✅ 通過所有限制，可加入')
     setConfirmPlayer(player)

@@ -41,6 +41,8 @@ export default function PlayerPage() {
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [assignedPositions, setAssignedPositions] = useState([])
+  const [weeklyAdds, setWeeklyAdds] = useState(0)
+
 
   const [dropPlayer, setDropPlayer] = useState('');
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false);
@@ -52,6 +54,26 @@ export default function PlayerPage() {
 
   const today = new Date()
   const formatDateInput = (date) => date.toISOString().slice(0, 10)
+
+  const fetchWeeklyAddCount = async () => {
+    if (!userId) return
+    try {
+      const res = await fetch('/api/add-count', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: userId }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setWeeklyAdds(data.count || 0)
+      } else {
+        console.warn('⚠️ 無法取得 Add 次數:', data.error)
+      }
+    } catch (err) {
+      console.error('❌ Add 次數取得錯誤:', err)
+    }
+  }
+  
 
   const applyDateRange = (range) => {
     const d = new Date(today)
@@ -100,6 +122,12 @@ export default function PlayerPage() {
     setFromDate(from)
     setToDate(to)
   }
+
+  useEffect(() => {
+    if (userId && taiwanToday) {
+      fetchWeeklyAddCount()
+    }
+  }, [userId, taiwanToday])
 
   useEffect(() => {
     const now = new Date()
@@ -437,8 +465,6 @@ export default function PlayerPage() {
     
   const checkAddConstraints = (player) => {
     const isForeign = player.identity === '洋將'
-  
-    const weeklyAdds = myRosterPlayers.filter(p => p.addedThisWeek).length
     const onTeamForeign = myRosterPlayers.filter(p =>
       p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team')
     ).length

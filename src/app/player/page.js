@@ -1064,34 +1064,29 @@ export default function PlayerPage() {
                 ))}
               </TabsList>
 
-              {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
-                <TabsContent key={label} value={label}>
-                  <table className="w-full text-xs text-center border mt-2">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        {type === 'Batter'
-                          ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'AVG', 'OPS'].map(k => (
-                              <th key={k} className="border px-2">{k}</th>
-                            ))
-                          : ['IP', 'W', 'L', 'ERA', 'WHIP', 'K'].map(k => (
-                              <th key={k} className="border px-2">{k}</th>
-                            ))}
+              <div className="overflow-x-auto">
+                <table className="text-xs text-center border w-full min-w-[850px] mt-2">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="border px-2">區間</th>
+                      {['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
+                        <th key={k} className="border px-2">{k}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
+                      <tr key={label}>
+                        <td className="border px-2 font-bold">{label}</td>
+                        {['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
+                          <td key={k} className="border px-2">{stats?.[k] ?? '-'}</td>
+                        ))}
                       </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        {type === 'Batter'
-                          ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'AVG', 'OPS'].map(k => (
-                              <td key={k} className="border px-2">{stats?.[k] ?? '-'}</td>
-                            ))
-                          : ['IP', 'W', 'L', 'ERA', 'WHIP', 'K'].map(k => (
-                              <td key={k} className="border px-2">{stats?.[k] ?? '-'}</td>
-                            ))}
-                      </tr>
-                    </tbody>
-                  </table>
-                </TabsContent>
-              ))}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
             </Tabs>
           </div>
         )}

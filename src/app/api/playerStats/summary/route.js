@@ -140,6 +140,8 @@ export async function POST(req) {
         }
       }
     }
+    console.log('🚀 最終回傳資料:', result)
+
 
     return NextResponse.json(result)
   } catch (err) {

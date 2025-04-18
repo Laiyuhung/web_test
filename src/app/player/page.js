@@ -439,6 +439,15 @@ export default function PlayerPage() {
     const isForeign = player.identity === '洋將'
   
     const weeklyAdds = myRosterPlayers.filter(p => p.addedThisWeek).length
+    const onTeamForeign = myRosterPlayers.filter(p =>
+      p.identity === '洋將' && (p.status || '').toLowerCase().includes('on team')
+    ).length
+  
+    // 抓出我隊上的 active 洋將與 active 所有球員（從 myRosterPlayers 名字比對 assignedPositions）
+    const myNames = myRosterPlayers.map(p => p.Name)
+    const activeAssigned = assignedPositions.filter(p =>
+      myNames.includes(p.player_name) && !['NA', 'NA(備用)'].includes(p.position)
+    )
     const activeForeign = myRosterPlayers.filter(p => {
       const isForeign = p.identity === '洋將'
       const isOnTeam = (p.status || '').toLowerCase().includes('on team')
@@ -448,13 +457,6 @@ export default function PlayerPage() {
       return isForeign && isOnTeam && assigned
     }).length
     
-  
-    // 抓出我隊上的 active 洋將與 active 所有球員（從 myRosterPlayers 名字比對 assignedPositions）
-    const myNames = myRosterPlayers.map(p => p.Name)
-    const activeAssigned = assignedPositions.filter(p =>
-      myNames.includes(p.player_name) && !['NA', 'NA(備用)'].includes(p.position)
-    )
-    const activeForeign = activeAssigned.filter(p => p.identity === '洋將').length
     const activeRoster = activeAssigned.length
   
     console.log('📊 檢查資料:', {

@@ -1217,6 +1217,14 @@ export default function PlayerPage() {
             setSuccessMessage(`✅ 成功加入球員並 Drop ${dropPlayer}`)
             setSuccessDialogOpen(true)
             await fetchStatsAndStatus()
+
+            // ⬇️ ✅✅✅ 加在這裡（寄信通知）
+            await sendEmailNotification(
+              `Add ${confirmPlayer?.Name} / Drop ${dropPlayer}`,
+              confirmPlayer?.Name,
+              managerMap[userId] || '未知玩家'
+            )
+            
           } else {
             setSuccessMessage(`❌ 錯誤: ${data.error}`)
             setSuccessDialogOpen(true)

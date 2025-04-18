@@ -60,7 +60,9 @@ export async function GET() {
 
     if (!batterStats[playerNo]) batterStats[playerNo] = {}
     positions.forEach(pos => {
-      const p = isValidPosition(pos) ? pos : 'Util'
+      // ✅ 轉換 LF/CF/RF 為 OF
+      let mappedPos = ['LF', 'CF', 'RF'].includes(pos) ? 'OF' : pos
+      const p = isValidPosition(mappedPos) ? mappedPos : 'Util'
       batterStats[playerNo][p] = (batterStats[playerNo][p] || 0) + 1
     })
   })

@@ -63,7 +63,7 @@ export async function GET() {
             const msDiff = nowTWN.getTime() - (dropTime.getTime() + taiwanOffsetMs)
             const daysSinceDrop = Math.floor(msDiff / (1000 * 60 * 60 * 24))
       
-            if (daysSinceDrop >= 3) {
+            if (daysSinceDrop >= 2) {
               status = 'Free Agent'
             } else {
               status = 'Waiver'

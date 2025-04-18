@@ -43,6 +43,8 @@ export default function PlayerPage() {
   const [assignedPositions, setAssignedPositions] = useState([])
   const [weeklyAdds, setWeeklyAdds] = useState(0)
 
+  const [selectedPlayerDetail, setSelectedPlayerDetail] = useState(null)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
 
   const [dropPlayer, setDropPlayer] = useState('');
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false);
@@ -748,7 +750,15 @@ export default function PlayerPage() {
                   <div className="flex flex-col">
                     {/* 第一行：名字、隊伍、守位 */}
                     <div className="flex items-center gap-2">
-                      <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>
+                      <span
+                        className="text-base font-bold text-[#0155A0] cursor-pointer underline"
+                        onClick={() => {
+                          setSelectedPlayerDetail(p)
+                          setDetailDialogOpen(true)
+                        }}
+                      >
+                        {p.Name}
+                      </span>
                       <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
                     </div>
 
@@ -987,6 +997,60 @@ export default function PlayerPage() {
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
+
+  <AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+  <AlertDialogContent className="max-w-4xl">
+    <AlertDialogHeader>
+      <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
+      <AlertDialogDescription>
+        <div className="text-sm text-gray-700 space-y-1">
+          <div>隊伍：{selectedPlayerDetail?.Team}</div>
+          <div>守位：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
+          <div>身分：{selectedPlayerDetail?.identity}</div>
+          <div>狀態：{selectedPlayerDetail?.status}</div>
+          <div>升降：{selectedPlayerDetail?.registerStatus}</div>
+          {/* 你也可以加更多欄位 */}
+        </div>
+
+        {/* 整合所有區間統計 */}
+        <div className="mt-4">
+          {/* 你可用 Tabs 呈現不同區間的資料，例如：Today, L7, Season */}
+          <div className="text-gray-600 font-semibold mb-2">數據（目前區間）</div>
+          <table className="w-full text-xs text-center border">
+            <thead className="bg-gray-100">
+              <tr>
+                {type === 'Batter'
+                  ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'AVG', 'OPS'].map(key => (
+                      <th key={key} className="border px-2">{key}</th>
+                    ))
+                  : ['IP', 'W', 'L', 'ERA', 'WHIP', 'K'].map(key => (
+                      <th key={key} className="border px-2">{key}</th>
+                    ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {type === 'Batter'
+                  ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'AVG', 'OPS'].map(k => (
+                      <td key={k} className="border px-2">{selectedPlayerDetail?.[k] ?? '-'}</td>
+                    ))
+                  : ['IP', 'W', 'L', 'ERA', 'WHIP', 'K'].map(k => (
+                      <td key={k} className="border px-2">{selectedPlayerDetail?.[k] ?? '-'}</td>
+                    ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogAction onClick={() => setDetailDialogOpen(false)}>
+        關閉
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
 
   <AlertDialog open={forcedDropDialogOpen} onOpenChange={setForcedDropDialogOpen}>
   <AlertDialogContent>

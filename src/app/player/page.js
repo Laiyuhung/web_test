@@ -76,16 +76,16 @@ export default function PlayerPage() {
         const res = await fetch('/api/playerStats/summary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, from, to })
+          body: JSON.stringify({ name: playerName, type })
         })
         const data = await res.json()
-        const playerData = data.find(p => p.name === playerName)
-        result[label] = playerData || null
+        result[label] = data[label] || null
       } catch (e) {
         console.error(`❌ 無法取得 ${label} 區間資料:`, e)
         result[label] = null
       }
     }
+    
   
     return result
   }

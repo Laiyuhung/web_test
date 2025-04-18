@@ -41,6 +41,7 @@ function getDateRange(label) {
 export async function POST(req) {
   try {
     const { name, type } = await req.json()
+    console.log('🧪 接收到請求參數:', { name, type })
     if (!name || !type) return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
 
     const labels = ['Today', 'Yesterday', 'Last 7 days', 'Last 14 days', 'Last 30 days', '2025 Season']

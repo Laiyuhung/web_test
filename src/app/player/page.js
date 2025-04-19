@@ -629,13 +629,24 @@ export default function PlayerPage() {
     if (isForeign) {
       if (onTeamForeign >= 4) {
         console.log('❌ 隊上洋將已滿 4 位（On Team）')
-        const options = myRosterPlayers.filter(p => {
+        const options = myRosterPlayers
+        .filter(p => {
           const isForeign = p.identity === '洋將'
           const isOnTeam = (p.status || '').toLowerCase().includes('on team')
           const assigned = assignedPositions.find(pos =>
-            pos.player_name === p.Name && !['NA', 'NA(備用)'].includes(pos.position)
+            cleanName(pos.player_name) === cleanName(p.Name) &&
+            !['NA', 'NA(備用)'].includes(pos.position)
           )
           return isForeign && isOnTeam && assigned
+        })
+        .map(p => {
+          const assigned = assignedPositions.find(pos =>
+            cleanName(pos.player_name) === cleanName(p.Name)
+          )
+          return {
+            player_name: p.Name,
+            position: assigned?.position || 'NA',
+          }
         })
         console.log('🔍 可選 Drop 洋將名單（4上限）:', options)
         setForcedDropReason('隊上洋將已達 4 位，請選擇一位 Active 洋將進行 Drop')
@@ -647,13 +658,23 @@ export default function PlayerPage() {
       
       if (activeForeign >= 3) {
         console.log('❌ Active 洋將已滿 3 位')
-        const options = myRosterPlayers.filter(p => {
+        .filter(p => {
           const isForeign = p.identity === '洋將'
           const isOnTeam = (p.status || '').toLowerCase().includes('on team')
           const assigned = assignedPositions.find(pos =>
-            pos.player_name === p.Name && !['NA', 'NA(備用)'].includes(pos.position)
+            cleanName(pos.player_name) === cleanName(p.Name) &&
+            !['NA', 'NA(備用)'].includes(pos.position)
           )
           return isForeign && isOnTeam && assigned
+        })
+        .map(p => {
+          const assigned = assignedPositions.find(pos =>
+            cleanName(pos.player_name) === cleanName(p.Name)
+          )
+          return {
+            player_name: p.Name,
+            position: assigned?.position || 'NA',
+          }
         })
         console.log('🔍 可選 Drop 洋將名單（3 active 限制）:', options)
         setForcedDropReason('Active 洋將已達 3 位，請選擇一位 Active 洋將進行 Drop')

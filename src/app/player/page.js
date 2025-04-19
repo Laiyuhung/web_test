@@ -658,6 +658,7 @@ export default function PlayerPage() {
       
       if (activeForeign >= 3) {
         console.log('❌ Active 洋將已滿 3 位')
+        const options = myRosterPlayers
         .filter(p => {
           const isForeign = p.identity === '洋將'
           const isOnTeam = (p.status || '').toLowerCase().includes('on team')

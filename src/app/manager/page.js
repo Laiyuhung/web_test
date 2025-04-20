@@ -251,6 +251,7 @@ export default function RosterPage() {
         if (isPast) {
           const assignedRes = await fetch(`/api/saveAssigned/load?date=${selectedDate}&manager_id=${selectedManager}`)
           const assignedData = await assignedRes.json()
+          console.log('👤 assignedData:', assignedData)
           const names = [...new Set(assignedData.filter(r => r.manager_id?.toString() === selectedManager).map(r => r.player_name))]
   
           console.log('👤 過去用 assigned 名單取得名稱:', names)

@@ -208,68 +208,97 @@ export default function RosterPage() {
   }, [selectedDate])
 
   useEffect(() => {
-
     const fetchData = async () => {
       setLoading(true)
       try {
         const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
-            fetch('/api/playerStatus'),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerPositionCaculate'),
-            fetch('/api/playerRegisterStatus')
+          fetch('/api/playerStatus'),
+          fetch('/api/playerStats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate }),
+          }),
+          fetch('/api/playerStats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate }),
+          }),
+          fetch('/api/playerPositionCaculate'),
+          fetch('/api/playerRegisterStatus'),
         ])
-
+  
         const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
-            statusRes.json(),
-            batterRes.ok ? batterRes.json() : [],
-            pitcherRes.ok ? pitcherRes.json() : [],
-            positionRes.ok ? positionRes.json() : [],
-            registerRes.ok ? registerRes.json() : []
+          statusRes.json(),
+          batterRes.ok ? batterRes.json() : [],
+          pitcherRes.ok ? pitcherRes.json() : [],
+          positionRes.ok ? positionRes.json() : [],
+          registerRes.ok ? registerRes.json() : [],
         ])
-
-        
+  
         const statsData = [...batterData, ...pitcherData]
-
-        const merged = statusData.map(p => {
-          const stat = statsData.find(s => s.name === p.Name)
-          const pos = positionData.find(pos => pos.name === p.Name)
-          const finalPosition = pos?.finalPosition || []
-          const reg = registerData.find(r => r.name === p.Name)
-          const registerStatus = reg?.status || '未知'
-          return {
-            ...p,
-            ...(stat || {}),
-            finalPosition,
-            registerStatus
-          }
-        })
-
-        const myPlayers = merged.filter(p => p.manager_id?.toString() === selectedManager)
-        console.log('👥 撈到的 myPlayers:', myPlayers) // 👈 加這行
-
-        setPlayers(myPlayers)
-
-        await loadAssigned(myPlayers)
+  
+        // 🔍 判斷 selectedDate 是否早於今天
+        const isPast = (() => {
+          const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+          const todayStr = now.toISOString().slice(0, 10)
+          return selectedDate < todayStr
+        })()
+  
+        console.log(`📅 selectedDate: ${selectedDate}, isPast: ${isPast}`)
+  
+        let playersList = []
+  
+        if (isPast) {
+          const assignedRes = await fetch(`/api/saveAssigned/load?date=${selectedDate}&manager_id=${selectedManager}`)
+          const assignedData = await assignedRes.json()
+          const names = [...new Set(assignedData.filter(r => r.manager_id?.toString() === selectedManager).map(r => r.player_name))]
+  
+          console.log('👤 過去用 assigned 名單取得名稱:', names)
+  
+          playersList = names.map(name => {
+            const status = statusData.find(s => s.Name === name)
+            const stat = statsData.find(s => s.name === name)
+            const pos = positionData.find(p => p.name === name)
+            const reg = registerData.find(r => r.name === name)
+            return {
+              ...(status || { Name: name }),
+              ...(stat || {}),
+              finalPosition: pos?.finalPosition || [],
+              registerStatus: reg?.status || '未知',
+            }
+          })
+  
+        } else {
+          const merged = statusData.map(p => {
+            const stat = statsData.find(s => s.name === p.Name)
+            const pos = positionData.find(pos => pos.name === p.Name)
+            const reg = registerData.find(r => r.name === p.Name)
+            return {
+              ...p,
+              ...(stat || {}),
+              finalPosition: pos?.finalPosition || [],
+              registerStatus: reg?.status || '未知',
+            }
+          })
+  
+          playersList = merged.filter(p => p.manager_id?.toString() === selectedManager)
+        }
+  
+        console.log('📋 最終 playersList:', playersList)
+  
+        setPlayers(playersList)
+        await loadAssigned(playersList)
         setPositionsLoaded(true)
         setRosterReady(true)
-
       } catch (err) {
-        console.error('讀取錯誤:', err)
+        console.error('❌ fetchData 發生錯誤:', err)
       }
       setLoading(false)
     }
-
+  
     if (selectedManager) fetchData()
-  }, [selectedManager, fromDate, toDate]) 
+  }, [selectedManager, fromDate, toDate, selectedDate])
+  
 
   useEffect(() => {
     const allForeign = players.filter(p => p.identity === '洋將')

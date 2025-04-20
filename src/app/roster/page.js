@@ -225,7 +225,11 @@ export default function RosterPage() {
         console.log('📌 positionData:', positionData)
         console.log('📋 registerData:', registerData)
     
-        const isPast = new Date(`${selectedDate}T00:00:00+08:00`) < new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+        const isPast = (() => {
+          const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+          const todayStr = now.toISOString().slice(0, 10)
+          return selectedDate < todayStr
+        })()
         console.log(`📅 selectedDate: ${selectedDate}, isPast: ${isPast}`)
     
         let playersList = []

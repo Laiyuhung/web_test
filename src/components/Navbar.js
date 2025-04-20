@@ -86,14 +86,15 @@ export default function Navbar() {
               &times; {/* Close button */}
             </button>
           </div>
-          <Link href="/home" className="block py-2">HOME</Link>
-          <Link href="/roster" className="block py-2">ROSTER</Link>
-          <Link href="/player" className="block py-2">PLAYERS</Link>
-          <Link href="/matchup" className="block py-2">MATCHUP</Link>
-          <Link href="/manager" className="block py-2">MANAGER</Link>
+          <Link href="/home" className="block py-2" onClick={() => setMenuOpen(false)}>HOME</Link>
+          <Link href="/roster" className="block py-2" onClick={() => setMenuOpen(false)}>ROSTER</Link>
+          <Link href="/player" className="block py-2" onClick={() => setMenuOpen(false)}>PLAYERS</Link>
+          <Link href="/matchup" className="block py-2" onClick={() => setMenuOpen(false)}>MATCHUP</Link>
+          <Link href="/manager" className="block py-2" onClick={() => setMenuOpen(false)}>MANAGER</Link>
           {userId === '2' && (
-            <Link href="/bulk-insert" className="block py-2">資料登錄系統</Link>
+            <Link href="/bulk-insert" className="block py-2" onClick={() => setMenuOpen(false)}>資料登錄系統</Link>
           )}
+
         </div>
       )}
 

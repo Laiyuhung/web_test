@@ -191,61 +191,98 @@ export default function RosterPage() {
 
     const fetchData = async () => {
       setLoading(true)
+    
       try {
         const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
-            fetch('/api/playerStatus'),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerStats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-            }),
-            fetch('/api/playerPositionCaculate'),
-            fetch('/api/playerRegisterStatus')
+          fetch('/api/playerStatus'),
+          fetch('/api/playerStats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
+          }),
+          fetch('/api/playerStats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
+          }),
+          fetch('/api/playerPositionCaculate'),
+          fetch('/api/playerRegisterStatus')
         ])
-
+    
         const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
-            statusRes.json(),
-            batterRes.ok ? batterRes.json() : [],
-            pitcherRes.ok ? pitcherRes.json() : [],
-            positionRes.ok ? positionRes.json() : [],
-            registerRes.ok ? registerRes.json() : []
+          statusRes.json(),
+          batterRes.ok ? batterRes.json() : [],
+          pitcherRes.ok ? pitcherRes.json() : [],
+          positionRes.ok ? positionRes.json() : [],
+          registerRes.ok ? registerRes.json() : []
         ])
-
-        
+    
         const statsData = [...batterData, ...pitcherData]
-
-        const merged = statusData.map(p => {
-          const stat = statsData.find(s => s.name === p.Name)
-          const pos = positionData.find(pos => pos.name === p.Name)
-          const finalPosition = pos?.finalPosition || []
-          const reg = registerData.find(r => r.name === p.Name)
-          const registerStatus = reg?.status || '未知'
-          return {
-            ...p,
-            ...(stat || {}),
-            finalPosition,
-            registerStatus
-          }
-        })
-
-        const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
-
-        setPlayers(myPlayers)
-
-        await loadAssigned(myPlayers)
+    
+        console.log('📦 statusData:', statusData)
+        console.log('📊 batterData:', batterData)
+        console.log('📊 pitcherData:', pitcherData)
+        console.log('📌 positionData:', positionData)
+        console.log('📋 registerData:', registerData)
+    
+        const isPast = new Date(`${selectedDate}T00:00:00+08:00`) < new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+        console.log(`📅 selectedDate: ${selectedDate}, isPast: ${isPast}`)
+    
+        let playersList = []
+    
+        if (isPast) {
+          const assignedRes = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
+          const assignedData = await assignedRes.json()
+          console.log('🗂️ assignedData (from position_assigned):', assignedData)
+    
+          const names = [...new Set(assignedData.map(r => r.player_name))]
+          console.log('📛 player names from assignedData:', names)
+    
+          playersList = names.map(name => {
+            const status = statusData.find(s => s.Name === name)
+            const stat = statsData.find(s => s.name === name)
+            const pos = positionData.find(p => p.name === name)
+            const reg = registerData.find(r => r.name === name)
+    
+            return {
+              ...(status || { Name: name }),
+              ...(stat || {}),
+              finalPosition: pos?.finalPosition || [],
+              registerStatus: reg?.status || '未知'
+            }
+          })
+    
+          console.log('📋 組合後 playersList（isPast）:', playersList)
+        } else {
+          const merged = statusData.map(p => {
+            const stat = statsData.find(s => s.name === p.Name)
+            const pos = positionData.find(pos => pos.name === p.Name)
+            const reg = registerData.find(r => r.name === p.Name)
+            return {
+              ...p,
+              ...(stat || {}),
+              finalPosition: pos?.finalPosition || [],
+              registerStatus: reg?.status || '未知'
+            }
+          })
+    
+          playersList = merged.filter(p => p.manager_id?.toString() === userId)
+          console.log('📋 組合後 playersList（today/future）:', playersList)
+        }
+    
+        setPlayers(playersList)
+        await loadAssigned(playersList)
         setPositionsLoaded(true)
         setRosterReady(true)
-
+    
       } catch (err) {
-        console.error('讀取錯誤:', err)
+        console.error('❌ 讀取錯誤:', err)
       }
+    
       setLoading(false)
     }
+    
+    
 
     if (userId) fetchData()
   }, [userId, fromDate, toDate]) 

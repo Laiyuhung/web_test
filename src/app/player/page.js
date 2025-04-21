@@ -1240,7 +1240,7 @@ export default function PlayerPage() {
                   <tbody>
                     {selectedPlayerDetail.last6games.map((game, idx) => (
                       <tr key={idx}>
-                        <td className="border px-2 py-1">{game.date}</td>
+                        <td className="border px-2 py-1">{game.game_date}</td>
                         <td className="border px-2 py-1">{game.opponent}</td>
                         {(type === 'Batter'
                           ? ['AB','R','H','HR','RBI','SB','K','BB','AVG','OPS']

@@ -17,6 +17,7 @@ export async function POST(req) {
       .eq('name', name)
       .eq('is_major', true)
       .gt('game_date', '2025-03-01')
+      .lte('game_date', today) // ✅ 加上這一行：排除未來比賽
       .order('game_date', { ascending: false })
       .limit(20)
 
@@ -59,6 +60,7 @@ export async function POST(req) {
       .from('cpbl_schedule')
       .select('date, home, away')
       .or(`home.eq.${team},away.eq.${team}`)
+      .lte('date', today)
       .order('date', { ascending: false })
       .limit(6)
 

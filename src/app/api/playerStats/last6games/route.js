@@ -70,6 +70,7 @@ export async function POST(req) {
       .select('date, home, away')
       .or(`home.eq.${team},away.eq.${team}`)
       .lte('date', today)
+      .eq('is_postponed', false)
       .order('date', { ascending: false })
       .limit(6)
 
@@ -87,7 +88,6 @@ export async function POST(req) {
         .eq('name', name)
         .eq('game_date', date)
         .eq('is_major', true)
-        .eq('is_postponed', false)
         .maybeSingle()
 
       const safe = stats ?? {

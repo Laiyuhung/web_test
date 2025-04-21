@@ -1179,7 +1179,7 @@ export default function PlayerPage() {
               </thead>
               <tbody>
                 {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
-                  <React.Fragment key={label}>
+                  <>
                     <tr className="bg-gray-50 text-left text-sm">
                       <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
                         {label}
@@ -1193,7 +1193,7 @@ export default function PlayerPage() {
                         <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
                       ))}
                     </tr>
-                  </React.Fragment>
+                  </>
                 ))}
               </tbody>
             </table>

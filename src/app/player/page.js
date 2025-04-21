@@ -896,7 +896,7 @@ export default function PlayerPage() {
                           const summary = await fetchPlayerStatSummary(p.Name, type.toLowerCase())
                         
                           // Last 6 games
-                          cconst res = await fetch('/api/playerStats/last6games', {
+                          const res = await fetch('/api/playerStats/last6games', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ name: p.Name, team: p.Team, type: type.toLowerCase() })

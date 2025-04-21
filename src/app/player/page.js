@@ -907,8 +907,9 @@ export default function PlayerPage() {
                           setSelectedPlayerDetail(prev => ({
                             ...prev,
                             statSummary: summary,
-                            last6games: last6
+                            last6games: last6.recentGames || [] // 改這行，避免 undefined 或錯誤型別
                           }))
+                          
                         }}
                         
                       >

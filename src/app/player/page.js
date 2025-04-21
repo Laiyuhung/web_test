@@ -1179,7 +1179,7 @@ export default function PlayerPage() {
                 {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
                   <>
                     <tr className="bg-gray-50 text-left text-sm">
-                      <td colSpan={type === 'Batter' ? 14 : 14} className="px-2 py-1 font-bold text-gray-700">
+                      <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
                         {label}
                       </td>
                     </tr>

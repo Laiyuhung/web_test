@@ -1147,7 +1147,7 @@ export default function PlayerPage() {
   </AlertDialog>
 
   <AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-  <AlertDialogContent className="max-w-4xl">
+  <AlertDialogContent className="w-full max-w-4xl overflow-x-auto max-h-[80vh]">
     <AlertDialogHeader>
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
       <AlertDialogDescription>
@@ -1163,7 +1163,7 @@ export default function PlayerPage() {
         {/* 整合所有區間統計（表格列出） */}
         {selectedPlayerDetail?.statSummary && (
           <div className="mt-4 overflow-x-auto">
-            <table className="text-xs text-center border w-full min-w-[950px]">
+            <table className="text-xs text-center border w-full min-w-[950px] table-fixed">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="border px-2">區間</th>

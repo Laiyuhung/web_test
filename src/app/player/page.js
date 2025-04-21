@@ -1147,10 +1147,13 @@ export default function PlayerPage() {
   </AlertDialog>
 
   <AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-  <AlertDialogContent>
+    <AlertDialogContent className="w-full max-w-4xl max-h-[80vh] overflow-y-auto">
     <AlertDialogHeader>
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
-      <AlertDialogDescription className="relative">
+    </AlertDialogHeader>
+
+    <div className="relative">
+      {/* 👉 固定不隨 table 滾動的區塊 */}
       <div className="sticky top-0 z-10 bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
         <div>team：{selectedPlayerDetail?.Team}</div>
         <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
@@ -1159,53 +1162,51 @@ export default function PlayerPage() {
         <div>升降：{selectedPlayerDetail?.registerStatus}</div>
       </div>
 
-        {/* 整合所有區間統計（表格列出） */}
-        {selectedPlayerDetail?.statSummary && (
-          <div className="mt-4 overflow-x-auto">
-            <table className="text-xs text-center border w-full min-w-[950px] table-fixed">
-              <thead className="bg-gray-100">
-                <tr>
-                  {/* <th className="border px-2">區間</th> */}
-                  {(type === 'Batter'
-                    ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
-                    : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
-                  ).map(k => (
-                    <th key={k} className="border px-2">{k}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
-                  <>
-                    <tr className="bg-gray-50 text-left text-sm">
-                      <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
-                        {label}
-                      </td>
-                    </tr>
-                    <tr>
-                      {(type === 'Batter'
-                        ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
-                        : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
-                      ).map(k => (
-                        <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
-                      ))}
-                    </tr>
-                  </>
+      {/* 👉 橫向可滾動的統計表格 */}
+      {selectedPlayerDetail?.statSummary && (
+        <div className="mt-4 overflow-x-auto">
+          <table className="text-xs text-center border w-full min-w-[950px] table-fixed">
+            <thead className="bg-gray-100">
+              <tr>
+                {(type === 'Batter'
+                  ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
+                  : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
+                ).map(k => (
+                  <th key={k} className="border px-2">{k}</th>
                 ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
+                <React.Fragment key={label}>
+                  <tr className="bg-gray-50 text-left text-sm">
+                    <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                      {label}
+                    </td>
+                  </tr>
+                  <tr>
+                    {(type === 'Batter'
+                      ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
+                      : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
+                    ).map(k => (
+                      <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
+                    ))}
+                  </tr>
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
 
-              </tbody>
-            </table>
-          </div>
-        )}
-
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
+    <AlertDialogFooter className="mt-4">
       <AlertDialogAction onClick={() => setDetailDialogOpen(false)}>
         關閉
       </AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
+
 </AlertDialog>
 
 

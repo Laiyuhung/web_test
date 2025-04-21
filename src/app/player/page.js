@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function PlayerPage() {
-  const [watchedList, setWatchedList] = useState([])
   const [managerMap, setManagerMap] = useState({})
   const [taiwanToday, setTaiwanToday] = useState('')
   const [gameInfoMap, setGameInfoMap] = useState({})
@@ -213,9 +212,6 @@ export default function PlayerPage() {
     fetchStartingPitchers()
   }, [taiwanToday])
   
-  useEffect(() => {
-    fetchWatchedList()
-  }, [userId])
   
   useEffect(() => {
     if (!taiwanToday) return
@@ -483,17 +479,7 @@ export default function PlayerPage() {
   
   
   
-  const fetchWatchedList = async () => {
-    if (!userId) return
-    const res = await fetch('/api/watched/load', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ manager_id: userId })
-    })
-    const data = await res.json()
-    const names = data.map(d => d.Name)
-    setWatchedList(names)
-  }
+  
 
   const positionOptions = type === 'Batter'
     ? ['Util', 'C', '1B', '2B', '3B', 'SS', 'OF']
@@ -931,25 +917,7 @@ export default function PlayerPage() {
                       >
                         {p.Name}
                       </span>
-
-                      {/* ➕ 在這裡加上星星 */}
-                      <button
-                        onClick={async () => {
-                          if (!userId) return
-                          await fetch('/api/watched/insertOrRemove', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ manager_id: userId, player_name: p.Name })
-                          })
-                          fetchWatchedList() // 重新取得最新 watched list（你要新增 useState 去記錄）
-                        }}
-                        className="ml-1"
-                      >
-                        {watchedList.includes(p.Name)
-                          ? '⭐'  // 實心
-                          : '☆'  // 空心
-                        }
-                      </button>
+                      
 
                       <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
                     </div>

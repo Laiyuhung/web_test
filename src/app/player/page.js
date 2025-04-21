@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Star, StarOff } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -337,7 +338,15 @@ export default function PlayerPage() {
           if (register === '二軍' && !['二軍', '註銷', '未註冊'].includes(p.registerStatus)) return false
           if (register === '註銷' && p.registerStatus !== '註銷') return false
         }
-        if (position !== 'Util' && position !== 'P') {
+        if (position === 'Start today') {
+          if (type === 'Batter') {
+            const found = startingLineup.find(l => l.name === p.Name)
+            const battingNo = found?.batting_no || ''
+            if (!battingNo || battingNo === 'X') return false
+          } else if (type === 'Pitcher') {
+            if (!startingPitchers.some(sp => sp.name === p.Name)) return false
+          }
+        } else if (position !== 'Util' && position !== 'P') {
           if (!(p.finalPosition || []).some(pos => pos.includes(position))) return false
         }
         return true
@@ -496,8 +505,8 @@ export default function PlayerPage() {
   }
 
   const positionOptions = type === 'Batter'
-    ? ['Util', 'C', '1B', '2B', '3B', 'SS', 'OF']
-    : ['P', 'SP', 'RP']
+    ? ['Util', 'C', '1B', '2B', '3B', 'SS', 'OF', 'Start today']
+    : ['P', 'SP', 'RP', 'Start today']
 
   const sortOptions = type === 'Batter'
     ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
@@ -937,30 +946,35 @@ export default function PlayerPage() {
                         onClick={async () => {
                           if (!userId) return
 
-                          // 👉 先切換 UI 狀態（Optimistic UI）
+                          // 立即切換
                           setWatchedList(prev =>
                             prev.includes(p.Name)
                               ? prev.filter(name => name !== p.Name)
                               : [...prev, p.Name]
                           )
 
-                          // 👉 再送出請求
+                          // 非同步處理寫入
                           await fetch('/api/watched/insertOrRemove', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ manager_id: userId, player_name: p.Name })
                           })
-
-                          // 可選擇要不要重新 fetchWatchedList()，或相信前面的樂觀更新就好
-                          // await fetchWatchedList()
                         }}
-                        className={`ml-1 ${
-                          watchedList.includes(p.Name)
-                            ? 'fas fa-star text-yellow-500 cursor-pointer'
-                            : 'far fa-star text-gray-400 cursor-pointer'
-                        }`}
+                        className="ml-1"
                         title={watchedList.includes(p.Name) ? '取消關注' : '加入觀察名單'}
-                      />
+                      >
+                        {watchedList.includes(p.Name) ? (
+                          <Star
+                            className="w-4 h-4 text-yellow-500 transition-transform duration-200 hover:scale-125"
+                            fill="#FACC15"
+                          />
+                        ) : (
+                          <Star
+                            className="w-4 h-4 text-gray-400 transition-transform duration-200 hover:scale-125"
+                          />
+                        )}
+                      </button>
+
 
                       <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
                     </div>

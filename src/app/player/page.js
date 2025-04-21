@@ -896,18 +896,20 @@ export default function PlayerPage() {
                           const summary = await fetchPlayerStatSummary(p.Name, type.toLowerCase())
                         
                           // Last 6 games
-                          const res = await fetch('/api/playerStats/last6games', {
+                          cconst res = await fetch('/api/playerStats/last6games', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ name: p.Name, team: p.Team, type: type.toLowerCase() })
                           })
                           const last6 = await res.json()
+                          
+                          console.log('🐛 last6 回傳內容:', last6)
                         
                           // Merge
                           setSelectedPlayerDetail(prev => ({
                             ...prev,
                             statSummary: summary,
-                            last6games: last6.recentGames || [] // 改這行，避免 undefined 或錯誤型別
+                            last6games: last6.recentGames || [] // 改這行，避免 undefined  或錯誤型別
                           }))
                           
                         }}

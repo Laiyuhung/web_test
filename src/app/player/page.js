@@ -891,14 +891,26 @@ export default function PlayerPage() {
                         onClick={async () => {
                           setSelectedPlayerDetail(p)
                           setDetailDialogOpen(true)
-                          
-                          // 👇 取得多區間數據
+                        
+                          // Stat summary
                           const summary = await fetchPlayerStatSummary(p.Name, type.toLowerCase())
+                        
+                          // Last 6 games
+                          const res = await fetch('/api/playerStats/last6games', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: p.Name, team: p.Team, type: type.toLowerCase() })
+                          })
+                          const last6 = await res.json()
+                        
+                          // Merge
                           setSelectedPlayerDetail(prev => ({
                             ...prev,
                             statSummary: summary,
+                            last6games: last6
                           }))
                         }}
+                        
                       >
                         {p.Name}
                       </span>
@@ -1151,55 +1163,98 @@ export default function PlayerPage() {
     <AlertDialogHeader>
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
       <AlertDialogDescription className="relative px-1">
-      <div className="sticky top-0 z-20 bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
+        <div className="sticky top-0 z-20 bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
+          <div>team：{selectedPlayerDetail?.Team}</div>
+          <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
+          <div>identity：{selectedPlayerDetail?.identity}</div>
+          <div>status：{selectedPlayerDetail?.status}</div>
+          <div>升降：{selectedPlayerDetail?.registerStatus}</div>
+        </div>
 
-        <div>team：{selectedPlayerDetail?.Team}</div>
-        <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
-        <div>identity：{selectedPlayerDetail?.identity}</div>
-        <div>status：{selectedPlayerDetail?.status}</div>
-        <div>升降：{selectedPlayerDetail?.registerStatus}</div>
-      </div>
+        {/* 🔻 Tabs 加進來 */}
+        <Tabs defaultValue="summary" className="mt-4">
+          <TabsList className="mb-2">
+            <TabsTrigger value="summary">統計區間</TabsTrigger>
+            <TabsTrigger value="last6">前六場</TabsTrigger>
+          </TabsList>
 
-        {/* 整合所有區間統計（表格列出） */}
-        {selectedPlayerDetail?.statSummary && (
-          <div className="mt-4">
-            <div className="overflow-x-auto">
-              <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
-                <thead className="bg-gray-100">
-                  <tr>
-                    {(type === 'Batter'
-                      ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
-                      : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
-                    ).map(k => (
-                      <th key={k} className="border px-2">{k}</th>
+          {/* 🔹 summary 區塊 */}
+          <TabsContent value="summary">
+            {selectedPlayerDetail?.statSummary && (
+              <div className="overflow-x-auto">
+                <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      {(type === 'Batter'
+                        ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                        : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                      ).map(k => (
+                        <th key={k} className="border px-2">{k}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
+                      <>
+                        <tr className="bg-gray-50 text-left text-sm">
+                          <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                            {label}
+                          </td>
+                        </tr>
+                        <tr>
+                          {(type === 'Batter'
+                            ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                            : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                          ).map(k => (
+                            <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
+                          ))}
+                        </tr>
+                      </>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
-                    <>
-                      <tr className="bg-gray-50 text-left text-sm">
-                        <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
-                          {label}
-                        </td>
-                      </tr>
-                      <tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* 🔹 last6 區塊 */}
+          <TabsContent value="last6">
+            {selectedPlayerDetail?.last6games && (
+              <div className="overflow-x-auto">
+                <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="border px-2">日期</th>
+                      <th className="border px-2">對手</th>
+                      {(type === 'Batter'
+                        ? ['AB','R','H','HR','RBI','SB','K','BB','AVG','OPS']
+                        : ['IP','W','L','HLD','SV','H','ER','K','BB','ERA','WHIP']
+                      ).map(k => (
+                        <th key={k} className="border px-2">{k}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedPlayerDetail.last6games.map((game, idx) => (
+                      <tr key={idx}>
+                        <td className="border px-2 py-1">{game.game_date}</td>
+                        <td className="border px-2 py-1">{game.opponent}</td>
                         {(type === 'Batter'
-                          ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
-                          : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
+                          ? ['AB','R','H','HR','RBI','SB','K','BB','AVG','OPS']
+                          : ['IP','W','L','HLD','SV','H','ER','K','BB','ERA','WHIP']
                         ).map(k => (
-                          <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
+                          <td key={k} className="border px-2 py-1 text-center">{game?.[k] ?? '-'}</td>
                         ))}
                       </tr>
-                    </>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </AlertDialogDescription>
+
     </AlertDialogHeader>
     <AlertDialogFooter className="sticky bottom-0 bg-white border-t pt-2">
       <AlertDialogAction onClick={() => setDetailDialogOpen(false)}>

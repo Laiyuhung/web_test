@@ -1147,18 +1147,17 @@ export default function PlayerPage() {
   </AlertDialog>
 
   <AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-  <AlertDialogContent className="w-full max-w-4xl overflow-x-auto max-h-[80vh]">
+  <AlertDialogContent>
     <AlertDialogHeader>
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
       <AlertDialogDescription className="relative">
-        <div className="sticky top-0 z-10 bg-white border-b py-2 space-y-1 text-sm text-gray-700">
-          <div>team：{selectedPlayerDetail?.Team}</div>
-          <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
-          <div>identity：{selectedPlayerDetail?.identity}</div>
-          <div>status：{selectedPlayerDetail?.status}</div>
-          <div>升降：{selectedPlayerDetail?.registerStatus}</div>
-          {/* 你也可以加更多欄位 */}
-        </div>
+      <div className="sticky top-0 z-10 bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
+        <div>team：{selectedPlayerDetail?.Team}</div>
+        <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
+        <div>identity：{selectedPlayerDetail?.identity}</div>
+        <div>status：{selectedPlayerDetail?.status}</div>
+        <div>升降：{selectedPlayerDetail?.registerStatus}</div>
+      </div>
 
         {/* 整合所有區間統計（表格列出） */}
         {selectedPlayerDetail?.statSummary && (

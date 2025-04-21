@@ -1150,8 +1150,8 @@ export default function PlayerPage() {
   <AlertDialogContent className="w-full max-w-4xl overflow-x-auto max-h-[80vh]">
     <AlertDialogHeader>
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
-      <AlertDialogDescription>
-        <div className="text-sm text-gray-700 space-y-1">
+      <AlertDialogDescription className="relative">
+        <div className="sticky top-0 z-10 bg-white border-b py-2 space-y-1 text-sm text-gray-700">
           <div>team：{selectedPlayerDetail?.Team}</div>
           <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
           <div>identity：{selectedPlayerDetail?.identity}</div>
@@ -1166,7 +1166,7 @@ export default function PlayerPage() {
             <table className="text-xs text-center border w-full min-w-[950px] table-fixed">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="border px-2">區間</th>
+                  {/* <th className="border px-2">區間</th> */}
                   {(type === 'Batter'
                     ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
                     : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
@@ -1177,16 +1177,23 @@ export default function PlayerPage() {
               </thead>
               <tbody>
                 {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
-                  <tr key={label}>
-                    <td className="border px-2 font-bold">{label}</td>
-                    {(type === 'Batter'
-                      ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
-                      : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
-                    ).map(k => (
-                      <td key={k} className="border px-2">{stats?.[k] ?? '-'}</td>
-                    ))}
-                  </tr>
+                  <>
+                    <tr className="bg-gray-50 text-left text-sm">
+                      <td colSpan={type === 'Batter' ? 14 : 14} className="px-2 py-1 font-bold text-gray-700">
+                        {label}
+                      </td>
+                    </tr>
+                    <tr>
+                      {(type === 'Batter'
+                        ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
+                        : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
+                      ).map(k => (
+                        <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
+                      ))}
+                    </tr>
+                  </>
                 ))}
+
               </tbody>
             </table>
           </div>

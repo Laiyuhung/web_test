@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import React from 'react'
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -1148,14 +1147,11 @@ export default function PlayerPage() {
   </AlertDialog>
 
   <AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-  <AlertDialogContent className="w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+  <AlertDialogContent>
     <AlertDialogHeader>
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
-    </AlertDialogHeader>
-
-    <AlertDialogDescription>
-      {/* 固定基本資料區塊 */}
-      <div className="bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
+      <AlertDialogDescription className="relative">
+      <div className="sticky top-0 z-10 bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
         <div>team：{selectedPlayerDetail?.Team}</div>
         <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
         <div>identity：{selectedPlayerDetail?.identity}</div>
@@ -1163,13 +1159,13 @@ export default function PlayerPage() {
         <div>升降：{selectedPlayerDetail?.registerStatus}</div>
       </div>
 
-      {/* 表格橫向可滑動，且不撐開整體寬度 */}
-      {selectedPlayerDetail?.statSummary && (
-        <div className="mt-4 overflow-x-auto">
-          <div className="w-max min-w-[950px]">
-            <table className="text-xs text-center border w-full table-fixed">
+        {/* 整合所有區間統計（表格列出） */}
+        {selectedPlayerDetail?.statSummary && (
+          <div className="mt-4 overflow-x-auto">
+            <table className="text-xs text-center border w-full min-w-[950px] table-fixed">
               <thead className="bg-gray-100">
                 <tr>
+                  {/* <th className="border px-2">區間</th> */}
                   {(type === 'Batter'
                     ? ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
                     : ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
@@ -1180,7 +1176,7 @@ export default function PlayerPage() {
               </thead>
               <tbody>
                 {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
-                  <React.Fragment key={label}>
+                  <>
                     <tr className="bg-gray-50 text-left text-sm">
                       <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
                         {label}
@@ -1194,23 +1190,23 @@ export default function PlayerPage() {
                         <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
                       ))}
                     </tr>
-                  </React.Fragment>
+                  </>
                 ))}
+
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-    </AlertDialogDescription>
+        )}
 
-    <AlertDialogFooter className="mt-4">
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
       <AlertDialogAction onClick={() => setDetailDialogOpen(false)}>
         關閉
       </AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
 </AlertDialog>
-
 
 
   <AlertDialog open={forcedDropDialogOpen} onOpenChange={setForcedDropDialogOpen}>

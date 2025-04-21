@@ -34,7 +34,9 @@ export async function POST(req) {
     }
 
     const processed = stats.map(d => {
-      const OUT = parseFloat(d.outs || 0)
+      const rawIP = d.innings_pitched || 0
+      const outs = Math.floor(rawIP) * 3 + Math.round((rawIP % 1) * 10)
+      const OUT = parseFloat(outs || 0)
       const IP = Math.floor(OUT / 3) + (OUT % 3) / 10
       const H = parseFloat(d.hits_allowed || 0)
       const ER = parseFloat(d.earned_runs || 0)

@@ -936,20 +936,31 @@ export default function PlayerPage() {
                       <button
                         onClick={async () => {
                           if (!userId) return
+
+                          // 👉 先切換 UI 狀態（Optimistic UI）
+                          setWatchedList(prev =>
+                            prev.includes(p.Name)
+                              ? prev.filter(name => name !== p.Name)
+                              : [...prev, p.Name]
+                          )
+
+                          // 👉 再送出請求
                           await fetch('/api/watched/insertOrRemove', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ manager_id: userId, player_name: p.Name })
                           })
-                          fetchWatchedList() // 重新取得最新 watched list（你要新增 useState 去記錄）
+
+                          // 可選擇要不要重新 fetchWatchedList()，或相信前面的樂觀更新就好
+                          // await fetchWatchedList()
                         }}
-                        className="ml-1"
-                      >
-                        {watchedList.includes(p.Name)
-                          ? '⭐'  // 實心
-                          : '☆'  // 空心
-                        }
-                      </button>
+                        className={`ml-1 ${
+                          watchedList.includes(p.Name)
+                            ? 'fas fa-star text-yellow-500 cursor-pointer'
+                            : 'far fa-star text-gray-400 cursor-pointer'
+                        }`}
+                        title={watchedList.includes(p.Name) ? '取消關注' : '加入觀察名單'}
+                      />
 
                       <span className="text-sm text-gray-500">{p.Team} - {(p.finalPosition || []).join(', ')}</span>
                     </div>

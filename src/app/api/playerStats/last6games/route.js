@@ -87,7 +87,7 @@ export async function POST(req) {
         .eq('name', name)
         .eq('game_date', date)
         .eq('is_major', true)
-        .eq('is_postponed', FALSE)
+        .eq('is_postponed', false)
         .maybeSingle()
 
       const safe = stats ?? {

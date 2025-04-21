@@ -1150,8 +1150,9 @@ export default function PlayerPage() {
   <AlertDialogContent className="w-full max-w-[95vw] max-h-[80vh] overflow-y-auto px-4">
     <AlertDialogHeader>
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
-      <AlertDialogDescription className="relative">
-      <div className="sticky top-0 z-10 bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
+      <AlertDialogDescription className="relative px-1">
+      <div className="sticky top-0 z-20 bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
+
         <div>team：{selectedPlayerDetail?.Team}</div>
         <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
         <div>identity：{selectedPlayerDetail?.identity}</div>

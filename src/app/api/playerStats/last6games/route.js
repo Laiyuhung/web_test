@@ -82,7 +82,7 @@ export async function POST(req) {
       const opponent = g.home === team ? g.away : g.home
 
       const { data: stats } = await supabase
-        .from(table)
+        .from('batting_stats')
         .select('*')
         .eq('name', name)
         .eq('game_date', date)

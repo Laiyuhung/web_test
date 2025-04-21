@@ -22,7 +22,7 @@ export async function POST(req) {
 
     if (error) return Response.json({ error: '讀取投手資料失敗' }, { status: 500 })
 
-    const filtered = stats.filter(d => parseFloat(d.IP) > 0 || parseFloat(d.OUT) > 0).slice(0, 6)
+    const filtered = stats.filter(d => parseFloat(d.IP) >= 0 || parseFloat(d.OUT) >= 0).slice(0, 6)
 
     return Response.json({ recentGames: filtered })
   } else {

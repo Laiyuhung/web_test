@@ -87,6 +87,7 @@ export async function POST(req) {
         .eq('name', name)
         .eq('game_date', date)
         .eq('is_major', true)
+        .eq('is_postponed', FALSE)
         .maybeSingle()
 
       const safe = stats ?? {
@@ -110,8 +111,12 @@ export async function POST(req) {
       const OBP_den = AB + BB + HBP + SF
       const OBP = OBP_den ? (H + BB + HBP) / OBP_den : 0
       const SLG = AB ? TB / AB : 0
-      const AVG = AB ? H / AB : 0
+      const AVG = AB ? (H / AB) : 0
       const OPS = OBP + SLG
+
+      const formattedAVG = `.${(AVG.toFixed(3) + '').split('.')[1] || '000'}`
+      const formattedOPS = `.${(OPS.toFixed(3) + '').split('.')[1] || '000'}`
+
 
       results.push({
         game_date: date.slice(5), // 只取 MM-DD
@@ -127,8 +132,8 @@ export async function POST(req) {
         GIDP: safe.double_plays || 0,
         XBH,
         TB,
-        AVG: parseFloat(AVG.toFixed(3)),
-        OPS: parseFloat(OPS.toFixed(3))
+        AVG: formattedAVG,
+        OPS: formattedOPS
       })
     }
 

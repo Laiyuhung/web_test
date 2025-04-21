@@ -1230,8 +1230,8 @@ export default function PlayerPage() {
                       <th className="border px-2">日期</th>
                       <th className="border px-2">對手</th>
                       {(type === 'Batter'
-                        ? ['AB','R','H','HR','RBI','SB','K','BB','AVG','OPS']
-                        : ['IP','W','L','HLD','SV','H','ER','K','BB','ERA','WHIP']
+                        ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                        : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                       ).map(k => (
                         <th key={k} className="border px-2">{k}</th>
                       ))}
@@ -1243,8 +1243,8 @@ export default function PlayerPage() {
                         <td className="border px-2 py-1">{game.game_date}</td>
                         <td className="border px-2 py-1">{game.opponent}</td>
                         {(type === 'Batter'
-                          ? ['AB','R','H','HR','RBI','SB','K','BB','AVG','OPS']
-                          : ['IP','W','L','HLD','SV','H','ER','K','BB','ERA','WHIP']
+                          ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                          : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                         ).map(k => (
                           <td key={k} className="border px-2 py-1 text-center">{game?.[k] ?? '-'}</td>
                         ))}

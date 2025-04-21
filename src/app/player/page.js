@@ -1147,7 +1147,7 @@ export default function PlayerPage() {
   </AlertDialog>
 
   <AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-  <AlertDialogContent>
+  <AlertDialogContent className="w-full max-w-[95vw] max-h-[80vh] overflow-y-auto px-4">
     <AlertDialogHeader>
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
       <AlertDialogDescription className="relative">
@@ -1163,7 +1163,7 @@ export default function PlayerPage() {
         {selectedPlayerDetail?.statSummary && (
           <div className="mt-4">
             <div className="overflow-x-auto">
-              <table className="text-xs text-center border w-full min-w-[950px] table-fixed">
+              <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
                 <thead className="bg-gray-100">
                   <tr>
                     {(type === 'Batter'
@@ -1200,7 +1200,7 @@ export default function PlayerPage() {
 
       </AlertDialogDescription>
     </AlertDialogHeader>
-    <AlertDialogFooter>
+    <AlertDialogFooter className="sticky bottom-0 bg-white border-t pt-2">
       <AlertDialogAction onClick={() => setDetailDialogOpen(false)}>
         關閉
       </AlertDialogAction>

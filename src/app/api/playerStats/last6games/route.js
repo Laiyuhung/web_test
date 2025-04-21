@@ -2,42 +2,49 @@ import supabase from '@/lib/supabase'
 
 export async function POST(req) {
   const { name, type, team } = await req.json()
-
   if (!name || !type || !team) {
     return Response.json({ error: '缺少必要參數' }, { status: 400 })
   }
 
+  const today = new Date().toISOString().slice(0, 10)
   const isPitcher = type === 'pitcher'
-  const table = isPitcher ? 'pitching_stats' : 'batting_stats'
 
   if (isPitcher) {
     const { data: stats, error } = await supabase
-      .from(table)
+      .from('pitching_stats')
       .select('*')
       .eq('name', name)
       .eq('is_major', true)
-      .gt('game_date', '2025-03-01')
-      .lte('game_date', today) // ✅ 加上這一行：排除未來比賽
+      .lte('game_date', today)
       .order('game_date', { ascending: false })
-      .limit(20)
+      .limit(6)
 
     if (error) return Response.json({ error: '讀取投手資料失敗' }, { status: 500 })
 
-    const filtered = stats.filter(d => parseFloat(d.OUT || 0) >= 0).slice(0, 6)
+    // 撈對手資料
+    const gameDates = stats.map(d => d.game_date)
+    const { data: schedules } = await supabase
+      .from('cpbl_schedule')
+      .select('date, home, away')
+      .in('date', gameDates)
 
-    const processed = filtered.map(d => {
+    const opponentMap = {}
+    for (const g of schedules || []) {
+      opponentMap[g.date] = g.home === team ? g.away : g.home
+    }
+
+    const processed = stats.map(d => {
       const OUT = parseFloat(d.OUT || 0)
       const IP = Math.floor(OUT / 3) + (OUT % 3) / 10
       const H = parseFloat(d.hits_allowed || 0)
       const ER = parseFloat(d.earned_runs || 0)
       const BB = parseFloat(d.walks || 0)
-
       const ERA = IP ? (ER * 9) / IP : 0
       const WHIP = IP ? (BB + H) / IP : 0
 
       return {
-        game_date: d.game_date,
-        opponent: d.opponent || '', // 可自行補上對手欄位
+        game_date: d.game_date.slice(5), // 只取 MM-DD
+        opponent: opponentMap[d.game_date] || '',
         IP: IP.toFixed(1),
         W: d.record === 'W' ? 1 : 0,
         L: d.record === 'L' ? 1 : 0,
@@ -55,7 +62,9 @@ export async function POST(req) {
     })
 
     return Response.json({ recentGames: processed })
-  } else {
+  }
+
+  else {
     const { data: games, error: scheduleError } = await supabase
       .from('cpbl_schedule')
       .select('date, home, away')
@@ -105,7 +114,7 @@ export async function POST(req) {
       const OPS = OBP + SLG
 
       results.push({
-        game_date: date,
+        game_date: date.slice(5), // 只取 MM-DD
         opponent,
         AB,
         R: safe.runs || 0,

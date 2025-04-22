@@ -1529,7 +1529,7 @@ export default function PlayerPage() {
           setSelectedTradeTarget(null)
         }}
       >
-        送出提案
+        提交交易包裹
       </AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>

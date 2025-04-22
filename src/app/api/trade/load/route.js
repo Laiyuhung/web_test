@@ -3,20 +3,31 @@ import supabase from '@/lib/supabase'
 
 export async function POST(req) {
   try {
-    const { status } = await req.json()
+    const { status, manager_id } = await req.json()
+
+    if (!manager_id) {
+      return NextResponse.json({ error: '缺少 manager_id' }, { status: 400 })
+    }
 
     const validStatuses = ['pending', 'accepted', 'rejected', 'canceled']
     if (status && !validStatuses.includes(status)) {
       return NextResponse.json({ error: '不合法的 status 篩選值' }, { status: 400 })
     }
 
-    const query = supabase
+    let query = supabase
       .from('trade_discussion')
       .select('*')
+      .or(`initiator_id.eq.${manager_id},receiver_id.eq.${manager_id}`)
       .order('created_at', { ascending: false })
 
     if (status) {
-      query.eq('status', status)
+      query = query.eq('status', status)
+
+      // 如果不是 pending，要加 updated_at 三天內條件
+      if (status !== 'pending') {
+        const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+        query = query.gte('updated_at', threeDaysAgo)
+      }
     }
 
     const { data, error } = await query

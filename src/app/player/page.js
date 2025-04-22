@@ -842,22 +842,23 @@ export default function PlayerPage() {
               <option>Ascending</option>
             </select>
           </div>
-          <div className="flex items-center gap-1">
-            <input
-              type="checkbox"
-              id="watchedOnly"
-              checked={filterWatchedOnly}
-              onChange={e => setFilterWatchedOnly(e.target.checked)}
-              className="mr-1"
-            />
-            
-          </div>
+          
 
         </div>
       </div>
-      <label htmlFor="watchedOnly" className="text-sm font-semibold">
-        只顯示關注球員
-      </label>
+
+      <div className="flex items-center gap-1">
+        <input
+          type="checkbox"
+          id="watchedOnly"
+          checked={filterWatchedOnly}
+          onChange={e => setFilterWatchedOnly(e.target.checked)}
+          className="mr-1"
+        />
+        <label htmlFor="watchedOnly" className="text-sm font-semibold">
+          只顯示關注球員
+        </label>
+      </div>
 
       <span className="text-sm text-gray-600">Stats range：{fromDate} ~ {toDate}</span>
 

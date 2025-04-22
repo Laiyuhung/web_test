@@ -313,7 +313,7 @@ export default function PlayerPage() {
       ])
       
       setAssignedPositions(assignedData) // ⬅️ 要補這行，才會讓 isDropBlocked 拿到最新資料
-      console.log('📌 positionData', positionData)
+      console.log('📌 assignedData', assignedData)
 
       
 

@@ -17,6 +17,7 @@ import {
 
 export default function PlayerPage() {
   const [filterWatchedOnly, setFilterWatchedOnly] = useState(false)
+  const [opponentPlayers, setOpponentPlayers] = useState([])
   const [watchedList, setWatchedList] = useState([])
   const [managerMap, setManagerMap] = useState({})
   const [taiwanToday, setTaiwanToday] = useState('')
@@ -305,7 +306,8 @@ export default function PlayerPage() {
       setAssignedPositions(assignedData) // ⬅️ 要補這行，才會讓 isDropBlocked 拿到最新資料
       // console.log('📌 positionData', positionData)
 
-      
+      const opponent = merged.filter(p => p.manager_id?.toString() === selectedTradeTarget?.manager_id?.toString())
+      setOpponentPlayers(opponent)
 
       const merged = statusData.map(p => {
         const stat = statsData.find(s => s.name === p.Name)
@@ -1447,25 +1449,21 @@ export default function PlayerPage() {
             {/* 右側：我希望獲得 */}
             <div className="md:w-1/2 w-full md:pl-4 mt-4 md:mt-0">
               <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
-              {players
-                .filter(p =>
-                  p.manager_id?.toString() === selectedTradeTarget?.manager_id?.toString()
-                )
-                .map(p => (
-                  <label key={p.Name} className="flex items-center gap-2 mb-1">
-                    <input
-                      type="checkbox"
-                      checked={opponentTradePlayers.includes(p.Name)}
-                      onChange={e => {
-                        setOpponentTradePlayers(prev =>
-                          e.target.checked
-                            ? [...prev, p.Name]
-                            : prev.filter(name => name !== p.Name)
-                        )
-                      }}
-                    />
-                    {p.Name}
-                  </label>
+              {opponentPlayers.map(p => (
+                <label key={p.Name} className="flex items-center gap-2 mb-1">
+                  <input
+                    type="checkbox"
+                    checked={opponentTradePlayers.includes(p.Name)}
+                    onChange={e => {
+                      setOpponentTradePlayers(prev =>
+                        e.target.checked
+                          ? [...prev, p.Name]
+                          : prev.filter(name => name !== p.Name)
+                      )
+                    }}
+                  />
+                  {p.Name}
+                </label>
               ))}
 
             </div>

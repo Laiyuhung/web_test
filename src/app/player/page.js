@@ -1476,21 +1476,22 @@ export default function PlayerPage() {
             <div className="md:w-1/2 w-full md:pl-4 mt-4 md:mt-0">
               <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
               {opponentPlayers.map(p => (
-                <label key={p.Name} className="flex items-center gap-2 mb-1">
+                <label key={p.player_name} className="flex items-center gap-2 mb-1">
                   <input
                     type="checkbox"
-                    checked={opponentTradePlayers.includes(p.Name)}
+                    checked={opponentTradePlayers.includes(p.player_name)}
                     onChange={e => {
                       setOpponentTradePlayers(prev =>
                         e.target.checked
-                          ? [...prev, p.Name]
-                          : prev.filter(name => name !== p.Name)
+                          ? [...prev, p.player_name]
+                          : prev.filter(name => name !== p.player_name)
                       )
                     }}
                   />
-                  {p.Name}
+                  {p.player_name}
                 </label>
               ))}
+
 
             </div>
           </div>

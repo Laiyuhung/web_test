@@ -1261,7 +1261,7 @@ export default function RosterPage() {
             {/* initiator 收到的球員（對方給他的） */}
             <div className="border rounded p-2 bg-white shadow">
               <div className="font-bold text-blue-700">{initiatorName}</div>
-              <div className="text-sm mb-1">Received players：{(t.receiver_received || []).join('、')}</div>
+              <div className="text-sm mb-1">Received players：{(t.initiator_received || []).join('、')}</div>
               <table className="w-full text-xs text-center border">
                 <thead className="bg-gray-100">
                   <tr>
@@ -1269,7 +1269,7 @@ export default function RosterPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(t.receiver_received || []).map(name => {
+                  {(t.initiator_received || []).map(name => {
                     const player = allPlayers.find(p => p.Name === name)
                     return (
                       <tr key={name}>
@@ -1286,7 +1286,7 @@ export default function RosterPage() {
             {/* receiver 收到的球員（發起人給他的） */}
             <div className="border rounded p-2 bg-white shadow mt-2">
               <div className="font-bold text-blue-700">{receiverName}</div>
-              <div className="text-sm mb-1">Received players：{(t.initiator_received || []).join('、')}</div>
+              <div className="text-sm mb-1">Received players：{(t.receiver_received || []).join('、')}</div>
               <table className="w-full text-xs text-center border">
                 <thead className="bg-gray-100">
                   <tr>
@@ -1294,7 +1294,7 @@ export default function RosterPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(t.initiator_received || []).map(name => {
+                  {(t.receiver_received || []).map(name => {
                     const player = allPlayers.find(p => p.Name === name)
                     return (
                       <tr key={name}>

@@ -282,6 +282,8 @@ export default function PlayerPage() {
         })
   
         setOpponentPlayers(opponent)
+        console.log('📌 opponent_player', opponent)
+        
       } catch (err) {
         console.error('❌ 無法取得對手球員:', err)
         setOpponentPlayers([])

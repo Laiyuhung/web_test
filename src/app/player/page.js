@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function PlayerPage() {
+  const [filterWatchedOnly, setFilterWatchedOnly] = useState(false)
   const [watchedList, setWatchedList] = useState([])
   const [managerMap, setManagerMap] = useState({})
   const [taiwanToday, setTaiwanToday] = useState('')
@@ -324,6 +325,7 @@ export default function PlayerPage() {
         if (type === 'Pitcher' && p.B_or_P !== 'Pitcher') return false
         if (identity !== 'All Identities' && p.identity !== identity) return false
         if (team !== 'All teams' && p.Team !== team) return false
+        if (filterWatchedOnly && !watchedList.includes(p.Name)) return false
         const statusLower = (p.status || '').toLowerCase()
         if (status !== 'All Players') {
           if (status === 'Market') {
@@ -840,6 +842,19 @@ export default function PlayerPage() {
               <option>Ascending</option>
             </select>
           </div>
+          <div className="flex items-center gap-1">
+            <input
+              type="checkbox"
+              id="watchedOnly"
+              checked={filterWatchedOnly}
+              onChange={e => setFilterWatchedOnly(e.target.checked)}
+              className="mr-1"
+            />
+            <label htmlFor="watchedOnly" className="text-sm font-semibold">
+              只顯示關注球員
+            </label>
+          </div>
+
         </div>
       </div>
 

@@ -1417,7 +1417,7 @@ export default function PlayerPage() {
 </AlertDialog>
 
 <AlertDialog open={tradeDialogOpen} onOpenChange={setTradeDialogOpen}>
-  <AlertDialogContent className="max-w-xl w-full">
+  <AlertDialogContent className="w-full max-w-[95vw] overflow-x-auto">
     <AlertDialogHeader>
       <AlertDialogTitle>提出交易提案</AlertDialogTitle>
       <AlertDialogDescription>

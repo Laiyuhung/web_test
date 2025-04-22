@@ -1473,7 +1473,7 @@ export default function PlayerPage() {
             </div>
 
             {/* 右側：我希望獲得 */}
-            <div className="md:w-1/2 w-full md:pl-4 mt-4 md:mt-0">
+            <div className="md:w-1/2 w-full border-r md:pr-4">
               <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
               {opponentPlayers.map(p => (
                 <label key={p.player_name} className="flex items-center gap-2 mb-1">

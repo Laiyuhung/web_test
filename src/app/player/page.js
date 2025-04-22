@@ -1417,16 +1417,16 @@ export default function PlayerPage() {
 </AlertDialog>
 
 <AlertDialog open={tradeDialogOpen} onOpenChange={setTradeDialogOpen}>
-  <AlertDialogContent className="w-full max-w-[95vw] overflow-x-auto">
+  <AlertDialogContent className="w-full max-w-4xl">
     <AlertDialogHeader>
       <AlertDialogTitle>提出交易提案</AlertDialogTitle>
       <AlertDialogDescription>
-        與 <b>{selectedTradeTarget?.owner}</b> 交易：<b>{selectedTradeTarget?.Name}</b>
+        與 <b>{selectedTradeTarget?.owner}</b> 交易
         <div className="mt-3 text-sm overflow-x-auto">
           <div className="flex gap-4 min-w-[700px]">
             {/* 左邊：我給對方 */}
             <div className="w-1/2 border-r pr-2 max-h-[300px] overflow-y-auto">
-              <div className="mb-2 font-bold text-gray-700">✅ 我給對方：</div>
+              <div className="mb-2 font-bold text-gray-700">✅ Trade Away：</div>
               {myRosterPlayers.map(p => (
                 <label key={p.Name} className="flex items-center gap-2 mb-1">
                   <input
@@ -1447,7 +1447,7 @@ export default function PlayerPage() {
 
             {/* 右邊：我希望獲得 */}
             <div className="w-1/2 pl-2 max-h-[300px] overflow-y-auto">
-              <div className="mb-2 font-bold text-gray-700">🎯 我希望獲得：</div>
+              <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
               {players
                 .filter(p => p.manager_id?.toString() !== userId)
                 .map(p => (

@@ -1423,7 +1423,7 @@ export default function PlayerPage() {
       <AlertDialogDescription>
         與 <b>{selectedTradeTarget?.owner}</b> 交易
         <div className="mt-3 text-sm overflow-x-auto">
-          <div className="flex gap-4 min-w-[700px]">
+          <div className="w-[48%] border-r pr-2 max-h-[300px] overflow-y-auto">
             {/* 左邊：我給對方 */}
             <div className="w-1/2 border-r pr-2 max-h-[300px] overflow-y-auto">
               <div className="mb-2 font-bold text-gray-700">✅ Trade Away：</div>
@@ -1446,7 +1446,7 @@ export default function PlayerPage() {
             </div>
 
             {/* 右邊：我希望獲得 */}
-            <div className="w-1/2 pl-2 max-h-[300px] overflow-y-auto">
+            <div className="w-[48%] pl-2 max-h-[300px] overflow-y-auto">
               <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
               {players
                 .filter(p => p.manager_id?.toString() !== userId)

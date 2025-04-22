@@ -1511,7 +1511,7 @@ export default function PlayerPage() {
               initiator_id: userId,
               receiver_id: selectedTradeTarget?.manager_id,
               initiator_received: opponentTradePlayers,
-              receiver_reveived: myTradePlayers,
+              receiver_received: myTradePlayers,
               status: 'pending'
             })
   

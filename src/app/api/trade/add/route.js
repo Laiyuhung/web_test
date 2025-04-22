@@ -12,6 +12,13 @@ export async function POST(req) {
       receiver_received
     } = body
 
+    console.log('✅ 檢查參數:', {
+      initiator_id,
+      receiver_id,
+      initiator_received,
+      receiver_received
+    })
+
     // ✅ 基本參數檢查
     if (!initiator_id || !receiver_id || !Array.isArray(initiator_received) || !Array.isArray(receiver_received)) {
       return NextResponse.json({ error: '缺少參數或格式錯誤' }, { status: 400 })

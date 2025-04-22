@@ -2,8 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog"
+
 
 export default function RosterPage() {
+  const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
+  const [tradeList, setTradeList] = useState([])
   const [weeklyIP, setWeeklyIP] = useState('0.0')
   const [activeCount, setActiveCount] = useState(0)
   const [weeklyAddCount, setWeeklyAddCount] = useState(0)
@@ -815,8 +829,10 @@ export default function RosterPage() {
   }
 
   return (
+
+<>
     
-      <div className="p-6">
+    <div className="p-6">
 
       {moveMessage && (
         <div className="mb-4 p-3 text-sm bg-blue-50 text-blue-800 border border-blue-300 rounded">
@@ -890,6 +906,28 @@ export default function RosterPage() {
           />
         )}
       </div>
+
+      {/* 查看交易按鈕 */}
+      <button
+        onClick={async () => {
+          const res = await fetch('/api/trade/list_by_manager', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ manager_id: userId })
+          })
+          const data = await res.json()
+          if (res.ok) {
+            setTradeList(data.trades)
+            setTradeDialogOpen(true)
+          } else {
+            console.error('❌ 取得交易失敗:', data)
+          }
+        }}
+        className="mt-2 px-4 py-1 rounded bg-[#004AAD] text-white text-sm hover:opacity-90"
+      >
+        查看交易紀錄
+      </button>
+
 
       <div className="mb-4 flex items-center justify-between">
         <div>
@@ -1174,5 +1212,61 @@ export default function RosterPage() {
       )}
 
     </div>
+
+<AlertDialog open={tradeDialogOpen} onOpenChange={setTradeDialogOpen}>
+<AlertDialogContent className="max-w-xl w-[90vw]">
+  <AlertDialogHeader>
+    <AlertDialogTitle>交易紀錄</AlertDialogTitle>
+    <AlertDialogDescription>
+      以下為你近期的交易申請紀錄（僅顯示 pending 或三日內更新）
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+
+  <div className="max-h-[300px] overflow-y-auto space-y-3">
+    {tradeList.length === 0 ? (
+      <div className="text-gray-500 text-sm">目前沒有可顯示的交易紀錄</div>
+    ) : (
+      tradeList.map((t, idx) => (
+        <div key={idx} className="border rounded-lg p-3 shadow-sm bg-gray-50">
+          <div className="font-semibold text-[#0155A0]">
+            #{t.id}｜{t.status.toUpperCase()}
+          </div>
+          <div className="text-sm mt-1">發起人：{t.initiator_id}</div>
+          <div className="text-sm">接受人：{t.receiver_id}</div>
+          <div className="text-sm">更新時間：{new Date(t.updated_at).toLocaleString('zh-TW')}</div>
+
+          {/* 按鈕區 */}
+          {userId && (t.status === 'pending') && (
+            <div className="flex gap-2 mt-2">
+              {t.initiator_id.toString() === userId ? (
+                <button className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200">
+                  取消交易
+                </button>
+              ) : (
+                <>
+                  <button className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200">
+                    同意
+                  </button>
+                  <button className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200">
+                    拒絕
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </div>
+
+  <AlertDialogFooter>
+    <AlertDialogCancel>關閉</AlertDialogCancel>
+  </AlertDialogFooter>
+</AlertDialogContent>
+</AlertDialog>
+
+</>
+
+
   )
 }

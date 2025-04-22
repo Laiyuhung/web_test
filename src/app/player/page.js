@@ -334,9 +334,6 @@ export default function PlayerPage() {
         }
       })
 
-      const opponent = merged.filter(p => p.manager_id?.toString() === selectedTradeTarget?.manager_id?.toString())
-      setOpponentPlayers(opponent)
-
       const filtered = merged.filter(p => {
         if (search && !p.Name.includes(search)) return false
         if (type === 'Batter' && p.B_or_P !== 'Batter') return false
@@ -382,6 +379,21 @@ export default function PlayerPage() {
 
       const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
       setMyRosterPlayers(myPlayers) 
+
+      const opponent = assignedData
+        .filter(pos =>
+          pos.manager_id?.toString() === selectedTradeTarget?.manager_id?.toString()
+        )
+        .map(pos => {
+          const fullInfo = merged.find(p => p.Name === pos.player_name)
+          return {
+            ...fullInfo,
+            position: pos.position
+          }
+        })
+
+      setOpponentPlayers(opponent)
+
 
     } catch (err) {
       console.error('統計錯誤:', err)

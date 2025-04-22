@@ -47,6 +47,11 @@ export default function PlayerPage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [assignedPositions, setAssignedPositions] = useState([])
   const [weeklyAdds, setWeeklyAdds] = useState(0)
+  const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
+  const [selectedTradeTarget, setSelectedTradeTarget] = useState(null)
+  const [myTradePlayers, setMyTradePlayers] = useState([])
+  const [opponentTradePlayers, setOpponentTradePlayers] = useState([])
+
 
   const [selectedPlayerDetail, setSelectedPlayerDetail] = useState(null)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
@@ -561,9 +566,10 @@ export default function PlayerPage() {
   } else if (status === "free agent") {
     checkAddConstraints(p);
   } else {
-    setSuccessMessage('⚠️ 此功能尚未啟用，如需交易請通知管理員');
-    setSuccessDialogOpen(true);
+    setSelectedTradeTarget(p)
+    setTradeDialogOpen(true)
   }
+  
   
 }}
       >
@@ -1409,6 +1415,90 @@ export default function PlayerPage() {
     </AlertDialogFooter>
   </AlertDialogContent>
 </AlertDialog>
+
+<AlertDialog open={tradeDialogOpen} onOpenChange={setTradeDialogOpen}>
+  <AlertDialogContent className="max-w-xl w-full">
+    <AlertDialogHeader>
+      <AlertDialogTitle>提出交易提案</AlertDialogTitle>
+      <AlertDialogDescription>
+        與 <b>{selectedTradeTarget?.owner}</b> 交易：<b>{selectedTradeTarget?.Name}</b>
+        <div className="mt-3 text-sm">
+          <div className="mb-2 font-bold text-gray-700">✅ 我給對方：</div>
+          {myRosterPlayers.map(p => (
+            <label key={p.Name} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={myTradePlayers.includes(p.Name)}
+                onChange={e => {
+                  setMyTradePlayers(prev =>
+                    e.target.checked
+                      ? [...prev, p.Name]
+                      : prev.filter(name => name !== p.Name)
+                  )
+                }}
+              />
+              {p.Name}
+            </label>
+          ))}
+
+          <div className="mt-4 mb-2 font-bold text-gray-700">🎯 我希望獲得：</div>
+          {players
+            .filter(p => p.manager_id?.toString() !== userId)
+            .map(p => (
+              <label key={p.Name} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={opponentTradePlayers.includes(p.Name)}
+                  onChange={e => {
+                    setOpponentTradePlayers(prev =>
+                      e.target.checked
+                        ? [...prev, p.Name]
+                        : prev.filter(name => name !== p.Name)
+                    )
+                  }}
+                />
+                {p.Name}
+              </label>
+          ))}
+        </div>
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>取消</AlertDialogCancel>
+      <AlertDialogAction
+        disabled={!myTradePlayers.length || !opponentTradePlayers.length}
+        onClick={async () => {
+          const res = await fetch('/api/trade/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              initiator_id: userId,
+              receiver_id: selectedTradeTarget?.manager_id,
+              initiator_received: opponentTradePlayers,
+              receiver_reveived: myTradePlayers,
+              status: 'pending'
+            })
+          })
+          const data = await res.json()
+          if (res.ok) {
+            setSuccessMessage('✅ 提案已送出')
+            setSuccessDialogOpen(true)
+          } else {
+            setSuccessMessage(`❌ 錯誤: ${data.error}`)
+            setSuccessDialogOpen(true)
+          }
+          setTradeDialogOpen(false)
+          setMyTradePlayers([])
+          setOpponentTradePlayers([])
+          setSelectedTradeTarget(null)
+        }}
+      >
+        送出提案
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
 
 
     </>

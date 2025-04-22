@@ -17,6 +17,8 @@ import {
 
 export default function RosterPage() {
   const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
+  const [allPlayers, setAllPlayers] = useState([])
+  const [managerMap, setManagerMap] = useState({})
   const [tradeList, setTradeList] = useState([])
   const [weeklyIP, setWeeklyIP] = useState('0.0')
   const [activeCount, setActiveCount] = useState(0)
@@ -306,6 +308,29 @@ export default function RosterPage() {
   }, [userId, fromDate, toDate]) 
 
   useEffect(() => {
+    const fetchManagerMap = async () => {
+      try {
+        const res = await fetch('/api/managers')
+        const data = await res.json()
+        if (res.ok) {
+          const map = {}
+          data.forEach(m => {
+            map[m.id] = m.team_name
+          })
+          setManagerMap(map)
+        } else {
+          console.error('❌ managerMap 載入錯誤:', data)
+        }
+      } catch (err) {
+        console.error('❌ 無法取得 manager list:', err)
+      }
+    }
+  
+    fetchManagerMap()
+  }, [])
+  
+
+  useEffect(() => {
     const allForeign = players.filter(p => p.identity === '洋將')
     const activeForeign = allForeign.filter(p => !['NA', 'NA(備用)'].includes(assignedPositions[p.Name]))
   
@@ -320,7 +345,7 @@ export default function RosterPage() {
 
   }, [players, assignedPositions])
   
-
+  
   useEffect(() => {
     const fetchGames = async () => {
       try {
@@ -1226,36 +1251,92 @@ export default function RosterPage() {
     {tradeList.length === 0 ? (
       <div className="text-gray-500 text-sm">目前沒有可顯示的交易紀錄</div>
     ) : (
-      tradeList.map((t, idx) => (
-        <div key={idx} className="border rounded-lg p-3 shadow-sm bg-gray-50">
-          <div className="font-semibold text-[#0155A0]">
-            #{t.id}｜{t.status.toUpperCase()}
-          </div>
-          <div className="text-sm mt-1">發起人：{t.initiator_id}</div>
-          <div className="text-sm">接受人：{t.receiver_id}</div>
-          <div className="text-sm">更新時間：{new Date(t.updated_at).toLocaleString('zh-TW')}</div>
+      tradeList.map((t, idx) => {
+        const initiatorName = managerMap[t.initiator_id] || `M${t.initiator_id}`
+        const receiverName = managerMap[t.receiver_id] || `M${t.receiver_id}`
 
-          {/* 按鈕區 */}
-          {userId && (t.status === 'pending') && (
-            <div className="flex gap-2 mt-2">
-              {t.initiator_id.toString() === userId ? (
-                <button className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200">
-                  取消交易
-                </button>
-              ) : (
-                <>
-                  <button className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200">
-                    同意
-                  </button>
-                  <button className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200">
-                    拒絕
-                  </button>
-                </>
-              )}
+        return (
+          <div key={idx} className="border rounded-lg p-3 shadow-sm bg-gray-50">
+
+            {/* initiator 收到的球員（對方給他的） */}
+            <div className="border rounded p-2 bg-white shadow">
+              <div className="font-bold text-blue-700">{initiatorName}</div>
+              <div className="text-sm mb-1">Received players：{(t.receiver_received || []).join('、')}</div>
+              <table className="w-full text-xs text-center border">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th>Player</th><th>AB</th><th>H</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(t.receiver_received || []).map(name => {
+                    const player = allPlayers.find(p => p.Name === name)
+                    return (
+                      <tr key={name}>
+                        <td>{name}</td>
+                        <td>{player?.AB ?? 0}</td>
+                        <td>{player?.H ?? 0}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
-          )}
-        </div>
-      ))
+
+            {/* receiver 收到的球員（發起人給他的） */}
+            <div className="border rounded p-2 bg-white shadow mt-2">
+              <div className="font-bold text-blue-700">{receiverName}</div>
+              <div className="text-sm mb-1">Received players：{(t.initiator_received || []).join('、')}</div>
+              <table className="w-full text-xs text-center border">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th>Player</th><th>AB</th><th>H</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(t.initiator_received || []).map(name => {
+                    const player = allPlayers.find(p => p.Name === name)
+                    return (
+                      <tr key={name}>
+                        <td>{name}</td>
+                        <td>{player?.AB ?? 0}</td>
+                        <td>{player?.H ?? 0}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 狀態顯示 */}
+            <div className="text-xs text-gray-500 font-semibold mt-2">
+              {t.status === 'pending' && 'Pending'}
+              {t.status === 'accepted' && 'Accepted'}
+              {t.status === 'rejected' && 'Rejected'}
+            </div>
+
+            {/* 按鈕區塊 */}
+            {userId && t.status === 'pending' && (
+              <div className="flex gap-2 mt-2">
+                {t.initiator_id.toString() === userId ? (
+                  <button className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200">
+                    Cancel Trade
+                  </button>
+                ) : (
+                  <>
+                    <button className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200">
+                      Accept
+                    </button>
+                    <button className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200">
+                      Reject
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })
     )}
   </div>
 
@@ -1263,6 +1344,7 @@ export default function RosterPage() {
     <AlertDialogCancel>關閉</AlertDialogCancel>
   </AlertDialogFooter>
 </AlertDialogContent>
+
 </AlertDialog>
 
 </>

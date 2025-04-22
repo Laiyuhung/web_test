@@ -1417,12 +1417,12 @@ export default function PlayerPage() {
 </AlertDialog>
 
 <AlertDialog open={tradeDialogOpen} onOpenChange={setTradeDialogOpen}>
-  <AlertDialogContent className="w-full max-w-4xl">
+  <AlertDialogContent className="w-[95vw] max-w-3xl px-2">
     <AlertDialogHeader>
       <AlertDialogTitle>提出交易提案</AlertDialogTitle>
         <AlertDialogDescription>
           與 <b>{selectedTradeTarget?.owner}</b> 交易
-          <div className="mt-3 text-sm flex flex-col md:flex-row gap-4 max-h-[60vh] overflow-y-auto">
+          <div className="mt-3 text-sm flex flex-col sm:flex-row gap-4 max-h-[60vh] overflow-y-auto">
             {/* 左側：我給對方 */}
             <div className="md:w-1/2 w-full border-r md:pr-4">
               <div className="mb-2 font-bold text-gray-700">✅ Trade Away：</div>

@@ -1518,7 +1518,7 @@ export default function PlayerPage() {
           })
           console.log('送出內容:', {
             initiator_id: userId,
-            receiver_id: opponentManagerId,
+            receiver_id: selectedTradeTarget?.manager_id,
             initiator_received: opponentTradePlayers,
             receiver_received: myTradePlayers
           })

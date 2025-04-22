@@ -1514,7 +1514,15 @@ export default function PlayerPage() {
               receiver_reveived: myTradePlayers,
               status: 'pending'
             })
+  
           })
+          console.log('送出內容:', {
+            initiator_id: userId,
+            receiver_id: opponentManagerId,
+            initiator_received: opponentTradePlayers,
+            receiver_received: myTradePlayers
+          })
+          
           const data = await res.json()
           if (res.ok) {
             setSuccessMessage('✅ 提案已送出')

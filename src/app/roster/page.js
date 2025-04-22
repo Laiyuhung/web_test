@@ -910,7 +910,7 @@ export default function RosterPage() {
       {/* 查看交易按鈕 */}
       <button
         onClick={async () => {
-          const res = await fetch('/api/trade/list_by_manager', {
+          const res = await fetch('/api/trade/load', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ manager_id: userId })

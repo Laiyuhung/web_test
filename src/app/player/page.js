@@ -1525,7 +1525,7 @@ export default function PlayerPage() {
           
           const data = await res.json()
           if (res.ok) {
-            setSuccessMessage('✅ 提案已送出')
+            setSuccessMessage('✅ 交易包裹已送出')
             setSuccessDialogOpen(true)
           } else {
             setSuccessMessage(`❌ 錯誤: ${data.error}`)

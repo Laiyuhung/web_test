@@ -850,13 +850,14 @@ export default function PlayerPage() {
               onChange={e => setFilterWatchedOnly(e.target.checked)}
               className="mr-1"
             />
-            <label htmlFor="watchedOnly" className="text-sm font-semibold">
-              只顯示關注球員
-            </label>
+            
           </div>
 
         </div>
       </div>
+      <label htmlFor="watchedOnly" className="text-sm font-semibold">
+        只顯示關注球員
+      </label>
 
       <span className="text-sm text-gray-600">Stats range：{fromDate} ~ {toDate}</span>
 

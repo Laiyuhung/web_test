@@ -1448,7 +1448,9 @@ export default function PlayerPage() {
             <div className="md:w-1/2 w-full md:pl-4 mt-4 md:mt-0">
               <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
               {players
-                .filter(p => p.manager_id?.toString() !== userId)
+                .filter(p =>
+                  p.manager_id?.toString() === selectedTradeTarget?.manager_id?.toString()
+                )
                 .map(p => (
                   <label key={p.Name} className="flex items-center gap-2 mb-1">
                     <input
@@ -1465,6 +1467,7 @@ export default function PlayerPage() {
                     {p.Name}
                   </label>
               ))}
+
             </div>
           </div>
 

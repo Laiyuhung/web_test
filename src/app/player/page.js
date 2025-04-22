@@ -1422,20 +1422,40 @@ export default function PlayerPage() {
       <AlertDialogTitle>提出交易提案</AlertDialogTitle>
         <AlertDialogDescription>
           與 <b>{selectedTradeTarget?.owner}</b> 交易
-          <div className="mt-3 text-sm overflow-x-auto">
-            
-            {/* 父層要是 flex，才能左右排 */}
-            <div className="flex gap-2 min-w-[700px]">
-              {/* 左邊：我給對方 */}
-              <div className="w-[48%] border-r pr-2 max-h-[300px] overflow-y-auto">
-                <div className="mb-2 font-bold text-gray-700">✅ Trade Away：</div>
-                {myRosterPlayers.map(p => (
+          <div className="mt-3 text-sm flex flex-col md:flex-row gap-4 max-h-[60vh] overflow-y-auto">
+            {/* 左側：我給對方 */}
+            <div className="md:w-1/2 w-full border-r md:pr-4">
+              <div className="mb-2 font-bold text-gray-700">✅ Trade Away：</div>
+              {myRosterPlayers.map(p => (
+                <label key={p.Name} className="flex items-center gap-2 mb-1">
+                  <input
+                    type="checkbox"
+                    checked={myTradePlayers.includes(p.Name)}
+                    onChange={e => {
+                      setMyTradePlayers(prev =>
+                        e.target.checked
+                          ? [...prev, p.Name]
+                          : prev.filter(name => name !== p.Name)
+                      )
+                    }}
+                  />
+                  {p.Name}
+                </label>
+              ))}
+            </div>
+
+            {/* 右側：我希望獲得 */}
+            <div className="md:w-1/2 w-full md:pl-4 mt-4 md:mt-0">
+              <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
+              {players
+                .filter(p => p.manager_id?.toString() !== userId)
+                .map(p => (
                   <label key={p.Name} className="flex items-center gap-2 mb-1">
                     <input
                       type="checkbox"
-                      checked={myTradePlayers.includes(p.Name)}
+                      checked={opponentTradePlayers.includes(p.Name)}
                       onChange={e => {
-                        setMyTradePlayers(prev =>
+                        setOpponentTradePlayers(prev =>
                           e.target.checked
                             ? [...prev, p.Name]
                             : prev.filter(name => name !== p.Name)
@@ -1444,33 +1464,10 @@ export default function PlayerPage() {
                     />
                     {p.Name}
                   </label>
-                ))}
-              </div>
-
-              {/* 右邊：我希望獲得 */}
-              <div className="w-[48%] pl-2 max-h-[300px] overflow-y-auto">
-                <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
-                {players
-                  .filter(p => p.manager_id?.toString() !== userId)
-                  .map(p => (
-                    <label key={p.Name} className="flex items-center gap-2 mb-1">
-                      <input
-                        type="checkbox"
-                        checked={opponentTradePlayers.includes(p.Name)}
-                        onChange={e => {
-                          setOpponentTradePlayers(prev =>
-                            e.target.checked
-                              ? [...prev, p.Name]
-                              : prev.filter(name => name !== p.Name)
-                          )
-                        }}
-                      />
-                      {p.Name}
-                    </label>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
+
         </AlertDialogDescription>
 
     </AlertDialogHeader>

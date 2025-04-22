@@ -51,6 +51,7 @@ export default function PlayerPage() {
   const [selectedTradeTarget, setSelectedTradeTarget] = useState(null)
   const [myTradePlayers, setMyTradePlayers] = useState([])
   const [opponentTradePlayers, setOpponentTradePlayers] = useState([])
+  const [opponentPlayers, setOpponentPlayers] = useState([])
 
 
   const [selectedPlayerDetail, setSelectedPlayerDetail] = useState(null)
@@ -203,6 +204,15 @@ export default function PlayerPage() {
     const todayStr = taiwanNow.toISOString().slice(0, 10)
     setTaiwanToday(todayStr)
   }, [])
+
+  useEffect(() => {
+    if (!selectedTradeTarget || !players.length) return
+  
+    const opponent = players.filter(
+      p => p.manager_id?.toString() === selectedTradeTarget.manager_id?.toString()
+    )
+    setOpponentPlayers(opponent)
+  }, [selectedTradeTarget, players])
   
 
   useEffect(() => {
@@ -323,6 +333,9 @@ export default function PlayerPage() {
           identity: identityType
         }
       })
+
+      const opponent = merged.filter(p => p.manager_id?.toString() === selectedTradeTarget?.manager_id?.toString())
+      setOpponentPlayers(opponent)
 
       const filtered = merged.filter(p => {
         if (search && !p.Name.includes(search)) return false
@@ -1447,25 +1460,21 @@ export default function PlayerPage() {
             {/* 右側：我希望獲得 */}
             <div className="md:w-1/2 w-full md:pl-4 mt-4 md:mt-0">
               <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
-              {players
-                .filter(p =>
-                  p.manager_id?.toString() === selectedTradeTarget?.manager_id?.toString()
-                )
-                .map(p => (
-                  <label key={p.Name} className="flex items-center gap-2 mb-1">
-                    <input
-                      type="checkbox"
-                      checked={opponentTradePlayers.includes(p.Name)}
-                      onChange={e => {
-                        setOpponentTradePlayers(prev =>
-                          e.target.checked
-                            ? [...prev, p.Name]
-                            : prev.filter(name => name !== p.Name)
-                        )
-                      }}
-                    />
-                    {p.Name}
-                  </label>
+              {opponentPlayers.map(p => (
+                <label key={p.Name} className="flex items-center gap-2 mb-1">
+                  <input
+                    type="checkbox"
+                    checked={opponentTradePlayers.includes(p.Name)}
+                    onChange={e => {
+                      setOpponentTradePlayers(prev =>
+                        e.target.checked
+                          ? [...prev, p.Name]
+                          : prev.filter(name => name !== p.Name)
+                      )
+                    }}
+                  />
+                  {p.Name}
+                </label>
               ))}
 
             </div>

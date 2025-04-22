@@ -273,16 +273,16 @@ export default function PlayerPage() {
         const res = await fetch(`/api/saveAssigned/load_manager?manager_id=${selectedTradeTarget.manager_id}&date=${taiwanToday}`)
         const assignedData = await res.json()
   
-        const opponent = assignedData.map(pos => {
-          const fullInfo = players.find(p => p.Name === pos.player_name)
-          return {
-            ...fullInfo,
-            position: pos.position
-          }
-        })
+        // const opponent = assignedData.map(pos => {
+        //   const fullInfo = players.find(p => p.Name === pos.player_name)
+        //   return {
+        //     ...fullInfo,
+        //     position: pos.position
+        //   }
+        // })
   
-        setOpponentPlayers(opponent)
-        console.log('📌 opponent_player', opponent)
+        setOpponentPlayers(assignedData)
+        console.log('📌 opponent_player', assignedData)
         
       } catch (err) {
         console.error('❌ 無法取得對手球員:', err)

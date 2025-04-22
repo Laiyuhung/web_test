@@ -204,17 +204,7 @@ export default function PlayerPage() {
     const todayStr = taiwanNow.toISOString().slice(0, 10)
     setTaiwanToday(todayStr)
   }, [])
-
-  useEffect(() => {
-    if (!selectedTradeTarget || !players.length) return
   
-    const opponent = players.filter(
-      p => p.manager_id?.toString() === selectedTradeTarget.manager_id?.toString()
-    )
-    setOpponentPlayers(opponent)
-  }, [selectedTradeTarget, players])
-  
-
   useEffect(() => {
     if (!taiwanToday) return
     const fetchStartingPitchers = async () => {
@@ -275,6 +265,31 @@ export default function PlayerPage() {
     fetchGameInfo()
   }, [players, taiwanToday])
   
+  useEffect(() => {
+    const fetchOpponentPlayers = async () => {
+      if (!selectedTradeTarget?.manager_id || !taiwanToday || !players.length) return
+  
+      try {
+        const res = await fetch(`/api/saveAssigned/load_manager?manager_id=${selectedTradeTarget.manager_id}&date=${taiwanToday}`)
+        const assignedData = await res.json()
+  
+        const opponent = assignedData.map(pos => {
+          const fullInfo = players.find(p => p.Name === pos.player_name)
+          return {
+            ...fullInfo,
+            position: pos.position
+          }
+        })
+  
+        setOpponentPlayers(opponent)
+      } catch (err) {
+        console.error('❌ 無法取得對手球員:', err)
+        setOpponentPlayers([])
+      }
+    }
+  
+    fetchOpponentPlayers()
+  }, [selectedTradeTarget, taiwanToday, players])
   
 
 
@@ -379,20 +394,6 @@ export default function PlayerPage() {
 
       const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
       setMyRosterPlayers(myPlayers) 
-
-      const opponent = assignedData
-        .filter(pos =>
-          pos.manager_id?.toString() === selectedTradeTarget?.manager_id?.toString()
-        )
-        .map(pos => {
-          const fullInfo = merged.find(p => p.Name === pos.player_name)
-          return {
-            ...fullInfo,
-            position: pos.position
-          }
-        })
-
-      setOpponentPlayers(opponent)
 
 
     } catch (err) {

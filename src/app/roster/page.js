@@ -57,6 +57,24 @@ export default function RosterPage() {
     return taiwanDate.toISOString().slice(0, 10)
   })
 
+  function StatsRangeSelector({ range, onChange }) {
+    return (
+      <select
+        value={range}
+        onChange={e => onChange(e.target.value)}
+        className="border px-2 py-1 rounded"
+      >
+        <option>Today</option>
+        <option>Yesterday</option>
+        <option>Last 7 days</option>
+        <option>Last 14 days</option>
+        <option>Last 30 days</option>
+        <option>2025 Season</option>
+      </select>
+    )
+  }
+  
+
   useEffect(() => {
     if (!userId) return
   
@@ -963,18 +981,7 @@ export default function RosterPage() {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <label className="text-sm font-semibold">Stats Range</label>
-          <select
-              value={range}
-              onChange={e => setRange(e.target.value)}
-              className="border px-2 py-1 rounded ml-2"
-          >
-              <option>Today</option>
-              <option>Yesterday</option>
-              <option>Last 7 days</option>
-              <option>Last 14 days</option>
-              <option>Last 30 days</option>
-              <option>2025 Season</option>
-          </select>
+          <StatsRangeSelector range={range} onChange={setRange} />
         </div>
 
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">
@@ -1248,10 +1255,12 @@ export default function RosterPage() {
 <AlertDialogContent className="max-w-xl w-[90vw]">
   <AlertDialogHeader>
     <AlertDialogTitle>交易紀錄</AlertDialogTitle>
-    <AlertDialogDescription>
-      以下為你近期的交易申請紀錄（僅顯示 pending 或三日內更新）
-    </AlertDialogDescription>
   </AlertDialogHeader>
+
+  <div className="mt-2 text-sm">
+    <label className="mr-2 font-semibold">Stats Range：</label>
+    <StatsRangeSelector range={range} onChange={setRange} />
+  </div>
 
   <div className="max-h-[300px] overflow-y-auto space-y-3">
     {tradeList.length === 0 ? (

@@ -1262,75 +1262,147 @@ export default function RosterPage() {
             <div className="border rounded p-2 bg-white shadow">
               <div className="font-bold text-blue-700">{initiatorName}</div>
               <div className="text-sm mb-1">Received players：{(t.initiator_received || []).join('、')}</div>
-              <table className="w-full text-xs text-center border">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-1">Player</th>
-                    {(t.initiator_received || []).some(name => allPlayers.find(p => p.Name === name)?.B_or_P === 'Pitcher')
-                      ? ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                      : ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                    .map(stat => (
-                      <th key={stat} className="px-1">{stat}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(t.initiator_received || []).map(name => {
-                    const player = allPlayers.find(p => p.Name === name)
-                    const isPitcher = player?.B_or_P === 'Pitcher'
-                    const stats = isPitcher
-                      ? ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                      : ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                    return (
-                      <tr key={name}>
-                        <td>{name}</td>
-                        {stats.map(key => (
-                          <td key={key}>{player?.[key] ?? 0}</td>
+
+              {/* 🧾 打者表格 */}
+              {(t.initiator_received || []).some(name => {
+                const p = allPlayers.find(p => p.Name === name)
+                return p?.B_or_P === 'Batter'
+              }) && (
+                <div className="mb-2">
+                  <div className="font-semibold text-[12px] text-gray-600">Batters</div>
+                  <table className="w-full text-xs text-center border mt-1">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        {['Player','AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
+                          <th key={k}>{k}</th>
                         ))}
                       </tr>
-                    )
-                  })}
-                </tbody>
+                    </thead>
+                    <tbody>
+                      {(t.initiator_received || []).map(name => {
+                        const p = allPlayers.find(p => p.Name === name)
+                        if (p?.B_or_P !== 'Batter') return null
+                        return (
+                          <tr key={name}>
+                            <td>{name}</td>
+                            {['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
+                              <td key={k}>{p?.[k] ?? 0}</td>
+                            ))}
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
-              </table>
+              {/* 🧾 投手表格 */}
+              {(t.initiator_received || []).some(name => {
+                const p = allPlayers.find(p => p.Name === name)
+                return p?.B_or_P === 'Pitcher'
+              }) && (
+                <div>
+                  <div className="font-semibold text-[12px] text-gray-600">Pitchers</div>
+                  <table className="w-full text-xs text-center border mt-1">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        {['Player','IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP'].map(k => (
+                          <th key={k}>{k}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(t.initiator_received || []).map(name => {
+                        const p = allPlayers.find(p => p.Name === name)
+                        if (p?.B_or_P !== 'Pitcher') return null
+                        return (
+                          <tr key={name}>
+                            <td>{name}</td>
+                            {['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP'].map(k => (
+                              <td key={k}>{p?.[k] ?? 0}</td>
+                            ))}
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
+
 
             {/* receiver 收到的球員（發起人給他的） */}
-            <div className="border rounded p-2 bg-white shadow mt-2">
-              <div className="font-bold text-blue-700">{receiverName}</div>
-              <div className="text-sm mb-1">Received players：{(t.receiver_received || []).join('、')}</div>
-              <table className="w-full text-xs text-center border">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-1">Player</th>
-                    {(t.receiver_received || []).some(name => allPlayers.find(p => p.Name === name)?.B_or_P === 'Pitcher')
-                      ? ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                      : ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                    .map(stat => (
-                      <th key={stat} className="px-1">{stat}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(t.receiver_received || []).map(name => {
-                    const player = allPlayers.find(p => p.Name === name)
-                    const isPitcher = player?.B_or_P === 'Pitcher'
-                    const stats = isPitcher
-                      ? ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                      : ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                    return (
-                      <tr key={name}>
-                        <td>{name}</td>
-                        {stats.map(key => (
-                          <td key={key}>{player?.[key] ?? 0}</td>
+            <div className="border rounded p-2 bg-white shadow">
+              <div className="font-bold text-blue-700">{initiatorName}</div>
+              <div className="text-sm mb-1">Received players：{(t.initiator_received || []).join('、')}</div>
+
+              {/* 🧾 打者表格 */}
+              {(t.initiator_received || []).some(name => {
+                const p = allPlayers.find(p => p.Name === name)
+                return p?.B_or_P === 'Batter'
+              }) && (
+                <div className="mb-2">
+                  <div className="font-semibold text-[12px] text-gray-600">Batters</div>
+                  <table className="w-full text-xs text-center border mt-1">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        {['Player','AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
+                          <th key={k}>{k}</th>
                         ))}
                       </tr>
-                    )
-                  })}
-                </tbody>
+                    </thead>
+                    <tbody>
+                      {(t.initiator_received || []).map(name => {
+                        const p = allPlayers.find(p => p.Name === name)
+                        if (p?.B_or_P !== 'Batter') return null
+                        return (
+                          <tr key={name}>
+                            <td>{name}</td>
+                            {['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
+                              <td key={k}>{p?.[k] ?? 0}</td>
+                            ))}
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
-              </table>
+              {/* 🧾 投手表格 */}
+              {(t.initiator_received || []).some(name => {
+                const p = allPlayers.find(p => p.Name === name)
+                return p?.B_or_P === 'Pitcher'
+              }) && (
+                <div>
+                  <div className="font-semibold text-[12px] text-gray-600">Pitchers</div>
+                  <table className="w-full text-xs text-center border mt-1">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        {['Player','IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP'].map(k => (
+                          <th key={k}>{k}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(t.initiator_received || []).map(name => {
+                        const p = allPlayers.find(p => p.Name === name)
+                        if (p?.B_or_P !== 'Pitcher') return null
+                        return (
+                          <tr key={name}>
+                            <td>{name}</td>
+                            {['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP'].map(k => (
+                              <td key={k}>{p?.[k] ?? 0}</td>
+                            ))}
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
+
 
             {/* 狀態顯示 */}
             <div className="text-xs text-gray-500 font-semibold mt-2">

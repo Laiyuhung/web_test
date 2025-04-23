@@ -1265,21 +1265,33 @@ export default function RosterPage() {
               <table className="w-full text-xs text-center border">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th>Player</th><th>AB</th><th>H</th>
+                    <th className="px-1">Player</th>
+                    {(t.initiator_received || []).some(name => allPlayers.find(p => p.Name === name)?.B_or_P === 'Pitcher')
+                      ? ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                      : ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                    .map(stat => (
+                      <th key={stat} className="px-1">{stat}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {(t.initiator_received || []).map(name => {
                     const player = allPlayers.find(p => p.Name === name)
+                    const isPitcher = player?.B_or_P === 'Pitcher'
+                    const stats = isPitcher
+                      ? ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                      : ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                     return (
                       <tr key={name}>
                         <td>{name}</td>
-                        <td>{player?.AB ?? 0}</td>
-                        <td>{player?.H ?? 0}</td>
+                        {stats.map(key => (
+                          <td key={key}>{player?.[key] ?? 0}</td>
+                        ))}
                       </tr>
                     )
                   })}
                 </tbody>
+
               </table>
             </div>
 
@@ -1290,21 +1302,33 @@ export default function RosterPage() {
               <table className="w-full text-xs text-center border">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th>Player</th><th>AB</th><th>H</th>
+                    <th className="px-1">Player</th>
+                    {(t.receiver_received || []).some(name => allPlayers.find(p => p.Name === name)?.B_or_P === 'Pitcher')
+                      ? ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                      : ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                    .map(stat => (
+                      <th key={stat} className="px-1">{stat}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {(t.receiver_received || []).map(name => {
                     const player = allPlayers.find(p => p.Name === name)
+                    const isPitcher = player?.B_or_P === 'Pitcher'
+                    const stats = isPitcher
+                      ? ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                      : ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                     return (
                       <tr key={name}>
                         <td>{name}</td>
-                        <td>{player?.AB ?? 0}</td>
-                        <td>{player?.H ?? 0}</td>
+                        {stats.map(key => (
+                          <td key={key}>{player?.[key] ?? 0}</td>
+                        ))}
                       </tr>
                     )
                   })}
                 </tbody>
+
               </table>
             </div>
 

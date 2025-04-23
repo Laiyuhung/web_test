@@ -1255,6 +1255,20 @@ export default function RosterPage() {
         const initiatorName = managerMap[t.initiator_id] || `M${t.initiator_id}`
         const receiverName = managerMap[t.receiver_id] || `M${t.receiver_id}`
 
+        {(t.initiator_received || []).map(name => {
+          const p = allPlayers.find(p => p.Name === name)
+          console.log('🔍 比對球員：', name, '→ 找到：', p?.Name, '→ 類型：', p?.B_or_P)
+          return null
+        })}
+
+        {(t.receiver_received || []).map(name => {
+          const p = allPlayers.find(p => p.Name === name)
+          console.log('🧾 receiver球員：', name, '→ 找到：', p?.Name, '→ 類型：', p?.B_or_P)
+          return null
+        })}
+        
+        
+
         return (
           <div key={idx} className="border rounded-lg p-3 shadow-sm bg-gray-50">
 

@@ -1256,13 +1256,13 @@ export default function RosterPage() {
         const receiverName = managerMap[t.receiver_id] || `M${t.receiver_id}`
 
         {(t.initiator_received || []).map(name => {
-          const p = allPlayers.find(p => p.Name === name)
+          const p = positionData.find(p => p.name === name)
           console.log('🔍 比對球員：', name, '→ 找到：', p?.Name, '→ 類型：', p?.B_or_P)
           return null
         })}
 
         {(t.receiver_received || []).map(name => {
-          const p = allPlayers.find(p => p.Name === name)
+          const p = positionData.find(p => p.name === name)
           console.log('🧾 receiver球員：', name, '→ 找到：', p?.Name, '→ 類型：', p?.B_or_P)
           return null
         })}
@@ -1279,7 +1279,7 @@ export default function RosterPage() {
 
               {/* 🟦 打者資料區塊 */}
               {(t.initiator_received || []).filter(name => {
-                const p = allPlayers.find(p => p.Name === name)
+                const p = positionData.find(p => p.name === name)
                 return p?.B_or_P === 'Batter'
               }).length > 0 && (
                 <>
@@ -1294,7 +1294,7 @@ export default function RosterPage() {
                     </thead>
                     <tbody>
                       {(t.initiator_received || []).map(name => {
-                        const p = allPlayers.find(p => p.Name === name)
+                        const p = positionData.find(p => p.name === name)
                         if (p?.B_or_P !== 'Batter') return null
                         return (
                           <tr key={name}>
@@ -1312,7 +1312,7 @@ export default function RosterPage() {
 
               {/* 🟥 投手資料區塊 */}
               {(t.initiator_received || []).filter(name => {
-                const p = allPlayers.find(p => p.Name === name)
+                const p = positionData.find(p => p.name === name)
                 return p?.B_or_P === 'Pitcher'
               }).length > 0 && (
                 <>
@@ -1327,7 +1327,7 @@ export default function RosterPage() {
                     </thead>
                     <tbody>
                       {(t.initiator_received || []).map(name => {
-                        const p = allPlayers.find(p => p.Name === name)
+                        const p = positionData.find(p => p.name === name)
                         if (p?.B_or_P !== 'Pitcher') return null
                         return (
                           <tr key={name}>
@@ -1352,7 +1352,7 @@ export default function RosterPage() {
 
               {/* 🟦 打者資料區塊 */}
               {(t.receiver_received || []).filter(name => {
-                const p = allPlayers.find(p => p.Name === name)
+                const p = positionData.find(p => p.name === name)
                 return p?.B_or_P === 'Batter'
               }).length > 0 && (
                 <>
@@ -1367,7 +1367,7 @@ export default function RosterPage() {
                     </thead>
                     <tbody>
                       {(t.receiver_received || []).map(name => {
-                        const p = allPlayers.find(p => p.Name === name)
+                        const p = positionData.find(p => p.name === name)
                         if (p?.B_or_P !== 'Batter') return null
                         return (
                           <tr key={name}>
@@ -1385,7 +1385,7 @@ export default function RosterPage() {
 
               {/* 🟥 投手資料區塊 */}
               {(t.receiver_received || []).filter(name => {
-                const p = allPlayers.find(p => p.Name === name)
+                const p = positionData.find(p => p.name === name)
                 return p?.B_or_P === 'Pitcher'
               }).length > 0 && (
                 <>
@@ -1400,7 +1400,7 @@ export default function RosterPage() {
                     </thead>
                     <tbody>
                       {(t.receiver_received || []).map(name => {
-                        const p = allPlayers.find(p => p.Name === name)
+                        const p = positionData.find(p => p.name === name)
                         if (p?.B_or_P !== 'Pitcher') return null
                         return (
                           <tr key={name}>

@@ -108,18 +108,23 @@ export async function POST(req) {
         }
       }
 
-      const AB = batterSum.AB || 1
-      const IP = pitcherSum.OUT / 3 || 1
+      const AB = batterSum.AB || 0
+      const IP = pitcherSum.OUT / 3 || 0
 
-      const rawAVG = batterSum.H / AB
-      const AVG = isNaN(rawAVG) ? '.000' : rawAVG.toFixed(3).replace(/^0\./, '.')
+      const rawAVG = AB ? batterSum.H / AB : 0
+      const AVG = rawAVG.toFixed(3).replace(/^0\./, '.')
+
       const OBP = (AB + batterSum.BB) ? ((batterSum.H + batterSum.BB) / (AB + batterSum.BB)) : 0
-      const SLG = batterSum.TB / AB
-      const rawOPS = OBP + SLG
-      const OPS = isNaN(rawOPS) ? '.000' : rawOPS.toFixed(3).replace(/^0\./, '.')
 
-      const ERA = (9 * pitcherSum.ER / IP).toFixed(2)
-      const WHIP = ((pitcherSum.H + pitcherSum.BB) / IP).toFixed(2)
+      const SLG = AB ? batterSum.TB / AB : 0
+
+      const rawOPS = OBP + SLG
+      const OPS = rawOPS.toFixed(3).replace(/^0\./, '.')
+
+      const ERA = IP ? (9 * pitcherSum.ER / IP).toFixed(2) : '0.00'
+
+      const WHIP = IP ? ((pitcherSum.H + pitcherSum.BB) / IP).toFixed(2) : '0.00'
+
 
       const { data: managerData } = await supabase
         .from('managers')

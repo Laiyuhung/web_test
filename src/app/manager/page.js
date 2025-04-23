@@ -249,7 +249,7 @@ export default function RosterPage() {
         let playersList = []
   
         if (isPast) {
-          const assignedRes = await fetch(`/api/saveAssigned/load?date=${selectedDate}&manager_id=${selectedManager}`)
+          const assignedRes = await fetch(`/api/saveAssigned/load_manager?date=${selectedDate}&manager_id=${selectedManager}`)
           const assignedData = await assignedRes.json()
           console.log('👤 assignedData:', assignedData)
           const names = assignedData.map(r => r.player_name)

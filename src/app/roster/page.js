@@ -16,9 +16,9 @@ import {
 
 
 export default function RosterPage() {
+  const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
   const [batterMap, setBatterMap] = useState(new Map())
   const [pitcherMap, setPitcherMap] = useState(new Map())
-  const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
   const [allPlayers, setAllPlayers] = useState([])
   const [managerMap, setManagerMap] = useState({})
   const [tradeList, setTradeList] = useState([])
@@ -1284,7 +1284,10 @@ export default function RosterPage() {
               <div className="text-sm mb-1">Received players：{(t.initiator_received || []).join('、')}</div>
 
               {/* 🟦 打者資料區塊 */}
-              {(t.initiator_received || []).filter(name => batterMap.has(name)).length > 0 && (
+              {(t.initiator_received || []).filter(name => {
+                const p = positionData.find(p => p.name === name)
+                return p?.B_or_P === 'Batter'
+              }).length > 0 && (
                 <>
                   <div className="font-semibold text-[12px] text-gray-600 mt-2">Batters</div>
                   <table className="w-full text-xs text-center border mt-1">
@@ -1297,8 +1300,8 @@ export default function RosterPage() {
                     </thead>
                     <tbody>
                       {(t.initiator_received || []).map(name => {
-                        const p = batterMap.get(name)
-                        if (!p) return null
+                        const p = positionData.find(p => p.name === name)
+                        if (p?.B_or_P !== 'Batter') return null
                         return (
                           <tr key={name}>
                             <td>{name}</td>
@@ -1313,9 +1316,11 @@ export default function RosterPage() {
                 </>
               )}
 
-
               {/* 🟥 投手資料區塊 */}
-              {(t.initiator_received || []).filter(name => pitcherMap.has(name)).length > 0 && (
+              {(t.initiator_received || []).filter(name => {
+                const p = positionData.find(p => p.name === name)
+                return p?.B_or_P === 'Pitcher'
+              }).length > 0 && (
                 <>
                   <div className="font-semibold text-[12px] text-gray-600 mt-4">Pitchers</div>
                   <table className="w-full text-xs text-center border mt-1">
@@ -1328,8 +1333,8 @@ export default function RosterPage() {
                     </thead>
                     <tbody>
                       {(t.initiator_received || []).map(name => {
-                        const p = pitcherMap.get(name)
-                        if (!p) return null
+                        const p = positionData.find(p => p.name === name)
+                        if (p?.B_or_P !== 'Pitcher') return null
                         return (
                           <tr key={name}>
                             <td>{name}</td>
@@ -1343,7 +1348,6 @@ export default function RosterPage() {
                   </table>
                 </>
               )}
-
             </div>
 
 
@@ -1353,7 +1357,10 @@ export default function RosterPage() {
               <div className="text-sm mb-1">Received players：{(t.receiver_received || []).join('、')}</div>
 
               {/* 🟦 打者資料區塊 */}
-              {(t.receiver_received || []).filter(name => batterMap.has(name)).length > 0 && (
+              {(t.receiver_received || []).filter(name => {
+                const p = positionData.find(p => p.name === name)
+                return p?.B_or_P === 'Batter'
+              }).length > 0 && (
                 <>
                   <div className="font-semibold text-[12px] text-gray-600 mt-2">Batters</div>
                   <table className="w-full text-xs text-center border mt-1">
@@ -1366,8 +1373,8 @@ export default function RosterPage() {
                     </thead>
                     <tbody>
                       {(t.receiver_received || []).map(name => {
-                        const p = batterMap.get(name)
-                        if (!p) return null
+                        const p = positionData.find(p => p.name === name)
+                        if (p?.B_or_P !== 'Batter') return null
                         return (
                           <tr key={name}>
                             <td>{name}</td>
@@ -1383,7 +1390,10 @@ export default function RosterPage() {
               )}
 
               {/* 🟥 投手資料區塊 */}
-              {(t.receiver_received || []).filter(name => pitcherMap.has(name)).length > 0 && (
+              {(t.receiver_received || []).filter(name => {
+                const p = positionData.find(p => p.name === name)
+                return p?.B_or_P === 'Pitcher'
+              }).length > 0 && (
                 <>
                   <div className="font-semibold text-[12px] text-gray-600 mt-4">Pitchers</div>
                   <table className="w-full text-xs text-center border mt-1">
@@ -1396,8 +1406,8 @@ export default function RosterPage() {
                     </thead>
                     <tbody>
                       {(t.receiver_received || []).map(name => {
-                        const p = pitcherMap.get(name)
-                        if (!p) return null
+                        const p = positionData.find(p => p.name === name)
+                        if (p?.B_or_P !== 'Pitcher') return null
                         return (
                           <tr key={name}>
                             <td>{name}</td>

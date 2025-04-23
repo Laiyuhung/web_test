@@ -37,6 +37,7 @@ export default function RosterPage() {
   const pitcherPositionOrder = ['SP', 'RP', 'P', 'BN', 'NA', 'NA(備用)']
   const [moveMessage, setMoveMessage] = useState('')
   const [positionsLoaded, setPositionsLoaded] = useState(false)
+  const [positionData, setPositionData] = useState([])
   const [rosterReady, setRosterReady] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [batterSummary, setBatterSummary] = useState(null)
@@ -240,6 +241,7 @@ export default function RosterPage() {
         console.log('📊 pitcherData:', pitcherData)
         console.log('📌 positionData:', positionData)
         console.log('📋 registerData:', registerData)
+        setPositionData(positionData)
     
         const isPast = (() => {
           const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))

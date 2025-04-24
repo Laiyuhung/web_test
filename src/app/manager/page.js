@@ -224,12 +224,12 @@ export default function RosterPage() {
     }
   }, [rosterReady, selectedDate, selectedManager])
   
-  useEffect(() => {
-    if (selectedManager) {
-      console.log('🔍 選擇的 manager:', selectedManager)
-      console.log('📅 選擇的日期:', selectedDate)
-    }
-  }, [selectedManager, selectedDate])
+  // useEffect(() => {
+  //   if (selectedManager) {
+  //     console.log('🔍 選擇的 manager:', selectedManager)
+  //     console.log('📅 選擇的日期:', selectedDate)
+  //   }
+  // }, [selectedManager, selectedDate])
 
   useEffect(() => {
     if (range === 'Today') {

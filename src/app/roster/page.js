@@ -205,10 +205,8 @@ export default function RosterPage() {
   }, [range])
 
   useEffect(() => {
-    if (rosterReady) {
-      fetchStatsSummary()
-    }
-  }, [rosterReady])
+    setRosterReady(false)
+  }, [selectedDate])
 
   useEffect(() => {
     if (rosterReady) {

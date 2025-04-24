@@ -1351,7 +1351,8 @@ export default function RosterPage() {
               }).length > 0 && (
                 <>
                   <div className="font-semibold text-[12px] text-gray-600 mt-2">Batters</div>
-                  <table className="w-full text-xs text-center border mt-1">
+                  <div className="overflow-x-auto">
+                  <table className="w-full min-w-[900px] text-xs text-center border mt-1">
                     <thead className="bg-gray-100">
                       <tr>
                         {['Player','AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
@@ -1375,6 +1376,7 @@ export default function RosterPage() {
                     })}
                     </tbody>
                   </table>
+                  </div>
                 </>
               )}
 
@@ -1385,7 +1387,8 @@ export default function RosterPage() {
               }).length > 0 && (
                 <>
                   <div className="font-semibold text-[12px] text-gray-600 mt-4">Pitchers</div>
-                  <table className="w-full text-xs text-center border mt-1">
+                  <div className="overflow-x-auto">
+                  <table className="w-full min-w-[900px] text-xs text-center border mt-1">
                     <thead className="bg-gray-100">
                       <tr>
                         {['Player','IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP'].map(k => (
@@ -1410,6 +1413,7 @@ export default function RosterPage() {
 
                     </tbody>
                   </table>
+                  </div>
                 </>
               )}
             </div>
@@ -1427,7 +1431,8 @@ export default function RosterPage() {
               }).length > 0 && (
                 <>
                   <div className="font-semibold text-[12px] text-gray-600 mt-2">Batters</div>
-                  <table className="w-full text-xs text-center border mt-1">
+                  <div className="overflow-x-auto">
+                  <table className="w-full min-w-[900px] text-xs text-center border mt-1">
                     <thead className="bg-gray-100">
                       <tr>
                         {['Player','AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS'].map(k => (
@@ -1451,6 +1456,7 @@ export default function RosterPage() {
                       })}
                     </tbody>
                   </table>
+                  </div>
                 </>
               )}
 
@@ -1461,7 +1467,8 @@ export default function RosterPage() {
               }).length > 0 && (
                 <>
                   <div className="font-semibold text-[12px] text-gray-600 mt-4">Pitchers</div>
-                  <table className="w-full text-xs text-center border mt-1">
+                  <div className="overflow-x-auto">
+                  <table className="w-full min-w-[900px] text-xs text-center border mt-1">
                     <thead className="bg-gray-100">
                       <tr>
                         {['Player','IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP'].map(k => (
@@ -1485,6 +1492,7 @@ export default function RosterPage() {
                       })}
                     </tbody>
                   </table>
+                  </div>
                 </>
               )}
             </div>

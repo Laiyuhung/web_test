@@ -131,13 +131,12 @@ export async function POST(req) {
         return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
       }
 
-      for (const name of myPlayers) {
-        await dropAndAdd(myManagerId, opponentManagerId, name, dateList, transaction_time)
-      }
-
-      for (const name of opponentPlayers) {
-        await dropAndAdd(opponentManagerId, myManagerId, name, dateList, transaction_time)
-      }
+      // ✅ 使用 Promise.all 並行執行交易
+      const tasks = [
+        ...myPlayers.map(name => dropAndAdd(myManagerId, opponentManagerId, name, dateList, transaction_time)),
+        ...opponentPlayers.map(name => dropAndAdd(opponentManagerId, myManagerId, name, dateList, transaction_time))
+      ]
+      await Promise.all(tasks)
 
       return NextResponse.json({ message: '交換完成 ✅ 並標記為 accepted' })
     }

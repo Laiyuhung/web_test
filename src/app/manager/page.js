@@ -4,6 +4,13 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function RosterPage() {
+  const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
+  const [myTradePlayers, setMyTradePlayers] = useState([])
+  const [opponentTradePlayers, setOpponentTradePlayers] = useState([])
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+  const [myRosterPlayers, setMyRosterPlayers] = useState([])
+
   const [selectedManager, setSelectedManager] = useState(null)
   const [managers, setManagers] = useState([])
   const [weeklyIP, setWeeklyIP] = useState('0.0')
@@ -50,6 +57,13 @@ export default function RosterPage() {
   
     fetchManagers()
   }, [])
+  
+  useEffect(() => {
+    if (userId && players.length > 0) {
+      const myPlayers = players.filter(p => p.manager_id?.toString() === userId)
+      setMyRosterPlayers(myPlayers)
+    }
+  }, [userId, players])
   
 
   useEffect(() => {
@@ -787,7 +801,7 @@ export default function RosterPage() {
   }
 
   return (
-    
+<>  
       <div className="p-6">
 
       {moveMessage && (
@@ -923,6 +937,23 @@ export default function RosterPage() {
       </div>
       
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
+
+      <div className="mb-4">
+        <button
+          onClick={() => {
+            if (!selectedManager) {
+              alert('請先選擇一位 Manager 再交易')
+              return
+            }
+            setTradeDialogOpen(true)
+          }}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          ⇄ 與此玩家交易
+        </button>
+      </div>
+
+
       <h1 className="text-xl font-bold mb-6">MANAGER LINEUP</h1>
       
       {batterSummary && pitcherSummary && (
@@ -1160,5 +1191,110 @@ export default function RosterPage() {
       )}
 
     </div>
+
+    
+    <AlertDialog open={tradeDialogOpen} onOpenChange={setTradeDialogOpen}>
+      <AlertDialogContent className="w-[95vw] max-w-3xl px-2">
+        <AlertDialogHeader>
+          <AlertDialogTitle>提出交易提案</AlertDialogTitle>
+            <AlertDialogDescription>
+              與 <b>{managers.find(m => m.id.toString() === selectedManager)?.team_name}</b> 交易
+              <div className="mt-3 text-sm flex flex-col sm:flex-row gap-4 max-h-[60vh] overflow-y-auto">
+                {/* 左側：我給對方 */}
+                <div className="md:w-1/2 w-full border-r md:pr-4">
+                  <div className="mb-2 font-bold text-gray-700">✅ Trade Away：</div>
+                  {myRosterPlayers.map(p => (
+                    <label key={p.Name} className="flex items-center gap-2 mb-1">
+                      <input
+                        type="checkbox"
+                        checked={myTradePlayers.includes(p.Name)}
+                        onChange={e => {
+                          setMyTradePlayers(prev =>
+                            e.target.checked
+                              ? [...prev, p.Name]
+                              : prev.filter(name => name !== p.Name)
+                          )
+                        }}
+                      />
+                      {p.Name}
+                    </label>
+                  ))}
+                </div>
+    
+                {/* 右側：我希望獲得 */}
+                <div className="md:w-1/2 w-full border-r md:pr-4">
+                  <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
+                  {players.map(p => (
+                    <label key={p.player_name} className="flex items-center gap-2 mb-1">
+                      <input
+                        type="checkbox"
+                        checked={opponentTradePlayers.includes(p.player_name)}
+                        onChange={e => {
+                          setOpponentTradePlayers(prev =>
+                            e.target.checked
+                              ? [...prev, p.player_name]
+                              : prev.filter(name => name !== p.player_name)
+                          )
+                        }}
+                      />
+                      {p.player_name}
+                    </label>
+                  ))}
+    
+    
+                </div>
+              </div>
+    
+            </AlertDialogDescription>
+    
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={!myTradePlayers.length || !opponentTradePlayers.length}
+            onClick={async () => {
+              const res = await fetch('/api/trade/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  initiator_id: userId,
+                  receiver_id: selectedManager,
+                  initiator_received: opponentTradePlayers,
+                  receiver_received: myTradePlayers,
+                  status: 'pending'
+                })
+      
+              })
+              console.log('送出內容:', {
+                initiator_id: userId,
+                receiver_id: selectedManager,
+                initiator_received: opponentTradePlayers,
+                receiver_received: myTradePlayers
+              })
+              
+              const data = await res.json()
+              if (res.ok) {
+                setSuccessMessage('✅ 交易包裹已送出')
+                setSuccessDialogOpen(true)
+              } else {
+                setSuccessMessage(`❌ 錯誤: ${data.error}`)
+                setSuccessDialogOpen(true)
+              }
+              setTradeDialogOpen(false)
+              setMyTradePlayers([])
+              setOpponentTradePlayers([])
+              setSelectedTradeTarget(null)
+            }}
+          >
+            提交交易包裹
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    
+
+    </>  
+
   )
 }

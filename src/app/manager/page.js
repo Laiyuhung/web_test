@@ -575,6 +575,9 @@ export default function RosterPage() {
           map[p.Name] = record.position
         }
       })
+
+      setOpponentTradePlayers(data.map(p => p.player_name))
+
   
       console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
   

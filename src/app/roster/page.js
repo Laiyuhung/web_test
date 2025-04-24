@@ -724,7 +724,6 @@ export default function RosterPage() {
       alert(data.message || '操作成功')
       await reloadTradeList()
       await reloadRoster()
-      setTradeDialogOpen(false)
         
     } catch (err) {
       console.error('❌ 處理交易失敗:', err)
@@ -1491,11 +1490,18 @@ export default function RosterPage() {
             </div>
 
             {/* 狀態顯示 */}
-            <div className="text-xs text-gray-500 font-semibold mt-2">
-              {t.status === 'pending' && 'Pending'}
-              {t.status === 'accepted' && 'Accepted'}
-              {t.status === 'rejected' && 'Rejected'}
+            <div className="text-xs font-semibold mt-2">
+              {t.status === 'pending' && (
+                <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">Pending</span>
+              )}
+              {t.status === 'accepted' && (
+                <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded">Accepted</span>
+              )}
+              {t.status === 'rejected' && (
+                <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded">Rejected</span>
+              )}
             </div>
+
 
             {/* 按鈕區塊 */}
             {userId && t.status === 'pending' && (

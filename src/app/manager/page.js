@@ -71,10 +71,16 @@ export default function RosterPage() {
   
   useEffect(() => {
     if (userId && players.length > 0) {
-      const myPlayers = players.filter(p => p.manager_id?.toString() === userId)
-      setMyRosterPlayers(myPlayers)
+      const fetchMyRosterPlayers = async () => {
+        const res = await fetch(`/api/saveAssigned/load_manager?date=${selectedDate}&manager_id=${userId}`)
+        const data = await res.json()
+        setMyRosterPlayers(data)
+      }
+  
+      fetchMyRosterPlayers()
     }
-  }, [userId, players])
+  }, [userId, players, selectedDate])
+  
   
 
   useEffect(() => {

@@ -419,6 +419,11 @@ export default function RosterPage() {
   
       const batter = await batterRes.json()
       const pitcher = await pitcherRes.json()
+
+      console.log('🧮 summary 撈的打者名單:', batterNames)
+      console.log('🧮 summary 撈的投手名單:', pitcherNames)
+      console.log('📦 API 回傳的打者 summary:', batter)
+      console.log('📦 API 回傳的投手 summary:', pitcher)
   
       setBatterSummary(batter)
       setPitcherSummary(pitcher)

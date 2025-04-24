@@ -705,7 +705,7 @@ export default function RosterPage() {
 
   const handleTradeAction = async (tradeId, type, trade) => {
     try {
-      const res = await fetch('/api/trade/action', {
+      const res = await fetch('/api/trade/modify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

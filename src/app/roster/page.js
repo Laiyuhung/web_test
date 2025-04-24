@@ -225,111 +225,111 @@ export default function RosterPage() {
   }, [selectedDate])
 
   useEffect(() => {
-
-    const fetchData = async () => {
-      setLoading(true)
-    
-      try {
-        const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
-          fetch('/api/playerStatus'),
-          fetch('/api/playerStats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
-          }),
-          fetch('/api/playerStats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
-          }),
-          fetch('/api/playerPositionCaculate'),
-          fetch('/api/playerRegisterStatus')
-        ])
-    
-        const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
-          statusRes.json(),
-          batterRes.ok ? batterRes.json() : [],
-          pitcherRes.ok ? pitcherRes.json() : [],
-          positionRes.ok ? positionRes.json() : [],
-          registerRes.ok ? registerRes.json() : []
-        ])
-    
-        const statsData = [...batterData, ...pitcherData]
-        setBatterMap(new Map(batterData.map(p => [p.name, p])))
-        setPitcherMap(new Map(pitcherData.map(p => [p.name, p])))
-    
-        console.log('📦 statusData:', statusData)
-        console.log('📊 batterData:', batterData)
-        console.log('📊 pitcherData:', pitcherData)
-        console.log('📌 positionData:', positionData)
-        console.log('📋 registerData:', registerData)
-        setPositionData(positionData)
-    
-        const isPast = (() => {
-          const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
-          const todayStr = now.toISOString().slice(0, 10)
-          return selectedDate < todayStr
-        })()
-        console.log(`📅 selectedDate: ${selectedDate}, isPast: ${isPast}`)
-    
-        let playersList = []
-    
-        if (isPast) {
-          const assignedRes = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
-          const assignedData = await assignedRes.json()
-          console.log('🗂️ assignedData (from position_assigned):', assignedData)
-    
-          const names = [...new Set(assignedData.map(r => r.player_name))]
-          console.log('📛 player names from assignedData:', names)
-    
-          playersList = names.map(name => {
-            const status = statusData.find(s => s.Name === name)
-            const stat = statsData.find(s => s.name === name)
-            const pos = positionData.find(p => p.name === name)
-            const reg = registerData.find(r => r.name === name)
-    
-            return {
-              ...(status || { Name: name }),
-              ...(stat || {}),
-              finalPosition: pos?.finalPosition || [],
-              registerStatus: reg?.status || '未知'
-            }
-          })
-    
-          console.log('📋 組合後 playersList（isPast）:', playersList)
-        } else {
-          const merged = statusData.map(p => {
-            const stat = statsData.find(s => s.name === p.Name)
-            const pos = positionData.find(pos => pos.name === p.Name)
-            const reg = registerData.find(r => r.name === p.Name)
-            return {
-              ...p,
-              ...(stat || {}),
-              finalPosition: pos?.finalPosition || [],
-              registerStatus: reg?.status || '未知'
-            }
-          })
-    
-          playersList = merged.filter(p => p.manager_id?.toString() === userId)
-          console.log('📋 組合後 playersList（today/future）:', playersList)
-        }
-    
-        setPlayers(playersList)
-        await loadAssigned(playersList)
-        setPositionsLoaded(true)
-        setRosterReady(true)
-    
-      } catch (err) {
-        console.error('❌ 讀取錯誤:', err)
-      }
-    
-      setLoading(false)
-    }
-    
-    
-
     if (userId) fetchData()
-  }, [userId, fromDate, toDate]) 
+  }, [userId, fromDate, toDate])
+
+
+  const fetchData = async () => {
+    setLoading(true)
+  
+    try {
+      const [statusRes, batterRes, pitcherRes, positionRes, registerRes] = await Promise.all([
+        fetch('/api/playerStatus'),
+        fetch('/api/playerStats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'batter', from: fromDate, to: toDate })
+        }),
+        fetch('/api/playerStats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'pitcher', from: fromDate, to: toDate })
+        }),
+        fetch('/api/playerPositionCaculate'),
+        fetch('/api/playerRegisterStatus')
+      ])
+  
+      const [statusData, batterData, pitcherData, positionData, registerData] = await Promise.all([
+        statusRes.json(),
+        batterRes.ok ? batterRes.json() : [],
+        pitcherRes.ok ? pitcherRes.json() : [],
+        positionRes.ok ? positionRes.json() : [],
+        registerRes.ok ? registerRes.json() : []
+      ])
+  
+      const statsData = [...batterData, ...pitcherData]
+      setBatterMap(new Map(batterData.map(p => [p.name, p])))
+      setPitcherMap(new Map(pitcherData.map(p => [p.name, p])))
+  
+      console.log('📦 statusData:', statusData)
+      console.log('📊 batterData:', batterData)
+      console.log('📊 pitcherData:', pitcherData)
+      console.log('📌 positionData:', positionData)
+      console.log('📋 registerData:', registerData)
+      setPositionData(positionData)
+  
+      const isPast = (() => {
+        const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+        const todayStr = now.toISOString().slice(0, 10)
+        return selectedDate < todayStr
+      })()
+      console.log(`📅 selectedDate: ${selectedDate}, isPast: ${isPast}`)
+  
+      let playersList = []
+  
+      if (isPast) {
+        const assignedRes = await fetch(`/api/saveAssigned/load?date=${selectedDate}`)
+        const assignedData = await assignedRes.json()
+        console.log('🗂️ assignedData (from position_assigned):', assignedData)
+  
+        const names = [...new Set(assignedData.map(r => r.player_name))]
+        console.log('📛 player names from assignedData:', names)
+  
+        playersList = names.map(name => {
+          const status = statusData.find(s => s.Name === name)
+          const stat = statsData.find(s => s.name === name)
+          const pos = positionData.find(p => p.name === name)
+          const reg = registerData.find(r => r.name === name)
+  
+          return {
+            ...(status || { Name: name }),
+            ...(stat || {}),
+            finalPosition: pos?.finalPosition || [],
+            registerStatus: reg?.status || '未知'
+          }
+        })
+  
+        console.log('📋 組合後 playersList（isPast）:', playersList)
+      } else {
+        const merged = statusData.map(p => {
+          const stat = statsData.find(s => s.name === p.Name)
+          const pos = positionData.find(pos => pos.name === p.Name)
+          const reg = registerData.find(r => r.name === p.Name)
+          return {
+            ...p,
+            ...(stat || {}),
+            finalPosition: pos?.finalPosition || [],
+            registerStatus: reg?.status || '未知'
+          }
+        })
+  
+        playersList = merged.filter(p => p.manager_id?.toString() === userId)
+        console.log('📋 組合後 playersList（today/future）:', playersList)
+      }
+  
+      setPlayers(playersList)
+      await loadAssigned(playersList)
+      setPositionsLoaded(true)
+      setRosterReady(true)
+  
+    } catch (err) {
+      console.error('❌ 讀取錯誤:', err)
+    }
+  
+    setLoading(false)
+  }
+
+  
 
   useEffect(() => {
     const fetchManagerMap = async () => {
@@ -679,6 +679,59 @@ export default function RosterPage() {
       setTimeout(() => setMoveMessage(''), 3000)
     }
   }
+
+  const reloadTradeList = async () => {
+    try {
+      const res = await fetch('/api/trade/load', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: userId }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setTradeList(data.trades)
+      } else {
+        console.error('❌ 無法重新取得交易列表:', data)
+      }
+    } catch (err) {
+      console.error('❌ 發生錯誤:', err)
+    }
+  }
+  
+  const reloadRoster = async () => {
+    await fetchData()
+  }
+  
+
+  const handleTradeAction = async (tradeId, type, trade) => {
+    try {
+      const res = await fetch('/api/trade/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: tradeId,
+          type,
+          myManagerId: userId,
+          opponentManagerId: trade.initiator_id.toString() === userId ? trade.receiver_id : trade.initiator_id,
+          myPlayers: trade.initiator_id.toString() === userId ? trade.initiator_give : trade.receiver_give,
+          opponentPlayers: trade.initiator_id.toString() === userId ? trade.receiver_give : trade.initiator_give,
+        }),
+      })
+  
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || '操作失敗')
+  
+      alert(data.message || '操作成功')
+      await reloadTradeList()
+      await reloadRoster()
+      setTradeDialogOpen(false)
+        
+    } catch (err) {
+      console.error('❌ 處理交易失敗:', err)
+      alert(`錯誤：${err.message}`)
+    }
+  }
+  
 
 
   const formatDateToLabel = (isoDateStr) => {
@@ -1448,21 +1501,31 @@ export default function RosterPage() {
             {userId && t.status === 'pending' && (
               <div className="flex gap-2 mt-2">
                 {t.initiator_id.toString() === userId ? (
-                  <button className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200">
+                  <button
+                    onClick={() => handleTradeAction(t.id, 'Cancel', t)}
+                    className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
+                  >
                     Cancel Trade
                   </button>
                 ) : (
                   <>
-                    <button className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200">
+                    <button
+                      onClick={() => handleTradeAction(t.id, 'Accept', t)}
+                      className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200"
+                    >
                       Accept
                     </button>
-                    <button className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200">
+                    <button
+                      onClick={() => handleTradeAction(t.id, 'Reject', t)}
+                      className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
+                    >
                       Reject
                     </button>
                   </>
                 )}
               </div>
             )}
+
           </div>
         )
       })

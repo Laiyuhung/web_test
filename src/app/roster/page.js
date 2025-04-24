@@ -1498,7 +1498,7 @@ export default function RosterPage() {
                 <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded">Accepted</span>
               )}
               {t.status === 'canceled' && (
-                <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded">Rejected</span>
+                <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded">Canceled</span>
               )}
               {t.status === 'rejected' && (
                 <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded">Rejected</span>

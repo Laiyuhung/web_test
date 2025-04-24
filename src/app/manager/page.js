@@ -1221,19 +1221,19 @@ export default function RosterPage() {
                 <div className="md:w-1/2 w-full border-r md:pr-4">
                   <div className="mb-2 font-bold text-gray-700">✅ Trade Away：</div>
                   {myRosterPlayers.map(p => (
-                    <label key={p.Name} className="flex items-center gap-2 mb-1">
+                    <label key={p.player_name} className="flex items-center gap-2 mb-1">
                       <input
                         type="checkbox"
-                        checked={myTradePlayers.includes(p.Name)}
+                        checked={myTradePlayers.includes(p.player_name)}
                         onChange={e => {
                           setMyTradePlayers(prev =>
                             e.target.checked
-                              ? [...prev, p.Name]
-                              : prev.filter(name => name !== p.Name)
+                              ? [...prev, p.player_name]
+                              : prev.filter(name => name !== p.player_name)
                           )
                         }}
                       />
-                      {p.Name}
+                      {p.player_name}
                     </label>
                   ))}
                 </div>

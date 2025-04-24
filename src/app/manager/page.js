@@ -212,18 +212,18 @@ export default function RosterPage() {
     applyDateRange(range)
   }, [range])
 
-  useEffect(() => {
-    if (rosterReady) {
-      fetchStatsSummary()
-    }
-  }, [rosterReady])
+  // useEffect(() => {
+  //   if (rosterReady) {
+  //     fetchStatsSummary()
+  //   }
+  // }, [rosterReady])
 
   useEffect(() => {
     if (rosterReady) {
       console.log('📊 觸發 fetchStatsSummary (roster ready & date):', selectedDate)
       fetchStatsSummary()
     }
-  }, [rosterReady, selectedDate])
+  }, [rosterReady, selectedDate, selectedManager])
   
   useEffect(() => {
     if (selectedManager) {

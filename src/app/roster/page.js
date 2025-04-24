@@ -1511,7 +1511,7 @@ export default function RosterPage() {
               <div className="flex gap-2 mt-2">
                 {t.initiator_id.toString() === userId ? (
                   <button
-                    onClick={() => handleTradeAction(t.id, 'canceled', t)}
+                    onClick={() => handleTradeAction(t.id, 'Cancel', t)}
                     className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
                   >
                     Cancel Trade
@@ -1519,13 +1519,13 @@ export default function RosterPage() {
                 ) : (
                   <>
                     <button
-                      onClick={() => handleTradeAction(t.id, 'accepted', t)}
+                      onClick={() => handleTradeAction(t.id, 'Accept', t)}
                       className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200"
                     >
                       Accept
                     </button>
                     <button
-                      onClick={() => handleTradeAction(t.id, 'rejected', t)}
+                      onClick={() => handleTradeAction(t.id, 'Reject', t)}
                       className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
                     >
                       Reject

@@ -25,7 +25,7 @@ export async function POST(req) {
         .select('*')
         .gte('game_date', from)
         .lte('game_date', to)
-        .eq('is_major', true)
+        .eq('is_major', 'TRUE')
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -92,7 +92,7 @@ export async function POST(req) {
         .select('*')
         .gte('game_date', from)
         .lte('game_date', to)
-        .eq('is_major', true)
+        .eq('is_major', 'TRUE')
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

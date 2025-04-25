@@ -25,9 +25,13 @@ export async function POST(req) {
         .select('*')
         .gte('game_date', from)
         .lte('game_date', to)
-        // .eq('is_major', true)
+        .eq('is_major', true)
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+      // 👇 加在這
+      const allNames = [...new Set(data.map(row => row.name || row.player_name))]
+      console.log('🧑‍💻 所有打者名稱清單:', allNames)
 
       const statsMap = {}
       for (const row of data) {
@@ -88,7 +92,7 @@ export async function POST(req) {
         .select('*')
         .gte('game_date', from)
         .lte('game_date', to)
-        // .eq('is_major', true)
+        .eq('is_major', true)
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

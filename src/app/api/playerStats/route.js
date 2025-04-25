@@ -32,6 +32,9 @@ export async function POST(req) {
       const statsMap = {}
       for (const row of data) {
         const name = row.name || row.player_name
+        if (name === '張祐銘') {
+          console.log('🔍 張祐銘的打者資料:', row)
+        }
         if (!statsMap[name]) {
           statsMap[name] = {
             name,

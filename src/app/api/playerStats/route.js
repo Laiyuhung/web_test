@@ -13,12 +13,6 @@ export async function POST(req) {
     const { type, from, to } = await req.json()
 
     console.log('📝 接收到參數:', { type, from, to })
-    console.log('🧾 撈到的筆數:', data.length)
-    data.forEach(row => {
-      if ((row.name || row.player_name).includes('張')) {
-        console.log('🔍 張相關資料:', row)
-      }
-    })
 
     if (!type || !from || !to) {
       return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
@@ -29,8 +23,8 @@ export async function POST(req) {
       const { data, error } = await supabase
         .from('batting_stats')
         .select('*')
-        .gte('game_date', 2025-4-22)
-        .lte('game_date', 2025-4-23)
+        .gte('game_date', from)
+        .lte('game_date', to)
         .eq('is_major', true)
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })

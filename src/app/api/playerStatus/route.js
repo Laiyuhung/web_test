@@ -58,20 +58,28 @@ export async function GET() {
           if (dropDateStr === addDateStr) {
             status = 'Free Agent'  // 同一天 Add + Drop，不進 Waiver
           } else {
-            // 計算是否已滿 3 天（Drop -> Waiver）
             const nowTWN = new Date(Date.now() + taiwanOffsetMs)
-            const msDiff = nowTWN.getTime() - (dropTime.getTime() + taiwanOffsetMs)
-            const daysSinceDrop = Math.floor(msDiff / (1000 * 60 * 60 * 24))
-      
-            if (daysSinceDrop >= 2) {
+          
+            // 把 dropTime 調成「台灣時間 0:00」
+            const dropDateTWN = new Date(dropTime.getTime() + taiwanOffsetMs)
+            dropDateTWN.setHours(0, 0, 0, 0)
+          
+            // 加 3 天，得到解除 Waiver 的日子
+            const offDate = new Date(dropDateTWN)
+            offDate.setDate(offDate.getDate() + 3)
+            // 再把時間設成 01:00
+            offDate.setHours(1, 0, 0, 0)
+          
+            if (nowTWN >= offDate) {
               status = 'Free Agent'
             } else {
               status = 'Waiver'
-              const offDate = new Date(dropTime.getTime() + taiwanOffsetMs)
-              offDate.setDate(offDate.getDate() + 3)
-              offWaivers = offDate.toISOString()  // 範例：2025-04-10T00:00:00.000Z
+              offWaivers = new Date(offDate.getTime() - taiwanOffsetMs).toISOString()
+              // 把 offDate 從台灣時間 01:00 調回 UTC，存成標準格式
             }
           }
+          
+          
         }
       }
       

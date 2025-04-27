@@ -427,7 +427,12 @@ export default function PlayerPage() {
     return `${d.getMonth() + 1}/${d.getDate()}`
   }
   
-  
+  const toTaiwanDateOnly = (isoString) => {
+    if (!isoString) return null
+    const utc = new Date(isoString)
+    const taiwanTime = new Date(utc.getTime() + 8 * 60 * 60 * 1000) // +8 小時
+    return taiwanTime.toISOString().slice(0, 10)
+  }
 
   const formatAvg = (val) => {
     const num = parseFloat(val)
@@ -1242,7 +1247,7 @@ export default function PlayerPage() {
                 apply_time: new Date().toISOString(),
                 manager: userId,
                 add_player: confirmPlayer?.Name,
-                off_waiver: confirmPlayer?.offWaivers?.slice(0, 10),
+                off_waiver: toTaiwanDateOnly(confirmPlayer?.offWaivers),
                 drop_player: dropPlayer || null,
               }),
             });

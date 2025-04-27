@@ -402,6 +402,22 @@ export default function RosterPage() {
       fetchGames()
     }
   }, [selectedDate, players])
+
+  const calculateActiveForeign = (updatedAssignedPositions) => {
+    const activeForeign = players.filter(p =>
+      p.identity === '洋將' &&
+      !['NA', 'NA(備用)'].includes(updatedAssignedPositions[p.Name])
+    )
+  
+    console.log('🧮 計算 Active 洋將數：', activeForeign.length)
+    console.log('🧑‍💻 活躍洋將名單：', activeForeign.map(p => ({
+      name: p.Name,
+      assignedPosition: updatedAssignedPositions[p.Name]
+    })))
+  
+    return activeForeign.length
+  }
+  
   
 
   const fetchStatsSummary = async () => {
@@ -1211,9 +1227,23 @@ export default function RosterPage() {
                         const updated = { ...prev }
                         updated[moveTarget.Name] = posKey
                         updated[p.Name] = newPos
+                      
+                        const activeForeign = calculateActiveForeign(updated)
+                        if (activeForeign > 3) {
+                          setMoveMessage('❌ Active 洋將不可超過 3 位')
+                          setTimeout(() => setMoveMessage(''), 3000)
+                          return prev
+                        }
+                      
+                        setForeignCount(prevCount => ({
+                          ...prevCount,
+                          active: activeForeign
+                        }))
+                      
                         saveAssigned(updated)
                         return updated
                       })
+                      
                     
                       setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}，${p.Name} 被移動到 ${newPos}`)
                       setTimeout(() => setMoveMessage(''), 3000)
@@ -1267,14 +1297,26 @@ export default function RosterPage() {
                   
                     console.log(`✅ 準備將 ${moveTarget.Name} 移動到 ${posKey}`)
                     setAssignedPositions(prev => {
-                      const updated = {
-                        ...prev,
-                        [moveTarget.Name]: posKey
+                      const updated = { ...prev, [moveTarget.Name]: posKey }
+                    
+                      // ✅ 檢查新 active 洋將數
+                      const activeForeign = calculateActiveForeign(updated)
+                      if (activeForeign > 3) {
+                        setMoveMessage('❌ Active 洋將不可超過 3 位')
+                        setTimeout(() => setMoveMessage(''), 3000)
+                        return prev  // 不變動
                       }
-                      console.log('📝 更新後位置:', updated)
+                    
+                      // ✅ 更新 active 洋將數
+                      setForeignCount(prevCount => ({
+                        ...prevCount,
+                        active: activeForeign
+                      }))
+                    
                       saveAssigned(updated)
                       return updated
                     })
+                    
                   
                     setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}`)
                     setTimeout(() => setMoveMessage(''), 2000)

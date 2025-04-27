@@ -10,22 +10,7 @@ export async function POST(req) {
   }
 
   try {
-    // 🔍 檢查是否已經申請過相同的 Waiver
-    const { data: existing, error: checkError } = await supabase
-      .from('waiver')
-      .select('apply_no')
-      .eq('manager', manager)
-      .eq('add_player', add_player)
-      .eq('off_waiver', off_waiver)
-
-    if (checkError) {
-      console.error('查詢錯誤:', checkError)
-      return NextResponse.json({ error: '查詢失敗' }, { status: 500 })
-    }
-
-    if (existing && existing.length > 0) {
-      return NextResponse.json({ error: '已申請過相同的 Waiver' }, { status: 409 })
-    }
+    
 
     // 📌 查目前 priority 最大值
     const { data: priorityData, error: priorityError } = await supabase

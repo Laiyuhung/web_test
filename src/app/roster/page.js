@@ -1234,6 +1234,14 @@ export default function RosterPage() {
                           setTimeout(() => setMoveMessage(''), 3000)
                           return prev
                         }
+
+                        const activePlayers = players.filter(p => !['NA', 'NA(備用)'].includes(updated[p.Name] || 'BN'))
+                        if (activePlayers.length > 26) {
+                          setMoveMessage('❌ Active Roster 不可超過 26 人')
+                          setTimeout(() => setMoveMessage(''), 3000)
+                          return prev
+                        }
+
                       
                         setForeignCount(prevCount => ({
                           ...prevCount,
@@ -1306,6 +1314,14 @@ export default function RosterPage() {
                         setTimeout(() => setMoveMessage(''), 3000)
                         return prev  // 不變動
                       }
+
+                      const activePlayers = players.filter(p => !['NA', 'NA(備用)'].includes(updated[p.Name] || 'BN'))
+                      if (activePlayers.length > 26) {
+                        setMoveMessage('❌ Active Roster 不可超過 26 人')
+                        setTimeout(() => setMoveMessage(''), 3000)
+                        return prev
+                      }
+
                     
                       // ✅ 更新 active 洋將數
                       setForeignCount(prevCount => ({

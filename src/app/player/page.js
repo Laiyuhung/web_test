@@ -1242,7 +1242,7 @@ export default function PlayerPage() {
                 apply_time: new Date().toISOString(),
                 manager: userId,
                 add_player: confirmPlayer?.Name,
-                off_waiver: confirmPlayer?.offWaivers,
+                off_waiver: formatDate(confirmPlayer?.offWaivers),
                 drop_player: dropPlayer || null,
               }),
             });

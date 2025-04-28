@@ -30,8 +30,8 @@ export async function POST(req) {
 
     // 交換 priority
     const updates = [
-      supabase.from('waiver').update({ personal_priority: w2.personal_priority }).eq('id', id1),
-      supabase.from('waiver').update({ personal_priority: w1.personal_priority }).eq('id', id2)
+      supabase.from('waiver').update({ personal_priority: w2.personal_priority }).eq('apply_no', id1),
+      supabase.from('waiver').update({ personal_priority: w1.personal_priority }).eq('apply_no', id2)
     ]
 
     const [res1, res2] = await Promise.all(updates)

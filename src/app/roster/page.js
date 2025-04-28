@@ -668,15 +668,13 @@ export default function RosterPage() {
 
   const moveWaiver = async (date, idx, direction) => {
     try {
-
       const groupedWaivers = waiverList.reduce((acc, w) => {
         const date = w.off_waiver
         if (!acc[date]) acc[date] = []
         acc[date].push(w)
         return acc
       }, {})
-      
-
+  
       const group = groupedWaivers[date]
       if (!group || group.length < 2) return
   
@@ -689,7 +687,7 @@ export default function RosterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id1: current.apply_no,
+          id1: current.apply_no, // 注意你是用 apply_no
           id2: target.apply_no,
         }),
       })
@@ -699,13 +697,31 @@ export default function RosterPage() {
       if (!res.ok) throw new Error(data.error || '交換失敗')
   
       console.log('✅ Waiver 優先順序交換成功')
-      await loadWaivers() // ✅ 重抓 waiver list
-  
     } catch (err) {
       console.error('❌ 移動 Waiver 失敗:', err)
       alert(`錯誤：${err.message}`)
     }
+  
+    // ✅ 成功或失敗後，統一重新載入
+    try {
+      const res = await fetch('/api/waiver/load_personal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: userId }),
+      })
+  
+      const data = await res.json()
+      if (res.ok) {
+        setWaiverList(data)
+        console.log('✅ 成功重抓 Waiver List')
+      } else {
+        console.error('❌ 重抓 Waiver List 失敗:', data)
+      }
+    } catch (err) {
+      console.error('❌ 呼叫 load_personal 失敗:', err)
+    }
   }
+  
   
   
 

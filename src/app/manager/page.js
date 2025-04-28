@@ -905,34 +905,40 @@ export default function RosterPage() {
       </div>
 
       <div className="mb-4 flex items-center justify-between">
-        <div>
-          <label className="text-sm font-semibold">Stats Range</label>
-          <select
+        <div className="flex flex-col sm:flex-row gap-2">
+          {/* Stats Range */}
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold mb-1">Stats Range</label>
+            <select
               value={range}
               onChange={e => setRange(e.target.value)}
-              className="border px-2 py-1 rounded ml-2"
-          >
+              className="border px-2 py-1 rounded"
+            >
               <option>Today</option>
               <option>Yesterday</option>
               <option>Last 7 days</option>
               <option>Last 14 days</option>
               <option>Last 30 days</option>
               <option>2025 Season</option>
-          </select>
-          <label className="text-sm font-semibold">Manager</label>
-          <select
-            value={selectedManager || ''}
-            onChange={(e) => {
-              setSelectedManager(e.target.value)
-            }}
-            className="ml-2 border px-2 py-1 rounded"
-          >
-            <option value="">選擇玩家</option>
-            {managers.map(m => (
-              <option key={m.id} value={m.id}>{m.team_name}</option>
-            ))}
-          </select>
+            </select>
+          </div>
+
+          {/* Manager */}
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold mb-1">Manager</label>
+            <select
+              value={selectedManager || ''}
+              onChange={e => setSelectedManager(e.target.value)}
+              className="border px-2 py-1 rounded"
+            >
+              <option value="">選擇玩家</option>
+              {managers.map(m => (
+                <option key={m.id} value={m.id}>{m.team_name}</option>
+              ))}
+            </select>
+          </div>
         </div>
+
 
 
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">

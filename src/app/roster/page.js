@@ -17,6 +17,8 @@ import {
 
 export default function RosterPage() {
 
+  const [waiverPriority, setWaiverPriority] = useState(null)
+
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false)
   const [waiverList, setWaiverList] = useState([])
 
@@ -230,6 +232,33 @@ export default function RosterPage() {
     if (userId) fetchData()
   }, [userId, fromDate, toDate])
 
+  useEffect(() => {
+    if (userId) {
+      fetchWaiverPriority()
+    }
+  }, [userId])
+  
+
+
+  const fetchWaiverPriority = async () => {
+    try {
+      const res = await fetch('/api/waiver/load_priority', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: userId }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setWaiverPriority(data.priority)
+      } else {
+        console.error('❌ 無法取得 Waiver Priority:', data)
+        setWaiverPriority(null)
+      }
+    } catch (err) {
+      console.error('❌ 呼叫 load_priority 失敗:', err)
+      setWaiverPriority(null)
+    }
+  }
 
   const fetchData = async () => {
     setLoading(true)
@@ -636,6 +665,39 @@ export default function RosterPage() {
   
     // TODO: 打開一個 modal，傳入 slotStatus 跟 player 本身
   }
+
+  const moveWaiver = async (date, idx, direction) => {
+    try {
+      const group = groupedWaivers[date]
+      if (!group || group.length < 2) return
+  
+      const current = group[idx]
+      const target = direction === 'up' ? group[idx - 1] : group[idx + 1]
+  
+      if (!current || !target) return
+  
+      const res = await fetch('/api/waiver/swap_priority', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id1: current.id,
+          id2: target.id,
+        }),
+      })
+  
+      const data = await res.json()
+  
+      if (!res.ok) throw new Error(data.error || '交換失敗')
+  
+      console.log('✅ Waiver 優先順序交換成功')
+      await loadWaivers() // ✅ 重抓 waiver list
+  
+    } catch (err) {
+      console.error('❌ 移動 Waiver 失敗:', err)
+      alert(`錯誤：${err.message}`)
+    }
+  }
+  
   
 
   const loadAssigned = async (playersList) => {
@@ -1135,7 +1197,7 @@ export default function RosterPage() {
         }}
         className="mt-2 px-4 py-1 rounded bg-[#004AAD] text-white text-sm hover:opacity-90"
       >
-        查看交易紀錄
+        Trades
       </button>
 
       <button
@@ -1155,7 +1217,7 @@ export default function RosterPage() {
         }}
         className="mt-2 ml-2 px-4 py-1 rounded bg-[#004AAD] text-white text-sm hover:opacity-90"
       >
-        查看 Waiver 紀錄
+        Waivers
       </button>
 
 
@@ -1167,6 +1229,10 @@ export default function RosterPage() {
         </div>
 
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">
+          <div>
+            <span className="text-[#0155A0]">Waiver Priority：</span>
+            <span className="text-[#0155A0]">{waiverPriority ?? '-'}</span>
+          </div>
           <div>
             <span className="text-[#0155A0]">Active Roster：</span>
             <span className="text-[#0155A0]">{activeCount}</span>
@@ -1762,7 +1828,7 @@ export default function RosterPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-green-600 font-bold text-lg">+</span>
                   <div className="text-sm text-gray-800">{w.add_player}</div>
-                  <div className="text-xs text-gray-500">Waiver claim</div>
+                  <div className="text-xs text-gray-500">Waiver Claim</div>
                 </div>
 
                 {/* ➖ Drop player */}
@@ -1775,17 +1841,17 @@ export default function RosterPage() {
                 )}
 
                 {/* 上下移按鈕 */}
-                <div className="absolute top-2 right-2 flex flex-col space-y-1">
+                <div className="absolute top-4 right-4 flex flex-col space-y-2">
                   <button
                     onClick={() => moveWaiver(date, idx, 'up')}
-                    className="text-gray-400 hover:text-black"
+                    className="text-gray-400 hover:text-black text-lg"
                     disabled={idx === 0}
                   >
                     ▲
                   </button>
                   <button
                     onClick={() => moveWaiver(date, idx, 'down')}
-                    className="text-gray-400 hover:text-black"
+                    className="text-gray-400 hover:text-black text-lg"
                     disabled={idx === waivers.length - 1}
                   >
                     ▼

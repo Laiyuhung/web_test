@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function RosterPage() {
+  const [waiverPriority, setWaiverPriority] = useState(null)
   const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
   const [myTradePlayers, setMyTradePlayers] = useState([])
   const [opponentTradePlayers, setOpponentTradePlayers] = useState([])
@@ -383,6 +384,33 @@ export default function RosterPage() {
       fetchGames()
     }
   }, [selectedDate, players])
+
+  useEffect(() => {
+    if (userId) {
+      fetchWaiverPriority()
+    }
+  }, [selectedManager])
+  
+
+  const fetchWaiverPriority = async () => {
+    try {
+      const res = await fetch('/api/waiver/load_priority', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: selectedManager }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setWaiverPriority(data.priority)
+      } else {
+        console.error('❌ 無法取得 Waiver Priority:', data)
+        setWaiverPriority(null)
+      }
+    } catch (err) {
+      console.error('❌ 呼叫 load_priority 失敗:', err)
+      setWaiverPriority(null)
+    }
+  }
   
 
   const fetchStatsSummary = async () => {
@@ -942,6 +970,10 @@ export default function RosterPage() {
 
 
         <div className="text-sm text-right font-medium text-gray-700 leading-snug">
+          <div>
+            <span className="text-[#0155A0]">Waiver Priority：</span>
+            <span className="text-[#0155A0]">{waiverPriority ?? '-'}</span>
+          </div>
           <div>
             <span className="text-[#0155A0]">Active Roster：</span>
             <span className="text-[#0155A0]">{activeCount}</span>

@@ -16,6 +16,10 @@ import {
 
 
 export default function RosterPage() {
+
+  const [waiverDialogOpen, setWaiverDialogOpen] = useState(false)
+  const [waiverList, setWaiverList] = useState([])
+
   const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
   const [batterMap, setBatterMap] = useState(new Map())
   const [pitcherMap, setPitcherMap] = useState(new Map())
@@ -1134,6 +1138,27 @@ export default function RosterPage() {
         查看交易紀錄
       </button>
 
+      <button
+        onClick={async () => {
+          const res = await fetch('/api/waiver/load_personal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ manager_id: userId })
+          })
+          const data = await res.json()
+          if (res.ok) {
+            setWaiverList(data)
+            setWaiverDialogOpen(true)
+          } else {
+            console.error('❌ 取得 waiver 失敗:', data)
+          }
+        }}
+        className="mt-2 ml-2 px-4 py-1 rounded bg-[#004AAD] text-white text-sm hover:opacity-90"
+      >
+        查看 Waiver 紀錄
+      </button>
+
+
 
       <div className="mb-4 flex items-center justify-between">
         <div>
@@ -1702,6 +1727,35 @@ export default function RosterPage() {
 </AlertDialogContent>
 
 </AlertDialog>
+
+<AlertDialog open={waiverDialogOpen} onOpenChange={setWaiverDialogOpen}>
+<AlertDialogContent className="max-w-xl w-[90vw]">
+  <AlertDialogHeader>
+    <AlertDialogTitle>Waiver 申請紀錄</AlertDialogTitle>
+  </AlertDialogHeader>
+
+  <div className="mt-2 text-sm">
+    {waiverList.length === 0 ? (
+      <div className="text-gray-500 text-sm">目前沒有 pending 的 Waiver</div>
+    ) : (
+      waiverList.map((w, idx) => (
+        <div key={idx} className="border rounded-lg p-3 shadow-sm bg-gray-50 mb-3">
+          <div className="text-sm">
+            <div><span className="font-semibold">申請增加：</span>{w.add_player}</div>
+            <div><span className="font-semibold">釋出球員：</span>{w.drop_player || '無'}</div>
+            <div><span className="font-semibold">Waiver 到期日：</span>{w.off_waiver}</div>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+
+  <AlertDialogFooter>
+    <AlertDialogCancel>關閉</AlertDialogCancel>
+  </AlertDialogFooter>
+</AlertDialogContent>
+</AlertDialog>
+
 
 </>
 

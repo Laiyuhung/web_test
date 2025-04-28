@@ -719,18 +719,75 @@ export default function RosterPage() {
 
   const handleTradeAction = async (tradeId, type, trade) => {
     try {
-      const res = await fetch('/api/trade/modify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: tradeId,
-          type,
-          myManagerId: userId,
-          opponentManagerId: trade.initiator_id.toString() === userId ? trade.receiver_id : trade.initiator_id,
-          myPlayers: trade.initiator_id.toString() === userId ? trade.initiator_give : trade.receiver_give,
-          opponentPlayers: trade.initiator_id.toString() === userId ? trade.receiver_give : trade.initiator_give,
-        }),
-      })
+      const myManagerId = userId
+      const opponentManagerId = trade.initiator_id.toString() === userId ? trade.receiver_id : trade.initiator_id
+      const myPlayers = trade.initiator_id.toString() === userId ? trade.initiator_give : trade.receiver_give
+      const opponentPlayers = trade.initiator_id.toString() === userId ? trade.receiver_give : trade.initiator_give
+  
+      console.log('🧩 開始交易模擬:', { myManagerId, opponentManagerId, myPlayers, opponentPlayers })
+  
+      // 抓自己、對方的 saveAssigned
+      const myRes = await fetch(`/api/saveAssigned/load_manager?manager_id=${myManagerId}&date=${taiwanToday}`)
+      const oppRes = await fetch(`/api/saveAssigned/load_manager?manager_id=${opponentManagerId}&date=${taiwanToday}`)
+      const myAssigned = await myRes.json()
+      const oppAssigned = await oppRes.json()
+  
+      console.log('🧩 自己陣容:', myAssigned)
+      console.log('🧩 對方陣容:', oppAssigned)
+  
+      const mySimulated = myAssigned
+        .filter(p => !myPlayers.includes(p.player_name)) // 移除我給出去的人
+        .concat(opponentPlayers.map(name => ({ player_name: name, position: 'BN' }))) // 加入我收到的人，初始都 BN
+  
+      const oppSimulated = oppAssigned
+        .filter(p => !opponentPlayers.includes(p.player_name))
+        .concat(myPlayers.map(name => ({ player_name: name, position: 'BN' })))
+  
+      console.log('🧩 模擬後自己陣容:', mySimulated)
+      console.log('🧩 模擬後對方陣容:', oppSimulated)
+  
+      const myActive = mySimulated.filter(p => !['NA', 'NA(備用)'].includes(p.position))
+      const oppActive = oppSimulated.filter(p => !['NA', 'NA(備用)'].includes(p.position))
+  
+      const myActiveCount = myActive.length
+      const oppActiveCount = oppActive.length
+  
+      const myActiveForeign = myActive.filter(p => p.player_name.includes('*')).length
+      const oppActiveForeign = oppActive.filter(p => p.player_name.includes('*')).length
+  
+      const myOnTeamForeign = mySimulated.filter(p => p.player_name.includes('*')).length
+      const oppOnTeamForeign = oppSimulated.filter(p => p.player_name.includes('*')).length
+  
+      console.log('🧩 自己統計:', { myActiveCount, myActiveForeign, myOnTeamForeign })
+      console.log('🧩 對方統計:', { oppActiveCount, oppActiveForeign, oppOnTeamForeign })
+  
+      // ⛔ 驗證自己
+      if (myActiveCount > 26) throw new Error('交易後你的 Active 超過26人')
+      if (myActiveForeign > 3) throw new Error('交易後你的 Active 洋將超過3人')
+      if (myOnTeamForeign > 4) throw new Error('交易後你的 On Team 洋將超過4人')
+  
+      // ⛔ 驗證對方
+      if (oppActiveCount > 26) throw new Error('交易後對方 Active 超過26人')
+      if (oppActiveForeign > 3) throw new Error('交易後對方 Active 洋將超過3人')
+      if (oppOnTeamForeign > 4) throw new Error('交易後對方 On Team 洋將超過4人')
+  
+      console.log('✅ 雙方交易模擬檢查通過')
+  
+      // 🛜 真的送出交易
+      // const res = await fetch('/api/trade/modify', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     id: tradeId,
+      //     type,
+      //     myManagerId,
+      //     opponentManagerId,
+      //     myPlayers,
+      //     opponentPlayers,
+      //   }),
+      // })
+
+      console.log('✅ 雙方交易模擬檢查通過，理論上可以送出，但目前先不真正送出');
   
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || '操作失敗')
@@ -738,12 +795,13 @@ export default function RosterPage() {
       alert(data.message || '操作成功')
       await reloadTradeList()
       await reloadRoster()
-        
+  
     } catch (err) {
       console.error('❌ 處理交易失敗:', err)
       alert(`錯誤：${err.message}`)
     }
   }
+  
   
 
 

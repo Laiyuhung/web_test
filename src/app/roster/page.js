@@ -723,6 +723,19 @@ export default function RosterPage() {
       const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000); // +8小時
       const taiwanToday = taiwanNow.toISOString().slice(0, 10);
 
+      // 讀取所有球員身份
+      const statusRes = await fetch('/api/playerStatus')
+      const statusData = await statusRes.json()
+
+      // 建 identityMap：名字 → 洋將 or 本土
+      const identityMap = {}
+      statusData.forEach(p => {
+        identityMap[p.Name] = p.identity
+      })
+
+      console.log('🧩 identityMap:', identityMap)
+
+      
       const myManagerId = userId
       const opponentManagerId = trade.initiator_id.toString() === userId ? trade.receiver_id : trade.initiator_id
       const myPlayers = trade.initiator_id.toString() === userId ? trade.receiver_received : trade.initiator_received
@@ -757,11 +770,21 @@ export default function RosterPage() {
       const myActiveCount = myActive.length
       const oppActiveCount = oppActive.length
   
-      const myActiveForeign = myActive.filter(p => p.player_name.includes('*')).length
-      const oppActiveForeign = oppActive.filter(p => p.player_name.includes('*')).length
-  
-      const myOnTeamForeign = mySimulated.filter(p => p.player_name.includes('*')).length
-      const oppOnTeamForeign = oppSimulated.filter(p => p.player_name.includes('*')).length
+      const myActiveForeign = myActive.filter(p =>
+        identityMap[p.player_name] === '洋將'
+      ).length
+      
+      const myOnTeamForeign = mySimulated.filter(p =>
+        identityMap[p.player_name] === '洋將'
+      ).length
+      
+      const oppActiveForeign = oppActive.filter(p =>
+        identityMap[p.player_name] === '洋將'
+      ).length
+      
+      const oppOnTeamForeign = oppSimulated.filter(p =>
+        identityMap[p.player_name] === '洋將'
+      ).length
   
       console.log('🧩 自己統計:', { myActiveCount, myActiveForeign, myOnTeamForeign })
       console.log('🧩 對方統計:', { oppActiveCount, oppActiveForeign, oppOnTeamForeign })

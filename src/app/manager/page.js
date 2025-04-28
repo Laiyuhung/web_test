@@ -570,6 +570,7 @@ export default function RosterPage() {
       const res = await fetch(`/api/saveAssigned/load_manager?date=${selectedDate}&manager_id=${selectedManager}`)
       const data = await res.json()
       console.log('👀 回傳資料內容:', data) // 👈 加這行
+      setOpponentTradePlayers(data.map(p => p.player_name))
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
       const map = {}
@@ -580,7 +581,7 @@ export default function RosterPage() {
         }
       })
 
-      setOpponentTradePlayers(data.map(p => p.Name))
+      
 
   
       console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行

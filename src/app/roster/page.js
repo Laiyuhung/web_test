@@ -1747,14 +1747,13 @@ export default function RosterPage() {
         }, {})
       ).map(([date, waivers]) => (
         <div key={date} className="border rounded-lg p-4 shadow-sm bg-gray-50 mb-6">
-
           {/* 日期 */}
           <div className="font-bold text-[#0155A0] text-base mb-4">{date}</div>
 
           {/* 每一筆 waiver（每一個 box） */}
           <div className="flex flex-col gap-4">
             {waivers.map((w, idx) => (
-              <div key={idx} className="border rounded-md bg-white p-3 shadow">
+              <div key={idx} className="border rounded-md bg-white p-3 shadow relative">
 
                 {/* Priority */}
                 <div className="text-xs text-gray-500 mb-2">Priority: {w.personal_priority}</div>
@@ -1774,11 +1773,30 @@ export default function RosterPage() {
                     <div className="text-xs text-gray-500">To Waivers</div>
                   </div>
                 )}
+
+                {/* 上下移按鈕 */}
+                <div className="absolute top-2 right-2 flex flex-col space-y-1">
+                  <button
+                    onClick={() => moveWaiver(date, idx, 'up')}
+                    className="text-gray-400 hover:text-black"
+                    disabled={idx === 0}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    onClick={() => moveWaiver(date, idx, 'down')}
+                    className="text-gray-400 hover:text-black"
+                    disabled={idx === waivers.length - 1}
+                  >
+                    ▼
+                  </button>
+                </div>
+
               </div>
             ))}
           </div>
-
         </div>
+
       ))
     )}
   </div>

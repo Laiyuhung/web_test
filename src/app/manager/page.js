@@ -569,15 +569,10 @@ export default function RosterPage() {
     try {
       const res = await fetch(`/api/saveAssigned/load_manager?date=${selectedDate}&manager_id=${selectedManager}`)
       const data = await res.json()
-      console.log('👀 回傳資料內容:', data)
-    
-      const playerNames = data.map(p => p.player_name)
-      console.log('✅ 即將塞進 OpponentTradePlayers 的名單:', playerNames)  // 加這行！
-    
-      setOpponentTradePlayers(playerNames)
-    
+      console.log('👀 回傳資料內容:', data) // 👈 加這行
+      setOpponentTradePlayers(data.map(p => p.player_name))
       if (!res.ok) throw new Error(data.error || '讀取失敗')
-    
+  
       const map = {}
       playersList.forEach(p => {
         const record = data.find(r => r.player_name === p.Name)
@@ -585,14 +580,16 @@ export default function RosterPage() {
           map[p.Name] = record.position
         }
       })
-    
-      console.log('📋 載入完成的球員位置對應:', map)
-    
+
+      
+
+  
+      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
+  
       setAssignedPositions(map)
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
-    
   }
 
   // ✅ 加入這段：
@@ -1252,7 +1249,7 @@ export default function RosterPage() {
                 {/* 右側：我希望獲得 */}
                 <div className="md:w-1/2 w-full border-r md:pr-4">
                   <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
-                  {players.map(p => (
+                  {opponentTradePlayers.map(p => (
                     <label key={p.player_name} className="flex items-center gap-2 mb-1">
                       <input
                         type="checkbox"

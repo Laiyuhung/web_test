@@ -31,6 +31,15 @@ function getDateList(startStr, endStr) {
   return list
 }
 
+function getTaiwanTodayStr() {
+  const now = new Date()
+  now.setHours(now.getHours() + 8)  // 加 8 小時變成台灣時間
+  const year = now.getUTCFullYear()
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(now.getUTCDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 
 export async function POST(req) {
   try {
@@ -42,7 +51,7 @@ export async function POST(req) {
       return NextResponse.json({ error: '參數錯誤或未登入' }, { status: 400 })
     }
 
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const todayStr = getTaiwanTodayStr()
     const endStr = '2025-11-30'
     const transaction_time = getUTCFormat()
 

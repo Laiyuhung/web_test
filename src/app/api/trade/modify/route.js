@@ -43,7 +43,7 @@ async function dropAndAdd(fromId, toId, playerName, dateList, transaction_time) 
   await supabase.from('transactions').insert([{
     transaction_time,
     manager_id: fromId,
-    type: 'Drop',
+    type: 'Trade Drop',
     Player_no: playerNo
   }])
   await supabase
@@ -56,7 +56,7 @@ async function dropAndAdd(fromId, toId, playerName, dateList, transaction_time) 
   await supabase.from('transactions').insert([{
     transaction_time,
     manager_id: toId,
-    type: 'Add',
+    type: 'Trade Add',
     Player_no: playerNo
   }])
   const addRows = dateList.map(date => ({

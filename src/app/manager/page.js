@@ -974,7 +974,7 @@ export default function RosterPage() {
             }
             setTradeDialogOpen(true)
           }}
-          className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"
+          className="mt-2 px-4 py-1 rounded bg-[#004AAD] text-white text-sm hover:opacity-90"
         >
           ⇄ 與此玩家交易
         </button>

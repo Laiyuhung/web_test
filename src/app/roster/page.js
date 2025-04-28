@@ -1741,9 +1741,10 @@ export default function RosterPage() {
       waiverList.map((w, idx) => (
         <div key={idx} className="border rounded-lg p-3 shadow-sm bg-gray-50 mb-3">
           <div className="text-sm">
-            <div><span className="font-semibold">申請增加：</span>{w.add_player}</div>
-            <div><span className="font-semibold">釋出球員：</span>{w.drop_player || '無'}</div>
-            <div><span className="font-semibold">Waiver 到期日：</span>{w.off_waiver}</div>
+            <div><span className="font-semibold">Add：</span>{w.add_player}</div>
+            <div><span className="font-semibold">Drop：</span>{w.drop_player || '無'}</div>
+            <div><span className="font-semibold">off waivers：</span>{w.off_waiver}</div>
+            <div><span className="font-semibold">priority：</span>{w.personal_priority}</div>
           </div>
         </div>
       ))

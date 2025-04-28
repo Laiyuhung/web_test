@@ -806,29 +806,30 @@ export default function RosterPage() {
       }
   
       // 🛜 真的送出交易
-      // const res = await fetch('/api/trade/modify', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     id: tradeId,
-      //     type,
-      //     myManagerId,
-      //     opponentManagerId,
-      //     myPlayers,
-      //     opponentPlayers,
-      //   }),
-      // })
+      const res = await fetch('/api/trade/modify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: tradeId,
+          type,
+          myManagerId,
+          opponentManagerId,
+          myPlayers,
+          opponentPlayers,
+        }),
+      })
 
-      console.log('✅ 雙方交易模擬檢查通過，理論上可以送出，但目前先不真正送出');
+      // console.log('✅ 雙方交易模擬檢查通過，理論上可以送出，但目前先不真正送出');
   
-      // const data = await res.json()
-      // if (!res.ok) throw new Error(data.error || '操作失敗')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || '操作失敗')
   
       alert(data.message || '操作成功')
       await reloadTradeList()
       await reloadRoster()
   
-    } catch (err) {
+    } 
+    catch (err) {
       console.error('❌ 處理交易失敗:', err)
       alert(`錯誤：${err.message}`)
     }

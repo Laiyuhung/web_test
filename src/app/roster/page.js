@@ -725,8 +725,9 @@ export default function RosterPage() {
 
       const myManagerId = userId
       const opponentManagerId = trade.initiator_id.toString() === userId ? trade.receiver_id : trade.initiator_id
-      const myPlayers = trade.initiator_id.toString() === userId ? trade.initiator_give : trade.receiver_give
-      const opponentPlayers = trade.initiator_id.toString() === userId ? trade.receiver_give : trade.initiator_give
+      const myPlayers = trade.initiator_id.toString() === userId ? trade.receiver_received : trade.initiator_received
+      const opponentPlayers = trade.initiator_id.toString() === userId ? trade.initiator_received : trade.receiver_received
+
   
       console.log('🧩 開始交易模擬:', { myManagerId, opponentManagerId, myPlayers, opponentPlayers })
   

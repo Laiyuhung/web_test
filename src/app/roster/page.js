@@ -1763,7 +1763,7 @@ export default function RosterPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-green-600 font-bold text-lg">+</span>
                   <div className="text-sm text-gray-800">{w.add_player}</div>
-                  <div className="text-xs text-gray-500">Free Agent</div>
+                  <div className="text-xs text-gray-500">Waiver claim</div>
                 </div>
 
                 {/* ➖ Drop player */}

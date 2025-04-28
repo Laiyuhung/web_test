@@ -720,6 +720,13 @@ export default function RosterPage() {
   const handleTradeAction = async (tradeId, type, trade) => {
     try {
 
+
+      const myManagerId = userId
+      const opponentManagerId = trade.initiator_id.toString() === userId ? trade.receiver_id : trade.initiator_id
+      const myPlayers = trade.initiator_id.toString() === userId ? trade.receiver_received : trade.initiator_received
+      const opponentPlayers = trade.initiator_id.toString() === userId ? trade.initiator_received : trade.receiver_received
+
+
       if (type === 'accept') {
         const now = new Date();
         const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000); // +8小時
@@ -737,13 +744,6 @@ export default function RosterPage() {
 
         console.log('🧩 identityMap:', identityMap)
 
-        
-        const myManagerId = userId
-        const opponentManagerId = trade.initiator_id.toString() === userId ? trade.receiver_id : trade.initiator_id
-        const myPlayers = trade.initiator_id.toString() === userId ? trade.receiver_received : trade.initiator_received
-        const opponentPlayers = trade.initiator_id.toString() === userId ? trade.initiator_received : trade.receiver_received
-
-    
         console.log('🧩 開始交易模擬:', { myManagerId, opponentManagerId, myPlayers, opponentPlayers })
     
         // 抓自己、對方的 saveAssigned

@@ -15,22 +15,20 @@ export async function POST(req) {
     }
 
     let query = supabase
-    .from('trade_discussion')
-    .select('*')
-    .or(`initiator_id.eq.${manager_id},receiver_id.eq.${manager_id}`)
-    .order('created_at', { ascending: false })
+      .from('trade_discussion')
+      .select('*')
+      .or(`initiator_id.eq.${manager_id},receiver_id.eq.${manager_id}`)
+      .order('created_at', { ascending: false })
 
-  if (status) {
-    if (status === 'pending') {
+    if (status) {
       query = query.eq('status', status)
-    } else {
-      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
 
-      // ❗連續加 where，要自己手動組 and
-      query = query.and(`status.eq.${status},updated_at.gte.${threeDaysAgo}`)
+      // 如果不是 pending，要加 updated_at 三天內條件
+      if (status !== 'pending') {
+        const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+        query = query.gte('updated_at', threeDaysAgo)
+      }
     }
-  }
-
 
     const { data, error } = await query
 

@@ -668,6 +668,15 @@ export default function RosterPage() {
 
   const moveWaiver = async (date, idx, direction) => {
     try {
+
+      const groupedWaivers = waiverList.reduce((acc, w) => {
+        const date = w.off_waiver
+        if (!acc[date]) acc[date] = []
+        acc[date].push(w)
+        return acc
+      }, {})
+      
+
       const group = groupedWaivers[date]
       if (!group || group.length < 2) return
   

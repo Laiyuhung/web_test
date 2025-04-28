@@ -580,7 +580,7 @@ export default function RosterPage() {
         }
       })
 
-      setOpponentTradePlayers(data.map(p => p.player_name))
+      setOpponentTradePlayers(data.map(p => p.Name))
 
   
       console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
@@ -971,7 +971,7 @@ export default function RosterPage() {
             }
             setTradeDialogOpen(true)
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"
         >
           ⇄ 與此玩家交易
         </button>

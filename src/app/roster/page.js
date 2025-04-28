@@ -689,8 +689,8 @@ export default function RosterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id1: current.id,
-          id2: target.id,
+          id1: current.apply_no,
+          id2: target.apply_no,
         }),
       })
   

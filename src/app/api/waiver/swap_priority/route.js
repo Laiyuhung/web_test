@@ -13,14 +13,14 @@ export async function POST(req) {
     // 抓兩筆資料
     const { data: w1, error: e1 } = await supabase
       .from('waiver')
-      .select('id, personal_priority')
-      .eq('id', id1)
+      .select('apply_no, personal_priority')
+      .eq('apply_no', id1)
       .single()
 
     const { data: w2, error: e2 } = await supabase
       .from('waiver')
-      .select('id, personal_priority')
-      .eq('id', id2)
+      .select('apply_no, personal_priority')
+      .eq('apply_no', id2)
       .single()
 
     if (e1 || e2 || !w1 || !w2) {

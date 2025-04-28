@@ -719,6 +719,10 @@ export default function RosterPage() {
 
   const handleTradeAction = async (tradeId, type, trade) => {
     try {
+      const now = new Date();
+      const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000); // +8小時
+      const taiwanToday = taiwanNow.toISOString().slice(0, 10);
+
       const myManagerId = userId
       const opponentManagerId = trade.initiator_id.toString() === userId ? trade.receiver_id : trade.initiator_id
       const myPlayers = trade.initiator_id.toString() === userId ? trade.initiator_give : trade.receiver_give

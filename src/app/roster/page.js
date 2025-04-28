@@ -1738,18 +1738,56 @@ export default function RosterPage() {
     {waiverList.length === 0 ? (
       <div className="text-gray-500 text-sm">目前沒有 pending 的 Waiver</div>
     ) : (
-      waiverList.map((w, idx) => (
-        <div key={idx} className="border rounded-lg p-3 shadow-sm bg-gray-50 mb-3">
-          <div className="text-sm">
-            <div><span className="font-semibold">Add：</span>{w.add_player}</div>
-            <div><span className="font-semibold">Drop：</span>{w.drop_player || '無'}</div>
-            <div><span className="font-semibold">off waivers：</span>{w.off_waiver}</div>
-            <div><span className="font-semibold">priority：</span>{w.personal_priority}</div>
+      Object.entries(
+        waiverList.reduce((acc, w) => {
+          const date = w.off_waiver
+          if (!acc[date]) acc[date] = []
+          acc[date].push(w)
+          return acc
+        }, {})
+      ).map(([date, waivers]) => (
+        <div key={date} className="border rounded-lg p-3 shadow-sm bg-gray-50 mb-6">
+
+          {/* 日期 */}
+          <div className="font-bold text-[#0155A0] text-base mb-1">{date}</div>
+
+          {/* Priority */}
+          {waivers.length > 0 && (
+            <div className="text-xs text-gray-500 mb-3">
+              Priority: {waivers[0].personal_priority}
+            </div>
+          )}
+
+          {/* 每一組 add/drop */}
+          <div className="flex flex-col gap-4">
+            {waivers.map((w, idx) => (
+              <div key={idx} className="flex flex-col gap-1">
+                
+                {/* ➕ Add player */}
+                <div className="flex items-center gap-2">
+                  <span className="text-green-600 font-bold text-lg">+</span>
+                  <div className="text-sm text-gray-800">{w.add_player}</div>
+                  <div className="text-xs text-gray-500">Free Agent</div>
+                </div>
+
+                {/* ➖ Drop player */}
+                {w.drop_player && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-red-600 font-bold text-lg">-</span>
+                    <div className="text-sm text-gray-800">{w.drop_player}</div>
+                    <div className="text-xs text-gray-500">To Waivers</div>
+                  </div>
+                )}
+
+              </div>
+            ))}
           </div>
+
         </div>
       ))
     )}
   </div>
+
 
   <AlertDialogFooter>
     <AlertDialogCancel>關閉</AlertDialogCancel>

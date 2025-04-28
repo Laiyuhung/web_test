@@ -821,8 +821,8 @@ export default function RosterPage() {
 
       console.log('✅ 雙方交易模擬檢查通過，理論上可以送出，但目前先不真正送出');
   
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || '操作失敗')
+      // const data = await res.json()
+      // if (!res.ok) throw new Error(data.error || '操作失敗')
   
       alert(data.message || '操作成功')
       await reloadTradeList()

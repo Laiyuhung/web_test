@@ -20,15 +20,23 @@ export async function POST(req) {
       .or(`initiator_id.eq.${manager_id},receiver_id.eq.${manager_id}`)
       .order('created_at', { ascending: false })
 
-    if (status) {
-      query = query.eq('status', status)
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
 
-      // 如果不是 pending，要加 updated_at 三天內條件
-      if (status !== 'pending') {
-        const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-        query = query.gte('updated_at', threeDaysAgo)
+    if (status) {
+      if (status === 'pending') {
+        query = query.eq('status', 'pending')
+      } else {
+        query = query.eq('status', status).gte('updated_at', threeDaysAgo)
       }
+    } else {
+      // ❗如果沒有指定 status，表示要全查：
+      // - pending 全部
+      // - 其他只要 updated_at >= 3天內
+      query = query.or(
+        `status.eq.pending,status.in.(accepted,rejected,canceled).and(updated_at.gte.${threeDaysAgo})`
+      )
     }
+      
 
     const { data, error } = await query
 

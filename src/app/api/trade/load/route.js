@@ -29,14 +29,11 @@ export async function POST(req) {
         query = query.eq('status', status).gte('updated_at', threeDaysAgo)
       }
     } else {
-      // ❗如果沒有指定 status，表示要全查：
-      // - pending 全部
-      // - 其他只要 updated_at >= 3天內
+      // 沒指定 status，要自己組條件
       query = query.or(
-        `status.eq.pending,status.in.(accepted,rejected,canceled).and(updated_at.gte.${threeDaysAgo})`
+        `status.eq.pending,and(status.in.(accepted,rejected,canceled),updated_at.gte.${threeDaysAgo})`
       )
     }
-      
 
     const { data, error } = await query
 

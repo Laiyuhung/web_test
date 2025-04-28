@@ -21,6 +21,8 @@ export default function RosterPage() {
   const [successDialogOpen, setSuccessDialogOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [myRosterPlayers, setMyRosterPlayers] = useState([])
+  const [opponentPlayers, setOpponentPlayers] = useState([])
+
 
   const [selectedManager, setSelectedManager] = useState(null)
   const [managers, setManagers] = useState([])
@@ -564,13 +566,13 @@ export default function RosterPage() {
   
 
   const loadAssigned = async (playersList) => {
-    console.log('📦 載入 assigned，用的 playersList:', playersList)
+    // console.log('📦 載入 assigned，用的 playersList:', playersList)
   
     try {
       const res = await fetch(`/api/saveAssigned/load_manager?date=${selectedDate}&manager_id=${selectedManager}`)
       const data = await res.json()
       console.log('👀 回傳資料內容:', data) // 👈 加這行
-      setOpponentTradePlayers(data.map(p => p.player_name))
+      setOpponentPlayers(data)
       if (!res.ok) throw new Error(data.error || '讀取失敗')
   
       const map = {}
@@ -1249,7 +1251,7 @@ export default function RosterPage() {
                 {/* 右側：我希望獲得 */}
                 <div className="md:w-1/2 w-full border-r md:pr-4">
                   <div className="mb-2 font-bold text-gray-700">🎯 Aquire：</div>
-                  {opponentTradePlayers.map(p => (
+                  {opponentPlayers.map(p => (
                     <label key={p.player_name} className="flex items-center gap-2 mb-1">
                       <input
                         type="checkbox"

@@ -569,10 +569,15 @@ export default function RosterPage() {
     try {
       const res = await fetch(`/api/saveAssigned/load_manager?date=${selectedDate}&manager_id=${selectedManager}`)
       const data = await res.json()
-      console.log('👀 回傳資料內容:', data) // 👈 加這行
-      setOpponentTradePlayers(data.map(p => p.player_name))
+      console.log('👀 回傳資料內容:', data)
+    
+      const playerNames = data.map(p => p.player_name)
+      console.log('✅ 即將塞進 OpponentTradePlayers 的名單:', playerNames)  // 加這行！
+    
+      setOpponentTradePlayers(playerNames)
+    
       if (!res.ok) throw new Error(data.error || '讀取失敗')
-  
+    
       const map = {}
       playersList.forEach(p => {
         const record = data.find(r => r.player_name === p.Name)
@@ -580,16 +585,14 @@ export default function RosterPage() {
           map[p.Name] = record.position
         }
       })
-
-      
-
-  
-      console.log('📋 載入完成的球員位置對應:', map) // 👈 加這行
-  
+    
+      console.log('📋 載入完成的球員位置對應:', map)
+    
       setAssignedPositions(map)
     } catch (err) {
       console.error('❌ 載入 AssignedPositions 失敗:', err)
     }
+    
   }
 
   // ✅ 加入這段：

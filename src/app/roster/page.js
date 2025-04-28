@@ -1746,25 +1746,21 @@ export default function RosterPage() {
           return acc
         }, {})
       ).map(([date, waivers]) => (
-        <div key={date} className="border rounded-lg p-3 shadow-sm bg-gray-50 mb-6">
+        <div key={date} className="border rounded-lg p-4 shadow-sm bg-gray-50 mb-6">
 
           {/* 日期 */}
-          <div className="font-bold text-[#0155A0] text-base mb-1">{date}</div>
+          <div className="font-bold text-[#0155A0] text-base mb-4">{date}</div>
 
-          {/* Priority */}
-          {waivers.length > 0 && (
-            <div className="text-xs text-gray-500 mb-3">
-              Priority: {waivers[0].personal_priority}
-            </div>
-          )}
-
-          {/* 每一組 add/drop */}
+          {/* 每一筆 waiver（每一個 box） */}
           <div className="flex flex-col gap-4">
             {waivers.map((w, idx) => (
-              <div key={idx} className="flex flex-col gap-1">
-                
+              <div key={idx} className="border rounded-md bg-white p-3 shadow">
+
+                {/* Priority */}
+                <div className="text-xs text-gray-500 mb-2">Priority: {w.personal_priority}</div>
+
                 {/* ➕ Add player */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mb-1">
                   <span className="text-green-600 font-bold text-lg">+</span>
                   <div className="text-sm text-gray-800">{w.add_player}</div>
                   <div className="text-xs text-gray-500">Free Agent</div>
@@ -1778,7 +1774,6 @@ export default function RosterPage() {
                     <div className="text-xs text-gray-500">To Waivers</div>
                   </div>
                 )}
-
               </div>
             ))}
           </div>

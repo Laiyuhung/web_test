@@ -961,8 +961,10 @@ export default function RosterPage() {
   }
   
   const cancelWaiver = async (applyNo) => {
-    if (!confirm('確定要取消這筆 Waiver 申請嗎？')) return
+    console.log('🚀 嘗試取消 Waiver，apply_no =', applyNo) // ← 這行是新增的
   
+    if (!confirm('確定要取消這筆 Waiver 申請嗎？')) return
+    
     try {
       const res = await fetch('/api/waiver/cancel_waiver', {
         method: 'POST',
@@ -975,7 +977,8 @@ export default function RosterPage() {
       if (!res.ok) throw new Error(data.error || '取消失敗')
   
       console.log('✅ Waiver 取消成功')
-      // 取消成功後，重抓最新 Waiver List
+      
+      // 重抓 Waiver List
       const reloadRes = await fetch('/api/waiver/load_personal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -993,6 +996,7 @@ export default function RosterPage() {
       alert(`取消失敗：${err.message}`)
     }
   }
+  
   
 
   const batters = players
@@ -1881,7 +1885,7 @@ export default function RosterPage() {
 
                 {/* Priority 與 🔼 上方移動按鈕同一列 */}
                 <div className="flex justify-between items-center mb-2">
-                  <div className="text-xs text-gray-500 font-bold">id: {w.apply_no}</div>
+                  {/* <div className="text-xs text-gray-500 font-bold">id: {w.apply_no}</div> */}
                   <div className="text-xs text-gray-500 font-bold">Priority: {w.personal_priority}</div>
                   <button
                     onClick={() => moveWaiver(date, idx, 'up')}

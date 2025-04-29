@@ -335,7 +335,7 @@ export default function PlayerPage() {
       
 
       const merged = statusData.map(p => {
-        const stat = statsData.find(s => s.name === p.Name)
+        const stat = statsData.find(s => clean(s.name) === clean(p.Name))
         const register = registerData.find(r => r.name === p.Name)
         const registerStatus = register?.status || '未知'
         const posData = positionData.find(pos => pos.name === p.Name)

@@ -922,7 +922,7 @@ export default function RosterPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || '操作失敗')
   
-      showMessage(data.message || '操作成功', 'success')
+      showMessage(data.message || '交易成功', 'success')
       await reloadTradeList()
       await reloadRoster()
   
@@ -983,6 +983,7 @@ export default function RosterPage() {
         if (!res.ok) throw new Error(data.error || '取消失敗')
   
         console.log('✅ Waiver 取消成功')
+        showMessage('✅ Waiver 取消成功', 'success')
   
         const reloadRes = await fetch('/api/waiver/load_personal', {
           method: 'POST',

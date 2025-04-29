@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import supabase from '@/lib/supabase'
 
+// 輔助：格式化 IP（局數）
 function formatIP(outs) {
   const fullInnings = Math.floor(outs / 3)
   const remainder = outs % 3
@@ -17,11 +18,10 @@ export async function POST(req) {
 
     console.log('📥 接收到:', { type, from, to })
 
-    // 【步驟 1】從 Supabase 撈 playersList
+    // 【步驟 1】從 Supabase 撈出 playerslist（全部撈）
     const { data: players, error: playersError } = await supabase
       .from('playerslist')
       .select('Name, B_or_P')
-      .filter('lower("B_or_P")', 'eq', type.toLowerCase())
 
     if (playersError) {
       console.error('❌ 撈取 playerslist 失敗:', playersError)
@@ -29,15 +29,23 @@ export async function POST(req) {
     }
 
     if (!players || players.length === 0) {
+      console.log('⚠️ playerslist 撈到空資料')
+      return NextResponse.json({ error: 'playerslist 沒有資料' }, { status: 400 })
+    }
+
+    // 【步驟 2】後端自己篩選 B_or_P 小寫等於 type 小寫
+    const filteredPlayers = players.filter(p => (p.B_or_P || '').toLowerCase() === type.toLowerCase())
+
+    if (filteredPlayers.length === 0) {
       console.log('⚠️ 找不到符合類型的球員')
       return NextResponse.json({ error: '找不到符合類型的球員' }, { status: 400 })
     }
 
-    console.log('✅ 撈到符合球員:', players.map(p => p.Name))
+    console.log('✅ 撈到符合球員:', filteredPlayers.map(p => p.Name))
 
-    const names = players.map(p => p.Name)
+    const names = filteredPlayers.map(p => p.Name)
 
-    // 【步驟 2】從打者或投手成績表查詢符合的人
+    // 【步驟 3】查成績表
     const { data: statsData, error: statsError } = await supabase
       .from(type === 'batter' ? 'batting_stats' : 'pitching_stats')
       .select('*')
@@ -47,17 +55,18 @@ export async function POST(req) {
       .lte('game_date', to)
 
     if (statsError) {
-      console.error('❌ 查詢 stats 失敗:', statsError)
+      console.error('❌ 查詢成績失敗:', statsError)
       return NextResponse.json({ error: statsError.message }, { status: 500 })
     }
 
     console.log('📊 查到成績資料筆數:', statsData.length)
 
+    // 【步驟 4】初始化累加器
     const result = type === 'batter'
       ? { AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0, K: 0, GIDP: 0, XBH: 0, TB: 0, BB: 0, HBP: 0, SF: 0 }
       : { W: 0, L: 0, HLD: 0, SV: 0, H: 0, ER: 0, K: 0, BB: 0, QS: 0, OUT: 0 }
 
-    // 【步驟 3】累加統計
+    // 【步驟 5】累加所有成績
     for (const row of statsData) {
       if (type === 'batter') {
         result.AB += row.at_bats || 0
@@ -95,7 +104,7 @@ export async function POST(req) {
 
     console.log('📈 累加後總結果:', result)
 
-    // 【步驟 4】加上平均指標並回傳
+    // 【步驟 6】加上平均指標並回傳
     if (type === 'batter') {
       const OBP_den = result.AB + result.BB + result.HBP + result.SF
       const OBP = OBP_den ? (result.H + result.BB + result.HBP) / OBP_den : 0

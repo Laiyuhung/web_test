@@ -18,9 +18,15 @@ import {
 export default function RosterPage() {
 
   const [waiverPriority, setWaiverPriority] = useState(null)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [confirmDialogMessage, setConfirmDialogMessage] = useState('')
+  const [onConfirmAction, setOnConfirmAction] = useState(() => () => {})
 
+  
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false)
   const [waiverList, setWaiverList] = useState([])
+  const [messageBox, setMessageBox] = useState({ text: '', type: 'info' }) // type: 'info' | 'success' | 'error'
+  const [messageVisible, setMessageVisible] = useState(false)
 
   const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
   const [batterMap, setBatterMap] = useState(new Map())
@@ -699,7 +705,7 @@ export default function RosterPage() {
       console.log('✅ Waiver 優先順序交換成功')
     } catch (err) {
       console.error('❌ 移動 Waiver 失敗:', err)
-      alert(`錯誤：${err.message}`)
+      showMessage(`錯誤：${err.message}`, 'error')
     }
   
     // ✅ 成功或失敗後，統一重新載入
@@ -915,7 +921,7 @@ export default function RosterPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || '操作失敗')
   
-      alert(data.message || '操作成功')
+      showMessage(data.message || '操作成功', 'success')
       await reloadTradeList()
       await reloadRoster()
   
@@ -961,43 +967,47 @@ export default function RosterPage() {
   }
   
   const cancelWaiver = async (applyNo) => {
-    console.log('🚀 嘗試取消 Waiver，apply_no =', applyNo) // ← 這行是新增的
+    console.log('🚀 嘗試取消 Waiver，apply_no =', applyNo)
   
-    if (!confirm('確定要取消這筆 Waiver 申請嗎？')) return
-    
-    try {
-      const res = await fetch('/api/waiver/cancel_waiver', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apply_no: applyNo }),
-      })
+    showConfirm('確定要取消這筆 Waiver 申請嗎？', async () => {
+      try {
+        const res = await fetch('/api/waiver/cancel_waiver', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apply_no: applyNo }),
+        })
   
-      const data = await res.json()
+        const data = await res.json()
   
-      if (!res.ok) throw new Error(data.error || '取消失敗')
+        if (!res.ok) throw new Error(data.error || '取消失敗')
   
-      console.log('✅ Waiver 取消成功')
-      
-      // 重抓 Waiver List
-      const reloadRes = await fetch('/api/waiver/load_personal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ manager_id: userId }),
-      })
-      const reloadData = await reloadRes.json()
-      if (reloadRes.ok) {
-        setWaiverList(reloadData)
-      } else {
-        console.error('❌ 重新載入失敗:', reloadData)
+        console.log('✅ Waiver 取消成功')
+  
+        const reloadRes = await fetch('/api/waiver/load_personal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ manager_id: userId }),
+        })
+        const reloadData = await reloadRes.json()
+        if (reloadRes.ok) {
+          setWaiverList(reloadData)
+        } else {
+          console.error('❌ 重新載入失敗:', reloadData)
+        }
+  
+      } catch (err) {
+        console.error('❌ 取消 Waiver 錯誤:', err)
+        alert(`取消失敗：${err.message}`)
       }
-  
-    } catch (err) {
-      console.error('❌ 取消 Waiver 錯誤:', err)
-      alert(`取消失敗：${err.message}`)
-    }
+    })
   }
   
   
+  const showConfirm = (message, onConfirm) => {
+    setConfirmDialogMessage(message)
+    setOnConfirmAction(() => onConfirm)
+    setConfirmDialogOpen(true)
+  }
 
   const batters = players
   .filter(p => p.B_or_P === 'Batter' && assignedPositions[p.Name] !== undefined)
@@ -1033,6 +1043,12 @@ export default function RosterPage() {
         ))}
       </tr>
     )
+  }
+
+  const showMessage = (text, type = 'info', duration = 3000) => {
+    setMessageBox({ text, type })
+    setMessageVisible(true)
+    setTimeout(() => setMessageVisible(false), duration)
   }
   
 
@@ -1165,8 +1181,42 @@ export default function RosterPage() {
   return (
 
 <>
+
+    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>確認操作</AlertDialogTitle>
+          <AlertDialogDescription>
+            {confirmDialogMessage}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              setConfirmDialogOpen(false)
+              if (onConfirmAction) onConfirmAction()
+            }}
+          >
+            確定
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
     
     <div className="p-6">
+
+    {messageVisible && (
+      <div className={`mb-4 px-4 py-2 rounded border text-sm font-semibold ${
+        messageBox.type === 'success' ? 'bg-green-50 text-green-700 border-green-300' :
+        messageBox.type === 'error' ? 'bg-red-50 text-red-700 border-red-300' :
+        'bg-blue-50 text-blue-700 border-blue-300'
+      }`}>
+        {messageBox.text}
+      </div>
+    )}
+
 
       {moveMessage && (
         <div className="mb-4 p-3 text-sm bg-blue-50 text-blue-800 border border-blue-300 rounded">
@@ -1819,25 +1869,28 @@ export default function RosterPage() {
               <div className="flex gap-2 mt-2">
                 {t.initiator_id.toString() === userId ? (
                   <button
-                    onClick={() => handleTradeAction(t.id, 'Cancel', t)}
+                    onClick={() => showConfirm('確定要取消這筆交易嗎？', () => handleTradeAction(t.id, 'Cancel', t))}
                     className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
                   >
                     Cancel Trade
                   </button>
+                
                 ) : (
                   <>
                     <button
-                      onClick={() => handleTradeAction(t.id, 'Accept', t)}
+                      onClick={() => showConfirm('確定要接受這筆交易嗎？', () => handleTradeAction(t.id, 'Accept', t))}
                       className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200"
                     >
                       Accept
                     </button>
+
                     <button
-                      onClick={() => handleTradeAction(t.id, 'Reject', t)}
+                      onClick={() => showConfirm('確定要拒絕這筆交易嗎？', () => handleTradeAction(t.id, 'Reject', t))}
                       className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
                     >
                       Reject
                     </button>
+
                   </>
                 )}
               </div>

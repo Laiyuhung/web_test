@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { sendTradeNotificationEmail } from '@/lib/email'
 import supabase from '@/lib/supabase'
 
 // 🔧 台灣 +08:00 時區的 ISO 格式
@@ -138,6 +139,34 @@ export async function POST(req) {
         console.warn('⚠️ Drop 時刪除位置失敗:', deleteError.message)
       }
     }
+
+    // 📨 新增：交易成功後發信（發給固定四個人）
+    const recipients = [
+      "mar.hung.0708@gmail.com",
+      "laiyuhung921118@gmail.com",
+      "peter0984541203@gmail.com",
+      "anthonylin6507@gmail.com"
+    ]
+
+    await Promise.all(
+      recipients.map(email =>
+        sendTradeNotificationEmail(
+          email,
+          `CPBL Fantasy transaction 通知`,
+          `
+          <h2>交易通知</h2>
+          <p><strong>玩家 #${manager_id}</strong> 已成功執行以下操作：</p>
+          <ul>
+            <li><strong>類型：</strong> ${type}</li>
+            <li><strong>球員：</strong> ${playerName}</li>
+          </ul>
+          <p>時間：${transaction_time}</p>
+          `
+        )
+      )
+    )
+    
+
 
     return NextResponse.json({
       message: '交易成功',

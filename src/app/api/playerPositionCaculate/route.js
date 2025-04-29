@@ -5,17 +5,21 @@ const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
 const validPositions = ['C', '1B', '2B', '3B', 'SS', 'OF']
 const isValidPosition = (p) => validPositions.includes(p)
 
-async function fetchAll(tableName, columns) {
+async function fetchAll(tableName, columns, where = null) {
   const pageSize = 1000
   let allData = []
   let page = 0
   let done = false
 
   while (!done) {
-    const { data, error } = await supabase
-      .from(tableName)
-      .select(columns)
-      .range(page * pageSize, (page + 1) * pageSize - 1)
+    let query = supabase.from(tableName).select(columns)
+
+    // 加上 where 條件（例如 .eq('Available', 'V')）
+    if (where) query = where(query)
+
+    query = query.range(page * pageSize, (page + 1) * pageSize - 1)
+
+    const { data, error } = await query
 
     if (error) throw new Error(error.message)
 
@@ -35,9 +39,10 @@ async function fetchAll(tableName, columns) {
 
 
 
+
 export async function GET() {
   const [players, posTable, batting, pitching] = await Promise.all([
-    fetchAll('playerslist', 'Player_no, Name, B_or_P'),
+    fetchAll('playerslist', 'Player_no, Name, B_or_P', q => q.eq('Available', 'V')),
     fetchAll('position2024', 'Player_no, Position'),
     fetchAll('batting_stats', 'name, position'),
     fetchAll('pitching_stats', 'name, sequence')

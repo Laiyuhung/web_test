@@ -1,16 +1,22 @@
 import supabase from '@/lib/supabase'
 
-async function fetchAll(table, columns) {
+async function fetchAll(table, columns, whereFn = null) {
   const pageSize = 1000
   let allData = []
   let page = 0
   let done = false
 
   while (!done) {
-    const { data, error } = await supabase
-      .from(table)
-      .select(columns)
-      .range(page * pageSize, (page + 1) * pageSize - 1)
+    let query = supabase.from(table).select(columns)
+
+    // ✅ 加入條件式（例如 .eq(...)）
+    if (whereFn) {
+      query = whereFn(query)
+    }
+
+    query = query.range(page * pageSize, (page + 1) * pageSize - 1)
+
+    const { data, error } = await query
 
     if (error) throw new Error(`❌ 撈取 ${table} 失敗: ${error.message}`)
 
@@ -29,11 +35,12 @@ async function fetchAll(table, columns) {
 }
 
 
+
 export async function GET() {
   try {
 
     const [players, transactions, managers] = await Promise.all([
-      fetchAll('playerslist', 'Player_no, Name, Team, identity, B_or_P'),
+      fetchAll('playerslist', 'Player_no, Name, Team, identity, B_or_P', q => q.eq('Available', 'V')),
       fetchAll('transactions', 'Player_no, manager_id, type, transaction_time'),
       fetchAll('managers', 'id, team_name')
     ])

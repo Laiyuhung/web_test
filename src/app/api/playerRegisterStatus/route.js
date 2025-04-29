@@ -4,17 +4,20 @@ import supabase from '@/lib/supabaseServer'
 // 清除特殊符號
 const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
 
-async function fetchAll(tableName, columns) {
+async function fetchAll(tableName, columns, whereFn = null) {
   const pageSize = 1000
   let allData = []
   let page = 0
   let done = false
 
   while (!done) {
-    const { data, error } = await supabase
-      .from(tableName)
-      .select(columns)
-      .range(page * pageSize, (page + 1) * pageSize - 1)
+    let query = supabase.from(tableName).select(columns)
+
+    if (whereFn) query = whereFn(query)
+
+    query = query.range(page * pageSize, (page + 1) * pageSize - 1)
+
+    const { data, error } = await query
 
     if (error) throw new Error(`❌ 讀取 ${tableName} 失敗: ${error.message}`)
 
@@ -34,13 +37,14 @@ async function fetchAll(tableName, columns) {
 
 
 
+
 export async function GET() {
   // 1. 撈出所有資料表
   const [registerlist, start_major, movements, players] = await Promise.all([
     fetchAll('registerlist', 'Player_no'),
     fetchAll('start_major', 'Player_no'),
     fetchAll('player_movements', 'name, action'),
-    fetchAll('playerslist', 'Player_no, Name')
+    fetchAll('playerslist', 'Player_no, Name', q => q.eq('Available', 'V'))
   ])
 
   // 2. Player_no -> cleaned name 對照表

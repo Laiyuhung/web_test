@@ -10,6 +10,33 @@ function formatIP(outs) {
 function cleanName(name) {
   return (name || '').replace(/[#◎＊*]/g, '').trim()
 }
+async function fetchAll(tableName, columns, whereFn = null) {
+  const pageSize = 1000
+  let allData = []
+  let page = 0
+  let done = false
+
+  while (!done) {
+    let query = supabase.from(tableName).select(columns)
+    if (whereFn) query = whereFn(query)
+    query = query.range(page * pageSize, (page + 1) * pageSize - 1)
+
+    const { data, error } = await query
+    if (error) throw new Error(`❌ 讀取 ${tableName} 失敗: ${error.message}`)
+
+    console.log(`📄 ${tableName} 第 ${page + 1} 頁，拿到 ${data.length} 筆`)
+    allData = allData.concat(data)
+
+    if (data.length < pageSize) {
+      done = true
+    } else {
+      page++
+    }
+  }
+
+  console.log(`✅ ${tableName} 全部讀取完成，共 ${allData.length} 筆`)
+  return allData
+}
 
 // 分頁查詢，直到撈到完
 async function fetchAllStats(tableName, from, to) {
@@ -55,9 +82,12 @@ export async function POST(req) {
     console.log('📥 接收到:', { type, from, to })
 
     // 撈 playerslist
-    const { data: playerList, error: playerError } = await supabase
-      .from('playerslist')
-      .select('Name, B_or_P')
+    const playerList = await fetchAll(
+      'playerslist',
+      'Name, B_or_P',
+      q => q.eq('Available', 'V')
+    )
+    
 
     if (playerError) {
       console.error('❌ 撈取 playerslist 失敗:', playerError)

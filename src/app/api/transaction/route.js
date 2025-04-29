@@ -48,6 +48,14 @@ export async function POST(req) {
     const user_id = req.cookies.get('user_id')?.value
     const manager_id = parseInt(user_id, 10)
 
+    const { data: managerData, error: managerError } = await supabase
+      .from('managers')
+      .select('team_name')
+      .eq('id', manager_id)
+      .single()
+
+    const managerName = managerData?.team_name || `玩家 #${manager_id}`
+
     if (!playerName || !user_id || isNaN(manager_id)) {
       return NextResponse.json({ error: '參數錯誤或未登入' }, { status: 400 })
     }
@@ -154,8 +162,8 @@ export async function POST(req) {
           email,
           `CPBL Fantasy transaction 通知`,
           `
-          <h2>交易通知</h2>
-          <p><strong>玩家 #${manager_id}</strong> 已成功執行以下操作：</p>
+          <h2>transaction 通知</h2>
+          <p><strong>${managerName}</strong> 已成功執行以下操作：</p>
           <ul>
             <li><strong>類型：</strong> ${type}</li>
             <li><strong>球員：</strong> ${playerName}</li>

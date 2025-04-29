@@ -1,12 +1,13 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// 暫時直接寫死 API KEY（正式上線建議用 process.env）
+const resend = new Resend('re_e6rMvxmn_JkqkxA1rhV6NDFoSbXtfWcSp')
 
 export async function sendTradeNotificationEmail(to, subject, html) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Fantasy Baseball <onboarding@resend.dev>', // 這個 from 要跟 Resend 驗證的 domain 有關
-      to,
+      from: 'onboarding@resend.dev', // ✅ 測試用發信地址
+      to,                             // ✅ 你會用 recipients.map(email => ...)
       subject,
       html,
     })

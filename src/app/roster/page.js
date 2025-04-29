@@ -1881,6 +1881,7 @@ export default function RosterPage() {
 
                 {/* Priority 與 🔼 上方移動按鈕同一列 */}
                 <div className="flex justify-between items-center mb-2">
+                  <div className="text-xs text-gray-500 font-bold">id: {w.apply_no}</div>
                   <div className="text-xs text-gray-500 font-bold">Priority: {w.personal_priority}</div>
                   <button
                     onClick={() => moveWaiver(date, idx, 'up')}

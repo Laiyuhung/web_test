@@ -11,6 +11,38 @@ function cleanName(name) {
   return (name || '').replace(/[#◎＊*]/g, '').trim()
 }
 
+// 分頁查詢，直到撈到完
+async function fetchAllStats(tableName, from, to) {
+  const pageSize = 1000
+  let allData = []
+  let page = 0
+  let done = false
+
+  while (!done) {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .eq('is_major', true)
+      .gte('game_date', from)
+      .lte('game_date', to)
+      .range(page * pageSize, (page + 1) * pageSize - 1)
+
+    if (error) throw new Error(error.message)
+
+    console.log(`📄 第 ${page + 1} 頁，拿到 ${data.length} 筆`)
+    allData = allData.concat(data)
+
+    if (data.length < pageSize) {
+      done = true // 最後一頁了
+    } else {
+      page++
+    }
+  }
+
+  console.log('📊 全部查詢完成，總筆數:', allData.length)
+  return allData
+}
+
 export async function POST(req) {
   try {
     const { type, from, to } = await req.json()
@@ -32,7 +64,7 @@ export async function POST(req) {
       return NextResponse.json({ error: playerError.message }, { status: 500 })
     }
 
-    const filteredPlayers = (playerList || []).filter(p => 
+    const filteredPlayers = (playerList || []).filter(p =>
       (p.B_or_P || '').toLowerCase() === (type === 'batter' ? 'batter' : 'pitcher')
     )
 
@@ -43,21 +75,12 @@ export async function POST(req) {
 
     console.log('✅ 撈到符合球員數:', filteredPlayers.length)
 
-    // 撈成績表
-    const { data: statsData, error: statsError } = await supabase
-      .from(type === 'batter' ? 'batting_stats' : 'pitching_stats')
-      .select('*')
-      .eq('is_major', true)
-      .gte('game_date', from)
-      .lte('game_date', to)
-      .limit(9999)
-
-    if (statsError) {
-      console.error('❌ 查詢成績失敗:', statsError)
-      return NextResponse.json({ error: statsError.message }, { status: 500 })
-    }
-
-    console.log('📊 查到成績資料筆數:', statsData.length)
+    // 用分頁方式撈成績表
+    const statsData = await fetchAllStats(
+      type === 'batter' ? 'batting_stats' : 'pitching_stats',
+      from,
+      to
+    )
 
     // 整理 statsData，每一筆加上 cleanName
     const cleanStats = (statsData || []).map(row => ({
@@ -94,7 +117,8 @@ export async function POST(req) {
           K += row.strikeouts || 0
           GIDP += row.double_plays || 0
           XBH += (row.doubles || 0) + (row.triples || 0) + (row.home_runs || 0)
-          TB += (row.hits - row.doubles - row.triples - row.home_runs || 0) + (row.doubles || 0) * 2 + (row.triples || 0) * 3 + (row.home_runs || 0) * 4
+          TB += (row.hits - row.doubles - row.triples - row.home_runs || 0)
+            + (row.doubles || 0) * 2 + (row.triples || 0) * 3 + (row.home_runs || 0) * 4
           BB += row.walks || 0
           HBP += row.hit_by_pitch || 0
           SF += row.sacrifice_flies || 0

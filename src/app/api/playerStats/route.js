@@ -19,12 +19,12 @@ export async function POST(req) {
 
     // 【步驟 1】從 Supabase 撈 playersList
     const { data: players, error: playersError } = await supabase
-      .from('playersList')
+      .from('playerslist')
       .select('Name, B_or_P')
       .eq('B_or_P', type)
 
     if (playersError) {
-      console.error('❌ 撈取 playersList 失敗:', playersError)
+      console.error('❌ 撈取 playerslist 失敗:', playersError)
       return NextResponse.json({ error: playersError.message }, { status: 500 })
     }
 

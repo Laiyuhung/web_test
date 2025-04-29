@@ -21,7 +21,7 @@ export async function POST(req) {
     const { data: players, error: playersError } = await supabase
       .from('playerslist')
       .select('Name, B_or_P')
-      .eq('B_or_P', type)
+      .filter('lower("B_or_P")', 'eq', type.toLowerCase())
 
     if (playersError) {
       console.error('❌ 撈取 playerslist 失敗:', playersError)

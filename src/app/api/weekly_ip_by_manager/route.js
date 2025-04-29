@@ -65,6 +65,7 @@ export async function POST(req) {
       .in('name', playerNames)
       .gte('game_date', start)
       .lte('game_date', end)
+      .eq('is_major', true)
 
     let totalOuts = 0
 

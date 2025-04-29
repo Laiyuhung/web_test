@@ -8,45 +8,72 @@ function formatIP(outs) {
 }
 
 function cleanName(name) {
-  return (name || '').replace(/[#◎＊*]/g, '')
+  return (name || '').replace(/[#◎＊*]/g, '').trim()
 }
 
 export async function POST(req) {
   try {
     const { type, from, to } = await req.json()
-    if (!type || !from || !to) return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
 
-    // 先從 playerslist 抓出該類型球員
+    if (!type || !from || !to) {
+      console.error('❌ 缺少參數:', { type, from, to })
+      return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
+    }
+
+    console.log('📥 接收到:', { type, from, to })
+
+    // 撈 playerslist
     const { data: playerList, error: playerError } = await supabase
       .from('playerslist')
-      .select('Name')
-      .eq('B_or_P', type === 'batter' ? 'Batter' : 'Pitcher')
+      .select('Name, B_or_P')
 
-    if (playerError) return NextResponse.json({ error: playerError.message }, { status: 500 })
+    if (playerError) {
+      console.error('❌ 撈取 playerslist 失敗:', playerError)
+      return NextResponse.json({ error: playerError.message }, { status: 500 })
+    }
 
+    const filteredPlayers = (playerList || []).filter(p => 
+      (p.B_or_P || '').toLowerCase() === (type === 'batter' ? 'batter' : 'pitcher')
+    )
+
+    if (filteredPlayers.length === 0) {
+      console.log('⚠️ 找不到符合類型的球員')
+      return NextResponse.json({ error: '找不到符合類型的球員' }, { status: 400 })
+    }
+
+    console.log('✅ 撈到符合球員數:', filteredPlayers.length)
+
+    // 撈成績表
     const { data: statsData, error: statsError } = await supabase
       .from(type === 'batter' ? 'batting_stats' : 'pitching_stats')
       .select('*')
+      .eq('is_major', true)
       .gte('game_date', from)
       .lte('game_date', to)
-      .eq('is_major', true)
 
-    if (statsError) return NextResponse.json({ error: statsError.message }, { status: 500 })
+    if (statsError) {
+      console.error('❌ 查詢成績失敗:', statsError)
+      return NextResponse.json({ error: statsError.message }, { status: 500 })
+    }
 
-    const cleanStats = statsData.map(row => ({
+    console.log('📊 查到成績資料筆數:', statsData.length)
+
+    // 整理 statsData，每一筆加上 cleanName
+    const cleanStats = (statsData || []).map(row => ({
       ...row,
       cleanName: cleanName(row.name || row.player_name)
     }))
 
     const result = []
 
-    for (const player of playerList) {
+    // 一個一個 player 跑
+    for (const player of filteredPlayers) {
       const rawName = player.Name
       const playerCleanName = cleanName(rawName)
       const playerRows = cleanStats.filter(r => r.cleanName === playerCleanName)
 
       if (playerRows.length === 0) {
-        // 如果完全沒資料，回傳零
+        console.log(`⚠️ ${rawName} 查無資料，回傳 0`)
         result.push(type === 'batter'
           ? { name: rawName, AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0, K: 0, GIDP: 0, XBH: 0, TB: 0, BB: 0, HBP: 0, SF: 0, AVG: "0.000", OPS: "0.000" }
           : { name: rawName, W: 0, L: 0, HLD: 0, SV: 0, H: 0, ER: 0, K: 0, BB: 0, QS: 0, IP: "0.0", ERA: "0.00", WHIP: "0.00" }
@@ -108,9 +135,10 @@ export async function POST(req) {
       }
     }
 
+    console.log('✅ 全部統計完畢，球員數:', result.length)
     return NextResponse.json(result)
   } catch (err) {
-    console.error('❌ stats 錯誤:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    console.error('❌ summary 錯誤:', err)
+    return NextResponse.json({ error: err.message || String(err) }, { status: 500 })
   }
 }

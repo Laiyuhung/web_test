@@ -89,11 +89,6 @@ export async function POST(req) {
     )
     
 
-    if (playerError) {
-      console.error('❌ 撈取 playerslist 失敗:', playerError)
-      return NextResponse.json({ error: playerError.message }, { status: 500 })
-    }
-
     const filteredPlayers = (playerList || []).filter(p =>
       (p.B_or_P || '').toLowerCase() === (type === 'batter' ? 'batter' : 'pitcher')
     )

@@ -16,94 +16,97 @@ export async function POST(req) {
     const { type, from, to } = await req.json()
     if (!type || !from || !to) return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
 
-    // 1️⃣ 撈該類型球員名單
-    const { data: playerList, error: listError } = await supabase
+    // 先從 playerslist 抓出該類型球員
+    const { data: playerList, error: playerError } = await supabase
       .from('playerslist')
       .select('Name')
       .eq('B_or_P', type === 'batter' ? 'Batter' : 'Pitcher')
 
-    if (listError) return NextResponse.json({ error: listError.message }, { status: 500 })
+    if (playerError) return NextResponse.json({ error: playerError.message }, { status: 500 })
 
-    const names = playerList.map(p => cleanName(p.Name))
-    const table = type === 'batter' ? 'batting_stats' : 'pitching_stats'
-
-    // 2️⃣ 撈出指定區間所有資料（只要是該類型、在名單內）
-    const { data, error } = await supabase
-      .from(table)
+    const { data: statsData, error: statsError } = await supabase
+      .from(type === 'batter' ? 'batting_stats' : 'pitching_stats')
       .select('*')
       .gte('game_date', from)
       .lte('game_date', to)
       .eq('is_major', true)
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (statsError) return NextResponse.json({ error: statsError.message }, { status: 500 })
 
-    const statsMap = {}
+    const cleanStats = statsData.map(row => ({
+      ...row,
+      cleanName: cleanName(row.name || row.player_name)
+    }))
 
-    for (const row of data) {
-      const name = cleanName(row.name || row.player_name)
-      if (!names.includes(name)) continue
+    const result = []
 
-      if (!statsMap[name]) {
-        statsMap[name] = type === 'batter'
-          ? { name, AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0, K: 0, GIDP: 0, XBH: 0, TB: 0, BB: 0, HBP: 0, SF: 0 }
-          : { name, W: 0, L: 0, HLD: 0, SV: 0, H: 0, ER: 0, K: 0, BB: 0, QS: 0, OUT: 0 }
+    for (const player of playerList) {
+      const rawName = player.Name
+      const playerCleanName = cleanName(rawName)
+      const playerRows = cleanStats.filter(r => r.cleanName === playerCleanName)
+
+      if (playerRows.length === 0) {
+        // 如果完全沒資料，回傳零
+        result.push(type === 'batter'
+          ? { name: rawName, AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0, K: 0, GIDP: 0, XBH: 0, TB: 0, BB: 0, HBP: 0, SF: 0, AVG: "0.000", OPS: "0.000" }
+          : { name: rawName, W: 0, L: 0, HLD: 0, SV: 0, H: 0, ER: 0, K: 0, BB: 0, QS: 0, IP: "0.0", ERA: "0.00", WHIP: "0.00" }
+        )
+        continue
       }
 
-      const s = statsMap[name]
       if (type === 'batter') {
-        s.AB += row.at_bats || 0
-        s.R += row.runs || 0
-        s.H += row.hits || 0
-        s.HR += row.home_runs || 0
-        s.RBI += row.rbis || 0
-        s.SB += row.stolen_bases || 0
-        s.K += row.strikeouts || 0
-        s.GIDP += row.double_plays || 0
-        s.XBH += (row.doubles || 0) + (row.triples || 0) + (row.home_runs || 0)
-        s.TB += (row.hits - row.doubles - row.triples - row.home_runs || 0) + (row.doubles || 0) * 2 + (row.triples || 0) * 3 + (row.home_runs || 0) * 4
-        s.BB += row.walks || 0
-        s.HBP += row.hit_by_pitch || 0
-        s.SF += row.sacrifice_flies || 0
-      } else {
-        const rawIP = row.innings_pitched || 0
-        const outs = Math.floor(rawIP) * 3 + Math.round((rawIP % 1) * 10)
-        s.OUT += outs
-        s.H += row.hits_allowed || 0
-        s.ER += row.earned_runs || 0
-        s.K += row.strikeouts || 0
-        s.BB += row.walks || 0
-        const rec = row.record
-        if (rec === 'W') s.W += 1
-        if (rec === 'L') s.L += 1
-        if (rec === 'H') s.HLD += 1
-        if (rec === 'S') s.SV += 1
-        if (rawIP >= 6 && row.earned_runs <= 3) s.QS += 1
-      }
-    }
-
-    const result = Object.values(statsMap).map(s => {
-      if (type === 'batter') {
-        const OBP_den = s.AB + s.BB + s.HBP + s.SF
-        const OBP = OBP_den ? (s.H + s.BB + s.HBP) / OBP_den : 0
-        const SLG = s.AB ? s.TB / s.AB : 0
-        const AVG = s.AB ? s.H / s.AB : 0
-        return {
-          ...s,
+        let AB = 0, R = 0, H = 0, HR = 0, RBI = 0, SB = 0, K = 0, GIDP = 0, XBH = 0, TB = 0, BB = 0, HBP = 0, SF = 0
+        for (const row of playerRows) {
+          AB += row.at_bats || 0
+          R += row.runs || 0
+          H += row.hits || 0
+          HR += row.home_runs || 0
+          RBI += row.rbis || 0
+          SB += row.stolen_bases || 0
+          K += row.strikeouts || 0
+          GIDP += row.double_plays || 0
+          XBH += (row.doubles || 0) + (row.triples || 0) + (row.home_runs || 0)
+          TB += (row.hits - row.doubles - row.triples - row.home_runs || 0) + (row.doubles || 0) * 2 + (row.triples || 0) * 3 + (row.home_runs || 0) * 4
+          BB += row.walks || 0
+          HBP += row.hit_by_pitch || 0
+          SF += row.sacrifice_flies || 0
+        }
+        const OBP_den = AB + BB + HBP + SF
+        const OBP = OBP_den ? (H + BB + HBP) / OBP_den : 0
+        const SLG = AB ? TB / AB : 0
+        const AVG = AB ? H / AB : 0
+        result.push({
+          name: rawName, AB, R, H, HR, RBI, SB, K, GIDP, XBH, TB, BB, HBP, SF,
           AVG: AVG.toFixed(3),
           OPS: (OBP + SLG).toFixed(3)
-        }
+        })
       } else {
-        const IP_raw = s.OUT / 3
-        const ERA = IP_raw ? (9 * s.ER / IP_raw) : 0
-        const WHIP = IP_raw ? (s.BB + s.H) / IP_raw : 0
-        return {
-          ...s,
-          IP: formatIP(s.OUT),
+        let W = 0, L = 0, HLD = 0, SV = 0, H = 0, ER = 0, K = 0, BB = 0, QS = 0, OUT = 0
+        for (const row of playerRows) {
+          const rawIP = row.innings_pitched || 0
+          const outs = Math.floor(rawIP) * 3 + Math.round((rawIP % 1) * 10)
+          OUT += outs
+          H += row.hits_allowed || 0
+          ER += row.earned_runs || 0
+          K += row.strikeouts || 0
+          BB += row.walks || 0
+          if (row.record === 'W') W++
+          if (row.record === 'L') L++
+          if (row.record === 'H') HLD++
+          if (row.record === 'S') SV++
+          if (rawIP >= 6 && row.earned_runs <= 3) QS++
+        }
+        const IP_raw = OUT / 3
+        const ERA = IP_raw ? (9 * ER / IP_raw) : 0
+        const WHIP = IP_raw ? (BB + H) / IP_raw : 0
+        result.push({
+          name: rawName, W, L, HLD, SV, H, ER, K, BB, QS,
+          IP: formatIP(OUT),
           ERA: ERA.toFixed(2),
           WHIP: WHIP.toFixed(2)
-        }
+        })
       }
-    })
+    }
 
     return NextResponse.json(result)
   } catch (err) {

@@ -703,6 +703,7 @@ export default function RosterPage() {
       if (!res.ok) throw new Error(data.error || '交換失敗')
   
       console.log('✅ Waiver 優先順序交換成功')
+      showMessage('✅ Waiver 順序交換成功', 'success')
     } catch (err) {
       console.error('❌ 移動 Waiver 失敗:', err)
       showMessage(`錯誤：${err.message}`, 'error')

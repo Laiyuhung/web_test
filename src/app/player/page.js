@@ -308,6 +308,7 @@ export default function PlayerPage() {
     if (!fromDate || !toDate) return
     setLoading(true)
     setError('')
+    const clean = s => (s || '').replace(/[#◎＊*]/g, '');
     try {
       const [statusRes, statsRes, registerRes, positionRes, assignedRes] = await Promise.all([
   			fetch('/api/playerStatus'),

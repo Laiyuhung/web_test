@@ -156,16 +156,36 @@ export async function POST(req) {
       "anthonylin6507@gmail.com"
     ]
 
+    // 📨 如果有 dropPlayer，先發 Drop 通知
+    if (dropPlayer) {
+      await Promise.all(
+        recipients.map(email =>
+          sendTradeNotificationEmail(
+            email,
+            `CPBL Fantasy transaction 通知`,
+            `
+            <h2>Drop 通知</h2>
+            <p><strong>${managerName}</strong> 已成功Drop 球員：</p>
+            <ul>
+              <li><strong>球員：</strong> ${dropPlayer}</li>
+            </ul>
+            <p>時間：${transaction_time}</p>
+            `
+          )
+        )
+      )
+    }
+
+    // 📨 再發 Add 通知
     await Promise.all(
       recipients.map(email =>
         sendTradeNotificationEmail(
           email,
           `CPBL Fantasy transaction 通知`,
           `
-          <h2>transaction 通知</h2>
-          <p><strong>${managerName}</strong> 已成功執行以下操作：</p>
+          <h2>Add 通知</h2>
+          <p><strong>${managerName}</strong> 已成功Add 球員：</p>
           <ul>
-            <li><strong>類型：</strong> ${type}</li>
             <li><strong>球員：</strong> ${playerName}</li>
           </ul>
           <p>時間：${transaction_time}</p>
@@ -173,6 +193,7 @@ export async function POST(req) {
         )
       )
     )
+
     
 
 

@@ -960,6 +960,39 @@ export default function RosterPage() {
     )
   }
   
+  const cancelWaiver = async (applyNo) => {
+    if (!confirm('確定要取消這筆 Waiver 申請嗎？')) return
+  
+    try {
+      const res = await fetch('/api/waiver/cancel_waiver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apply_no: applyNo }),
+      })
+  
+      const data = await res.json()
+  
+      if (!res.ok) throw new Error(data.error || '取消失敗')
+  
+      console.log('✅ Waiver 取消成功')
+      // 取消成功後，重抓最新 Waiver List
+      const reloadRes = await fetch('/api/waiver/load_personal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: userId }),
+      })
+      const reloadData = await reloadRes.json()
+      if (reloadRes.ok) {
+        setWaiverList(reloadData)
+      } else {
+        console.error('❌ 重新載入失敗:', reloadData)
+      }
+  
+    } catch (err) {
+      console.error('❌ 取消 Waiver 錯誤:', err)
+      alert(`取消失敗：${err.message}`)
+    }
+  }
   
 
   const batters = players
@@ -1851,7 +1884,7 @@ export default function RosterPage() {
                   <div className="text-xs text-gray-500 font-bold">Priority: {w.personal_priority}</div>
                   <button
                     onClick={() => moveWaiver(date, idx, 'up')}
-                    className="text-gray-400 hover:text-black text-lg"
+                    className="text-gray-400 hover:text-black text-2xl"
                     disabled={idx === 0}
                   >
                     ▲
@@ -1884,7 +1917,7 @@ export default function RosterPage() {
                   </button>
                   <button
                     onClick={() => moveWaiver(date, idx, 'down')}
-                    className="text-gray-400 hover:text-black text-lg"
+                    className="text-gray-400 hover:text-black text-2xl"
                     disabled={idx === waivers.length - 1}
                   >
                     ▼

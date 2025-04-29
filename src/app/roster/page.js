@@ -1846,8 +1846,9 @@ export default function RosterPage() {
             {waivers.map((w, idx) => (
               <div key={idx} className="border rounded-md bg-white p-3 shadow relative">
 
-                {/* 🔼 上方移動按鈕 */}
-                <div className="flex justify-end mb-2">
+                {/* Priority 與 🔼 上方移動按鈕同一列 */}
+                <div className="flex justify-between items-center mb-2">
+                  <div className="text-xs text-gray-500 font-bold">Priority: {w.personal_priority}</div>
                   <button
                     onClick={() => moveWaiver(date, idx, 'up')}
                     className="text-gray-400 hover:text-black text-lg"
@@ -1857,14 +1858,11 @@ export default function RosterPage() {
                   </button>
                 </div>
 
-                {/* Priority */}
-                <div className="text-xs text-gray-500 mb-2">Priority: {w.personal_priority}</div>
-
                 {/* ➕ Add player */}
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-green-600 font-bold text-lg">+</span>
                   <div className="text-sm text-gray-800">{w.add_player}</div>
-                  <div className="text-xs text-gray-500">Waiver Claim</div>
+                  <div className="text-xs text-gray-500 font-bold">Waiver Claim</div>
                 </div>
 
                 {/* ➖ Drop player */}
@@ -1872,7 +1870,7 @@ export default function RosterPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-red-600 font-bold text-lg">-</span>
                     <div className="text-sm text-gray-800">{w.drop_player}</div>
-                    <div className="text-xs text-gray-500">To Waivers</div>
+                    <div className="text-xs text-gray-500 font-bold">To Waivers</div>
                   </div>
                 )}
 

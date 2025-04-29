@@ -1865,6 +1865,16 @@ export default function RosterPage() {
                   </div>
                 )}
 
+                {/* 左下 Cancel 按鈕 */}
+                <div className="absolute bottom-3 left-3">
+                  <button
+                    onClick={() => cancelWaiver(w.apply_no)}
+                    className="text-xs text-red-500 hover:text-red-700 border border-red-300 px-2 py-1 rounded"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
                 {/* 上下移按鈕 */}
                 <div className="absolute top-4 right-4 flex flex-col space-y-2">
                   <button

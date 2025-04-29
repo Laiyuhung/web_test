@@ -1846,6 +1846,17 @@ export default function RosterPage() {
             {waivers.map((w, idx) => (
               <div key={idx} className="border rounded-md bg-white p-3 shadow relative">
 
+                {/* 🔼 上方移動按鈕 */}
+                <div className="flex justify-end mb-2">
+                  <button
+                    onClick={() => moveWaiver(date, idx, 'up')}
+                    className="text-gray-400 hover:text-black text-lg"
+                    disabled={idx === 0}
+                  >
+                    ▲
+                  </button>
+                </div>
+
                 {/* Priority */}
                 <div className="text-xs text-gray-500 mb-2">Priority: {w.personal_priority}</div>
 
@@ -1865,7 +1876,7 @@ export default function RosterPage() {
                   </div>
                 )}
 
-                {/* 最下層按鈕列：Cancel 在左、上下移在右 */}
+                {/* 🔽 下方按鈕：Cancel 與 ↓ */}
                 <div className="mt-4 flex items-center justify-between">
                   <button
                     onClick={() => cancelWaiver(w.apply_no)}
@@ -1873,25 +1884,15 @@ export default function RosterPage() {
                   >
                     Cancel
                   </button>
-
-                  {/* 上下移按鈕（移出 absolute） */}
-                  <div className="flex flex-col space-y-1">
-                    <button
-                      onClick={() => moveWaiver(date, idx, 'up')}
-                      className="text-gray-400 hover:text-black text-lg"
-                      disabled={idx === 0}
-                    >
-                      ▲
-                    </button>
-                    <button
-                      onClick={() => moveWaiver(date, idx, 'down')}
-                      className="text-gray-400 hover:text-black text-lg"
-                      disabled={idx === waivers.length - 1}
-                    >
-                      ▼
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => moveWaiver(date, idx, 'down')}
+                    className="text-gray-400 hover:text-black text-lg"
+                    disabled={idx === waivers.length - 1}
+                  >
+                    ▼
+                  </button>
                 </div>
+
 
 
               </div>

@@ -309,40 +309,46 @@ export default function PlayerPage() {
     setLoading(true)
     setError('')
     const clean = s => (s || '').replace(/[#◎＊*]/g, '');
+  
     try {
       const [statusRes, statsRes, registerRes, positionRes, assignedRes] = await Promise.all([
-  			fetch('/api/playerStatus'),
-  			fetch('/api/playerStats', {
-    			method: 'POST',
-    			headers: { 'Content-Type': 'application/json' },
-    			body: JSON.stringify({ type: type.toLowerCase(), from: fromDate, to: toDate })
-  			}),
-  			fetch('/api/playerRegisterStatus'),
-  			fetch('/api/playerPositionCaculate'),
-  			fetch(`/api/saveAssigned/load?date=${taiwanToday}`)
-			])
-
-      const [statusData, statsData, registerData, positionData, assignedData] = await Promise.all([
+        fetch('/api/playerStatus'),
+        fetch('/api/playerStats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: type.toLowerCase(), from: fromDate, to: toDate })
+        }),
+        fetch('/api/playerRegisterStatus'),
+        fetch('/api/playerPositionCaculate'),
+        fetch(`/api/saveAssigned/load?date=${taiwanToday}`)
+      ])
+  
+      const [statusData, statsDataRaw, registerData, positionData, assignedData] = await Promise.all([
         statusRes.json(),
         statsRes.ok ? statsRes.json() : [],
         registerRes.ok ? registerRes.json() : [],
         positionRes.ok ? positionRes.json() : [],
         assignedRes.ok ? assignedRes.json() : []
       ])
-      
-      setAssignedPositions(assignedData) // ⬅️ 要補這行，才會讓 isDropBlocked 拿到最新資料
-      console.log('📌 assignedData', assignedData)
-
-      
-
+  
+      console.log('✅ 後端 /api/playerStats 回傳資料 statsDataRaw:', statsDataRaw)
+  
+      // 🧹 把回來的 statsData 也 clean 一次（確保名字一致）
+      const statsData = statsDataRaw.map(row => ({
+        ...row,
+        name: clean(row.name)
+      }))
+  
+      setAssignedPositions(assignedData)
+  
       const merged = statusData.map(p => {
-        const stat = statsData.find(s => clean(s.name) === clean(p.Name))
+        const stat = statsData.find(s => clean(p.Name) === s.name)
         const register = registerData.find(r => r.name === p.Name)
         const registerStatus = register?.status || '未知'
         const posData = positionData.find(pos => pos.name === p.Name)
         const finalPosition = posData?.finalPosition || []
         const identityType = p.identity || '未知'
-
+  
         return {
           ...p,
           ...(stat || {}),
@@ -351,7 +357,7 @@ export default function PlayerPage() {
           identity: identityType
         }
       })
-
+  
       const filtered = merged.filter(p => {
         if (search && !p.Name.includes(search)) return false
         if (type === 'Batter' && p.B_or_P !== 'Batter') return false
@@ -386,25 +392,25 @@ export default function PlayerPage() {
         }
         return true
       })
-
+  
       const sorted = [...filtered].sort((a, b) => {
         const aVal = parseFloat(a[sortBy] || 0)
         const bVal = parseFloat(b[sortBy] || 0)
         return sortMethod === 'Ascending' ? aVal - bVal : bVal - aVal
       })
-      
+  
       setPlayers(sorted)
-
+  
       const myPlayers = merged.filter(p => p.manager_id?.toString() === userId)
-      setMyRosterPlayers(myPlayers) 
-
-
+      setMyRosterPlayers(myPlayers)
+  
     } catch (err) {
       console.error('統計錯誤:', err)
       setError('統計讀取失敗')
     }
     setLoading(false)
   }
+  
 
   useEffect(() => {
     fetchStatsAndStatus()

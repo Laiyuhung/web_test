@@ -5,12 +5,42 @@ const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
 const validPositions = ['C', '1B', '2B', '3B', 'SS', 'OF']
 const isValidPosition = (p) => validPositions.includes(p)
 
+async function fetchAll(tableName, columns) {
+  const pageSize = 1000
+  let allData = []
+  let page = 0
+  let done = false
+
+  while (!done) {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select(columns)
+      .range(page * pageSize, (page + 1) * pageSize - 1)
+
+    if (error) throw new Error(error.message)
+
+    console.log(`📄 ${tableName} 第 ${page + 1} 頁，拿到 ${data.length} 筆`)
+    allData = allData.concat(data)
+
+    if (data.length < pageSize) {
+      done = true
+    } else {
+      page++
+    }
+  }
+
+  console.log(`✅ ${tableName} 全部拿完，總筆數:`, allData.length)
+  return allData
+}
+
+
+
 export async function GET() {
-  const [{ data: players }, { data: posTable }, { data: batting }, { data: pitching }] = await Promise.all([
-    supabase.from('playerslist').select('Player_no, Name, B_or_P'),
-    supabase.from('position2024').select('Player_no, Position'),
-    supabase.from('batting_stats').select('name, position'),
-    supabase.from('pitching_stats').select('name, sequence')
+  const [players, posTable, batting, pitching] = await Promise.all([
+    fetchAll('playerslist', 'Player_no, Name, B_or_P'),
+    fetchAll('position2024', 'Player_no, Position'),
+    fetchAll('batting_stats', 'name, position'),
+    fetchAll('pitching_stats', 'name, sequence')
   ])
 
   const nameToPlayerNo = {}

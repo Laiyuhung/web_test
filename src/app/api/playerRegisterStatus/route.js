@@ -4,13 +4,43 @@ import supabase from '@/lib/supabaseServer'
 // 清除特殊符號
 const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
 
+async function fetchAll(tableName, columns) {
+  const pageSize = 1000
+  let allData = []
+  let page = 0
+  let done = false
+
+  while (!done) {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select(columns)
+      .range(page * pageSize, (page + 1) * pageSize - 1)
+
+    if (error) throw new Error(`❌ 讀取 ${tableName} 失敗: ${error.message}`)
+
+    console.log(`📄 ${tableName} 第 ${page + 1} 頁，拿到 ${data.length} 筆`)
+    allData = allData.concat(data)
+
+    if (data.length < pageSize) {
+      done = true
+    } else {
+      page++
+    }
+  }
+
+  console.log(`✅ ${tableName} 全部讀取完成，共 ${allData.length} 筆`)
+  return allData
+}
+
+
+
 export async function GET() {
   // 1. 撈出所有資料表
-  const [{ data: registerlist }, { data: start_major }, { data: movements }, { data: players }] = await Promise.all([
-    supabase.from('registerlist').select('Player_no'),
-    supabase.from('start_major').select('Player_no'),
-    supabase.from('player_movements').select('name, action'),
-    supabase.from('playerslist').select('Player_no, Name')
+  const [registerlist, start_major, movements, players] = await Promise.all([
+    fetchAll('registerlist', 'Player_no'),
+    fetchAll('start_major', 'Player_no'),
+    fetchAll('player_movements', 'name, action'),
+    fetchAll('playerslist', 'Player_no, Name')
   ])
 
   // 2. Player_no -> cleaned name 對照表

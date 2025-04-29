@@ -1,23 +1,43 @@
 import supabase from '@/lib/supabase'
 
+async function fetchAll(table, columns) {
+  const pageSize = 1000
+  let allData = []
+  let page = 0
+  let done = false
+
+  while (!done) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(columns)
+      .range(page * pageSize, (page + 1) * pageSize - 1)
+
+    if (error) throw new Error(`❌ 撈取 ${table} 失敗: ${error.message}`)
+
+    console.log(`📄 ${table} 第 ${page + 1} 頁，拿到 ${data.length} 筆`)
+    allData = allData.concat(data)
+
+    if (data.length < pageSize) {
+      done = true
+    } else {
+      page++
+    }
+  }
+
+  console.log(`✅ ${table} 全部讀取完成，共 ${allData.length} 筆`)
+  return allData
+}
+
+
 export async function GET() {
   try {
-    const { data: players, error: err1 } = await supabase
-      .from('playerslist')
-      .select('Player_no, Name, Team, identity, B_or_P')
-      .eq('Available', 'V')  // 只選擇 Available 為 V 的球員
-    if (err1 || !Array.isArray(players)) throw new Error('playerslist error')
 
-    const { data: transactions, error: err2 } = await supabase
-      .from('transactions')
-      .select('Player_no, manager_id, type, transaction_time')
-    if (err2 || !Array.isArray(transactions)) throw new Error('transactions error')
-
-    const { data: managers, error: err3 } = await supabase
-      .from('managers')
-      .select('id, team_name')
-    if (err3 || !Array.isArray(managers)) throw new Error('managers error')
-
+    const [players, transactions, managers] = await Promise.all([
+      fetchAll('playerslist', 'Player_no, Name, Team, identity, B_or_P'),
+      fetchAll('transactions', 'Player_no, manager_id, type, transaction_time'),
+      fetchAll('managers', 'id, team_name')
+    ])
+    
     const result = players.map(player => {
       const playerTx = transactions.filter(t => t.Player_no === player.Player_no)
       const addCount = playerTx.filter(t => t.type.includes('Add')).length

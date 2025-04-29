@@ -50,6 +50,7 @@ export async function POST(req) {
       .eq('is_major', true)
       .gte('game_date', from)
       .lte('game_date', to)
+      .limit(9999)
 
     if (statsError) {
       console.error('❌ 查詢成績失敗:', statsError)

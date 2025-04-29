@@ -1844,56 +1844,60 @@ export default function RosterPage() {
           {/* 每一筆 waiver（每一個 box） */}
           <div className="flex flex-col gap-4">
             {waivers.map((w, idx) => (
-              <div key={idx} className="border rounded-md bg-white p-3 shadow relative">
+            <div key={idx} className="border rounded-md bg-white p-3 shadow relative">
 
-                {/* Priority */}
-                <div className="text-xs text-gray-500 mb-2">Priority: {w.personal_priority}</div>
-
-                {/* ➕ Add player */}
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-green-600 font-bold text-lg">+</span>
-                  <div className="text-sm text-gray-800">{w.add_player}</div>
-                  <div className="text-xs text-gray-500">Waiver Claim</div>
-                </div>
-
-                {/* ➖ Drop player */}
-                {w.drop_player && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-red-600 font-bold text-lg">-</span>
-                    <div className="text-sm text-gray-800">{w.drop_player}</div>
-                    <div className="text-xs text-gray-500">To Waivers</div>
-                  </div>
-                )}
-
-                {/* 左下 Cancel 按鈕 */}
-                <div className="absolute bottom-3 left-3">
-                  <button
-                    onClick={() => cancelWaiver(w.apply_no)}
-                    className="text-xs text-red-500 hover:text-red-700 border border-red-300 px-2 py-1 rounded"
-                  >
-                    Cancel
-                  </button>
-                </div>
-
-                {/* 上下移按鈕 */}
-                <div className="absolute top-4 right-4 flex flex-col space-y-2">
-                  <button
-                    onClick={() => moveWaiver(date, idx, 'up')}
-                    className="text-gray-400 hover:text-black text-lg"
-                    disabled={idx === 0}
-                  >
-                    ▲
-                  </button>
-                  <button
-                    onClick={() => moveWaiver(date, idx, 'down')}
-                    className="text-gray-400 hover:text-black text-lg"
-                    disabled={idx === waivers.length - 1}
-                  >
-                    ▼
-                  </button>
-                </div>
-
+              {/* Priority */}
+              <div className="text-xs text-gray-500 mb-2">Priority: {w.personal_priority}</div>
+            
+              {/* ➕ Add player */}
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-green-600 font-bold text-lg">+</span>
+                <div className="text-sm text-gray-800">{w.add_player}</div>
+                <div className="text-xs text-gray-500">Waiver Claim</div>
               </div>
+            
+              {/* ➖ Drop player */}
+              {w.drop_player && (
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600 font-bold text-lg">-</span>
+                  <div className="text-sm text-gray-800">{w.drop_player}</div>
+                  <div className="text-xs text-gray-500">To Waivers</div>
+                </div>
+              )}
+            
+              {/* 左下 Cancel 按鈕 */}
+              <div className="absolute bottom-3 left-3">
+                <button
+                  onClick={() => cancelWaiver(w.apply_no)}
+                  className="text-xs text-red-500 hover:text-red-700 border border-red-300 px-2 py-1 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            
+              {/* 右上 上下移按鈕 */}
+              <div className="absolute top-4 right-4 flex flex-col space-y-2">
+                <button
+                  onClick={() => moveWaiver(date, idx, 'up')}
+                  className="text-gray-400 hover:text-black text-lg"
+                  disabled={idx === 0}
+                >
+                  ▲
+                </button>
+                <button
+                  onClick={() => moveWaiver(date, idx, 'down')}
+                  className="text-gray-400 hover:text-black text-lg"
+                  disabled={idx === waivers.length - 1}
+                >
+                  ▼
+                </button>
+              </div>
+            
+            </div>
+            
+
+
+
             ))}
           </div>
         </div>

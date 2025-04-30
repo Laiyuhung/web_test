@@ -27,7 +27,7 @@ export default function RosterPage() {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [confirmDialogMessage, setConfirmDialogMessage] = useState('')
   const [onConfirmAction, setOnConfirmAction] = useState(() => () => {})
-
+  const [taiwanToday, setTaiwanToday] = useState('')
 
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false)
   const [waiverList, setWaiverList] = useState([])
@@ -93,7 +93,13 @@ export default function RosterPage() {
       </select>
     )
   }
-  
+  useEffect(() => {
+    const now = new Date()
+    const taiwanOffset = 8 * 60 * 60 * 1000
+    const taiwanNow = new Date(now.getTime() + taiwanOffset)
+    const todayStr = taiwanNow.toISOString().slice(0, 10)
+    setTaiwanToday(todayStr)
+  }, [])
 
   useEffect(() => {
     if (!userId) return

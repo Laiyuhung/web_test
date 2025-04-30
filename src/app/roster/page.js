@@ -1011,7 +1011,37 @@ export default function RosterPage() {
       }
     })
   }
+  const fetchPlayerStatSummary = async (playerName, type) => {
+    const ranges = {
+      Today: [taiwanToday, taiwanToday],
+      Yesterday: [formatDateInput(new Date(today.getTime() - 1 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      'Last 7 days': [formatDateInput(new Date(today.getTime() - 7 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      'Last 14 days': [formatDateInput(new Date(today.getTime() - 14 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      'Last 30 days': [formatDateInput(new Date(today.getTime() - 30 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      '2025 Season': ['2025-03-27', '2025-11-30'],
+    }
+    
   
+    const result = {}
+  
+    for (const [label, [from, to]] of Object.entries(ranges)) {
+      try {
+        const res = await fetch('/api/playerStats/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: playerName, type })
+        })
+        const data = await res.json()
+        result[label] = data[label] || null
+      } catch (e) {
+        console.error(`❌ 無法取得 ${label} 區間資料:`, e)
+        result[label] = null
+      }
+    }
+    
+  
+    return result
+  }
   
   const showConfirm = (message, onConfirm) => {
     setConfirmDialogMessage(message)

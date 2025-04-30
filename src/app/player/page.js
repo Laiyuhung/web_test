@@ -1287,16 +1287,17 @@ export default function PlayerPage() {
     <AlertDialogHeader>
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
       <AlertDialogDescription className="relative px-1">
-        <div className="sticky top-0 z-20 bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
-          <div>team：{selectedPlayerDetail?.Team}</div>
-          <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
-          <div>identity：{selectedPlayerDetail?.identity}</div>
-          <div>status：{selectedPlayerDetail?.status}</div>
-          <div>升降：{selectedPlayerDetail?.registerStatus}</div>
-        </div>
+        <div className="sticky top-0 z-20 bg-white border-b py-2 px-2 flex items-start justify-between gap-4 text-sm text-gray-700">
+          {/* 左側文字資料 */}
+          <div className="space-y-1 text-left">
+            <div>team：{selectedPlayerDetail?.Team}</div>
+            <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
+            <div>identity：{selectedPlayerDetail?.identity}</div>
+            <div>status：{selectedPlayerDetail?.status}</div>
+            <div>升降：{selectedPlayerDetail?.registerStatus}</div>
+          </div>
 
-        {/* ✅ 改為依 status 顯示對應操作按鈕 */}
-        <div className="flex justify-end">
+          {/* 右側動態按鈕 */}
           {(() => {
             const p = selectedPlayerDetail
             if (!p) return null
@@ -1351,12 +1352,14 @@ export default function PlayerPage() {
               <div
                 className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
                 onClick={onClickHandler}
+                title={symbol === '＋' ? '加入' : symbol === '－' ? '移除' : '交易'}
               >
                 <span className={`${textColor} font-bold text-lg`}>{symbol}</span>
               </div>
             )
           })()}
         </div>
+
 
 
         {/* 🔻 Tabs 加進來 */}

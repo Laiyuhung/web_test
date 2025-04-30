@@ -77,6 +77,8 @@ export default function RosterPage() {
     return taiwanDate.toISOString().slice(0, 10)
   })
 
+  const today = new Date()
+
   function StatsRangeSelector({ range, onChange }) {
     return (
       <select

@@ -1295,6 +1295,46 @@ export default function PlayerPage() {
           <div>升降：{selectedPlayerDetail?.registerStatus}</div>
         </div>
 
+        {/* 🔽 這邊是新增按鈕區塊 */}
+        <div className="flex gap-1">
+          <button
+            className="px-2 py-1 rounded border text-sm text-green-700 border-green-700"
+            onClick={() => {
+              setConfirmPlayer(selectedPlayerDetail)
+              setDialogOpen(true)
+            }}
+          >
+            Add
+          </button>
+          <button
+            className="px-2 py-1 rounded border text-sm text-red-600 border-red-600"
+            onClick={() => {
+              setConfirmPlayer(selectedPlayerDetail)
+              setDialogOpen(true)
+            }}
+          >
+            Drop
+          </button>
+          <button
+            className="px-2 py-1 rounded border text-sm text-yellow-700 border-yellow-700"
+            onClick={() => {
+              setConfirmPlayer(selectedPlayerDetail)
+              setWaiverDialogOpen(true)
+            }}
+          >
+            Waiver
+          </button>
+          <button
+            className="px-2 py-1 rounded border text-sm text-blue-700 border-blue-700"
+            onClick={() => {
+              setSelectedTradeTarget(selectedPlayerDetail)
+              setTradeDialogOpen(true)
+            }}
+          >
+            Trade
+          </button>
+        </div>
+
         {/* 🔻 Tabs 加進來 */}
         <Tabs defaultValue="summary" className="mt-4">
           <TabsList className="mb-2">

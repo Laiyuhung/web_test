@@ -1295,45 +1295,69 @@ export default function PlayerPage() {
           <div>升降：{selectedPlayerDetail?.registerStatus}</div>
         </div>
 
-        {/* 🔽 這邊是新增按鈕區塊 */}
-        <div className="flex gap-1">
-          <button
-            className="px-2 py-1 rounded border text-sm text-green-700 border-green-700"
-            onClick={() => {
-              setConfirmPlayer(selectedPlayerDetail)
+        {/* ✅ 改為依 status 顯示對應操作按鈕 */}
+        <div className="flex justify-end">
+          {(() => {
+            const p = selectedPlayerDetail
+            if (!p) return null
+
+            const status = (p.status || '').toLowerCase()
+            const ownerId = p.manager_id?.toString()
+            const isOwner = ownerId === userId
+
+            const openConfirmDialog = () => {
+              setConfirmPlayer(p)
               setDialogOpen(true)
-            }}
-          >
-            Add
-          </button>
-          <button
-            className="px-2 py-1 rounded border text-sm text-red-600 border-red-600"
-            onClick={() => {
-              setConfirmPlayer(selectedPlayerDetail)
-              setDialogOpen(true)
-            }}
-          >
-            Drop
-          </button>
-          <button
-            className="px-2 py-1 rounded border text-sm text-yellow-700 border-yellow-700"
-            onClick={() => {
-              setConfirmPlayer(selectedPlayerDetail)
-              setWaiverDialogOpen(true)
-            }}
-          >
-            Waiver
-          </button>
-          <button
-            className="px-2 py-1 rounded border text-sm text-blue-700 border-blue-700"
-            onClick={() => {
-              setSelectedTradeTarget(selectedPlayerDetail)
+            }
+
+            let symbol = '⇄'
+            let borderColor = 'border-blue-600'
+            let textColor = 'text-blue-600'
+            let onClickHandler = () => {
+              setSelectedTradeTarget(p)
               setTradeDialogOpen(true)
-            }}
-          >
-            Trade
-          </button>
+            }
+
+            if (status === 'free agent') {
+              symbol = '＋'
+              borderColor = 'border-green-600'
+              textColor = 'text-green-600'
+              onClickHandler = () => {
+                checkAddConstraints(p)
+              }
+            } else if (status.includes('waiver')) {
+              symbol = '＋'
+              borderColor = 'border-yellow-500'
+              textColor = 'text-yellow-500'
+              onClickHandler = () => {
+                setConfirmPlayer(p)
+                setWaiverDialogOpen(true)
+              }
+            } else if (status.includes('on team') && p.owner && p.owner !== '-' && isOwner) {
+              symbol = '－'
+              borderColor = 'border-red-600'
+              textColor = 'text-red-600'
+              onClickHandler = () => {
+                if (isDropBlocked(p)) {
+                  setSuccessMessage('⚠️ 該球員已開賽，無法進行 Drop 操作')
+                  setSuccessDialogOpen(true)
+                  return
+                }
+                openConfirmDialog()
+              }
+            }
+
+            return (
+              <div
+                className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
+                onClick={onClickHandler}
+              >
+                <span className={`${textColor} font-bold text-lg`}>{symbol}</span>
+              </div>
+            )
+          })()}
         </div>
+
 
         {/* 🔻 Tabs 加進來 */}
         <Tabs defaultValue="summary" className="mt-4">

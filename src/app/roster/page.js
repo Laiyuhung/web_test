@@ -1085,9 +1085,26 @@ export default function RosterPage() {
                 <div className="flex items-center gap-2">
                   <div
                     className="flex items-center gap-2 font-bold text-[#0155A0] text-base cursor-pointer"
-                    onClick={() => {
+                    onClick={async () => {
                       setSelectedPlayerDetail(p)
-                      setDetailDialogOpen(true)  // ✅ 加上這行
+                      setDetailDialogOpen(true)
+                    
+                      // Stat summary
+                      const summary = await fetchPlayerStatSummary(p.Name, type.toLowerCase())
+                    
+                      // Last 6 games
+                      const res = await fetch('/api/playerStats/last6games', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: p.Name, team: p.Team, type: type.toLowerCase() })
+                      })
+                      const last6 = await res.json()
+                    
+                      setSelectedPlayerDetail(prev => ({
+                        ...prev,
+                        statSummary: summary,
+                        last6games: last6.recentGames || []
+                      }))
                     }}
                   >
                     <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>

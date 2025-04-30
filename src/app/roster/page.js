@@ -22,12 +22,13 @@ export default function RosterPage() {
   const [confirmDialogMessage, setConfirmDialogMessage] = useState('')
   const [onConfirmAction, setOnConfirmAction] = useState(() => () => {})
 
-  const [selectedPlayerDetail, setSelectedPlayerDetail] = useState(null)
 
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false)
   const [waiverList, setWaiverList] = useState([])
   const [messageBox, setMessageBox] = useState({ text: '', type: 'info' }) // type: 'info' | 'success' | 'error'
   const [messageVisible, setMessageVisible] = useState(false)
+  const [selectedPlayerDetail, setSelectedPlayerDetail] = useState(null)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
 
   const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
   const [batterMap, setBatterMap] = useState(new Map())
@@ -1078,7 +1079,10 @@ export default function RosterPage() {
                 <div className="flex items-center gap-2">
                   <div
                     className="flex items-center gap-2 font-bold text-[#0155A0] text-base cursor-pointer"
-                    onClick={() => setSelectedPlayerDetail(p)}
+                    onClick={() => {
+                      setSelectedPlayerDetail(p)
+                      setDetailDialogOpen(true)  // ✅ 加上這行
+                    }}
                   >
                     <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>
                   </div>
@@ -1379,81 +1383,6 @@ export default function RosterPage() {
 
         </div>
       </div>
-      {selectedPlayerDetail && (
-        <div className="flex items-start justify-between gap-4 mb-4">
-          {/* 詳細資料 */}
-          <div className="sticky top-0 z-20 bg-white border-b py-2 space-y-1 text-sm text-gray-700 text-left">
-            <div>team：{selectedPlayerDetail?.Team}</div>
-            <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
-            <div>identity：{selectedPlayerDetail?.identity}</div>
-            <div>status：{selectedPlayerDetail?.status}</div>
-            <div>升降：{selectedPlayerDetail?.registerStatus}</div>
-          </div>
-
-          {/* 操作按鈕 */}
-          <div className="flex justify-end">
-            {(() => {
-              const p = selectedPlayerDetail
-              if (!p) return null
-
-              const status = (p.status || '').toLowerCase()
-              const ownerId = p.manager_id?.toString()
-              const isOwner = ownerId === userId
-
-              const openConfirmDialog = () => {
-                setConfirmPlayer(p)
-                setDialogOpen(true)
-              }
-
-              let symbol = '⇄'
-              let borderColor = 'border-blue-600'
-              let textColor = 'text-blue-600'
-              let onClickHandler = () => {
-                setSelectedTradeTarget(p)
-                setTradeDialogOpen(true)
-              }
-
-              if (status === 'free agent') {
-                symbol = '＋'
-                borderColor = 'border-green-600'
-                textColor = 'text-green-600'
-                onClickHandler = () => {
-                  checkAddConstraints(p)
-                }
-              } else if (status.includes('waiver')) {
-                symbol = '＋'
-                borderColor = 'border-yellow-500'
-                textColor = 'text-yellow-500'
-                onClickHandler = () => {
-                  setConfirmPlayer(p)
-                  setWaiverDialogOpen(true)
-                }
-              } else if (status.includes('on team') && p.owner && p.owner !== '-' && isOwner) {
-                symbol = '－'
-                borderColor = 'border-red-600'
-                textColor = 'text-red-600'
-                onClickHandler = () => {
-                  if (isDropBlocked(p)) {
-                    setSuccessMessage('⚠️ 該球員已開賽，無法進行 Drop 操作')
-                    setSuccessDialogOpen(true)
-                    return
-                  }
-                  openConfirmDialog()
-                }
-              }
-
-              return (
-                <div
-                  className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
-                  onClick={onClickHandler}
-                >
-                  <span className={`${textColor} font-bold text-lg`}>{symbol}</span>
-                </div>
-              )
-            })()}
-          </div>
-        </div>
-      )}
 
       {loading && <div className="mb-4 text-blue-600 font-semibold">Loading...</div>}
       <h1 className="text-xl font-bold mb-6">MY ROSTER</h1>
@@ -2086,6 +2015,179 @@ export default function RosterPage() {
 </AlertDialogContent>
 </AlertDialog>
 
+
+<AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+  <AlertDialogContent className="w-full max-w-[95vw] max-h-[80vh] overflow-y-auto px-4">
+    <AlertDialogHeader>
+      <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
+      <AlertDialogDescription className="relative px-1">
+        <div className="sticky top-0 z-20 bg-white border-b py-2 px-2 flex items-start justify-between gap-4 text-sm text-gray-700">
+          {/* 左側文字資料 */}
+          <div className="space-y-1 text-left">
+            <div>team：{selectedPlayerDetail?.Team}</div>
+            <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
+            <div>identity：{selectedPlayerDetail?.identity}</div>
+            <div>status：{selectedPlayerDetail?.status}</div>
+            <div>升降：{selectedPlayerDetail?.registerStatus}</div>
+          </div>
+
+          {/* 右側動態按鈕 */}
+          {(() => {
+            const p = selectedPlayerDetail
+            if (!p) return null
+
+            const status = (p.status || '').toLowerCase()
+            const ownerId = p.manager_id?.toString()
+            const isOwner = ownerId === userId
+
+            const openConfirmDialog = () => {
+              setConfirmPlayer(p)
+              setDialogOpen(true)
+            }
+
+            let symbol = '⇄'
+            let borderColor = 'border-blue-600'
+            let textColor = 'text-blue-600'
+            let onClickHandler = () => {
+              setSelectedTradeTarget(p)
+              setTradeDialogOpen(true)
+            }
+
+            if (status === 'free agent') {
+              symbol = '＋'
+              borderColor = 'border-green-600'
+              textColor = 'text-green-600'
+              onClickHandler = () => {
+                checkAddConstraints(p)
+              }
+            } else if (status.includes('waiver')) {
+              symbol = '＋'
+              borderColor = 'border-yellow-500'
+              textColor = 'text-yellow-500'
+              onClickHandler = () => {
+                setConfirmPlayer(p)
+                setWaiverDialogOpen(true)
+              }
+            } else if (status.includes('on team') && p.owner && p.owner !== '-' && isOwner) {
+              symbol = '－'
+              borderColor = 'border-red-600'
+              textColor = 'text-red-600'
+              onClickHandler = () => {
+                if (isDropBlocked(p)) {
+                  setSuccessMessage('⚠️ 該球員已開賽，無法進行 Drop 操作')
+                  setSuccessDialogOpen(true)
+                  return
+                }
+                openConfirmDialog()
+              }
+            }
+
+            return (
+              <div
+                className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
+                onClick={onClickHandler}
+                title={symbol === '＋' ? '加入' : symbol === '－' ? '移除' : '交易'}
+              >
+                <span className={`${textColor} font-bold text-lg`}>{symbol}</span>
+              </div>
+            )
+          })()}
+        </div>
+
+
+
+        {/* 🔻 Tabs 加進來 */}
+        <Tabs defaultValue="summary" className="mt-4">
+          <TabsList className="mb-2">
+            <TabsTrigger value="summary">統計區間</TabsTrigger>
+            <TabsTrigger value="last6">前六場</TabsTrigger>
+          </TabsList>
+
+          {/* 🔹 summary 區塊 */}
+          <TabsContent value="summary">
+            {selectedPlayerDetail?.statSummary && (
+              <div className="overflow-x-auto">
+                <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      {(type === 'Batter'
+                        ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                        : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                      ).map(k => (
+                        <th key={k} className="border px-2">{k}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
+                      <>
+                        <tr className="bg-gray-50 text-left text-sm">
+                          <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                            {label}
+                          </td>
+                        </tr>
+                        <tr>
+                          {(type === 'Batter'
+                            ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                            : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                          ).map(k => (
+                            <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
+                          ))}
+                        </tr>
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* 🔹 last6 區塊 */}
+          <TabsContent value="last6">
+            {selectedPlayerDetail?.last6games && (
+              <div className="overflow-x-auto">
+                <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="border px-2">日期</th>
+                      <th className="border px-2">對手</th>
+                      {(type === 'Batter'
+                        ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                        : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                      ).map(k => (
+                        <th key={k} className="border px-2">{k}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedPlayerDetail.last6games.map((game, idx) => (
+                      <tr key={idx}>
+                        <td className="border px-2 py-1">{game.game_date}</td>
+                        <td className="border px-2 py-1">{game.opponent}</td>
+                        {(type === 'Batter'
+                          ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                          : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                        ).map(k => (
+                          <td key={k} className="border px-2 py-1 text-center">{game?.[k] ?? '-'}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </AlertDialogDescription>
+
+    </AlertDialogHeader>
+    <AlertDialogFooter className="sticky bottom-0 bg-white border-t pt-2">
+      <AlertDialogAction onClick={() => setDetailDialogOpen(false)}>
+        關閉
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
 
 </>
 

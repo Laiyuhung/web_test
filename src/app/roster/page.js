@@ -282,6 +282,40 @@ export default function RosterPage() {
     }
   }
 
+  const isDropBlocked = (p) => {
+    // 目前分配位置（例如 'C', '1B', 'OF', 'BN', 'NA' 等）
+    const currentPosition = assignedPositions[p.Name] || 'BN'
+  
+    // 先判斷是不是先發位置（不包含 BN、NA、NA(備用)）
+    const isStartingPosition = !['BN', 'NA', 'NA(備用)'].includes(currentPosition)
+  
+    if (!isStartingPosition) {
+      // 如果不是先發位置，永遠允許 drop
+      console.log(`✅ 可 Drop：${p.Name} 目前位置 ${currentPosition} 非先發位置`)
+      return false
+    }
+  
+    // 抓 gameInfoMap 判斷時間
+    const gameInfo = gameInfoMap[p.Team]
+    const timeMatch = gameInfo?.match(/\d{2}:\d{2}/)
+    const timeStr = timeMatch ? timeMatch[0] : '23:59'
+    const gameDateTime = new Date(`${selectedDate}T${timeStr}:00+08:00`)
+  
+    const now = new Date()
+    const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+  
+    const isLocked = taiwanNow >= gameDateTime
+  
+    if (isLocked) {
+      console.log(`⛔ 禁止 Drop：${p.Team} 比賽已開始 (${gameDateTime.toISOString()}), 且 ${p.Name} 在先發位置`)
+      return true
+    }
+  
+    console.log(`✅ 可 Drop：${p.Name} 比賽尚未開始或位置非先發 (${currentPosition})`)
+    return false
+  }
+  
+
   const fetchData = async () => {
     setLoading(true)
   

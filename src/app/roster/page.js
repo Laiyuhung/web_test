@@ -361,6 +361,7 @@ export default function RosterPage() {
           return {
             ...p,
             ...(stat || {}),
+            B_or_P: p.B_or_P,  // ⬅️ 確保帶進來
             finalPosition: pos?.finalPosition || [],
             registerStatus: reg?.status || '未知'
           }
@@ -1126,16 +1127,18 @@ export default function RosterPage() {
                     onClick={async () => {
                       setSelectedPlayerDetail(p)
                       setDetailDialogOpen(true)
-                    
+                      
+                      const playerType = p.B_or_P
+
                       // Stat summary
-                      const summary = await fetchPlayerStatSummary(p.Name, type.toLowerCase())
-                    
-                      // Last 6 games
+                      const summary = await fetchPlayerStatSummary(p.Name, playerType.toLowerCase())
+
                       const res = await fetch('/api/playerStats/last6games', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: p.Name, team: p.Team, type: type.toLowerCase() })
+                        body: JSON.stringify({ name: p.Name, team: p.Team, type: playerType.toLowerCase() })
                       })
+
                       const last6 = await res.json()
                     
                       setSelectedPlayerDetail(prev => ({
@@ -2171,7 +2174,7 @@ export default function RosterPage() {
                 <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
                   <thead className="bg-gray-100">
                     <tr>
-                      {(type === 'Batter'
+                      {(playerType === 'Batter'
                         ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                         : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                       ).map(k => (

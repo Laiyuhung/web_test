@@ -1129,6 +1129,8 @@ export default function RosterPage() {
                       setDetailDialogOpen(true)
                       
                       const playerType = p.B_or_P
+                      console.log(`🛠️ ${p.Name} → ${playerType}`)
+
 
                       // Stat summary
                       const summary = await fetchPlayerStatSummary(p.Name, playerType.toLowerCase())

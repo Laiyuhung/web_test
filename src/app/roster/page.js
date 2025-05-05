@@ -1129,7 +1129,7 @@ export default function RosterPage() {
                       setDetailDialogOpen(true)
                       
                       const playerType = p.B_or_P
-                      console.log(`🛠️ ${p.Name} → ${playerType}`)
+                      // console.log(`🛠️ ${p.Name} → ${playerType}`)
 
 
                       // Stat summary
@@ -2178,7 +2178,7 @@ export default function RosterPage() {
                 <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
                   <thead className="bg-gray-100">
                     <tr>
-                      {(selectedPlayerDetail.type === 'Batter'
+                      {(selectedPlayerDetail.type === 'batter'
                         ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                         : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                       ).map(k => (
@@ -2190,12 +2190,12 @@ export default function RosterPage() {
                     {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
                       <>
                         <tr className="bg-gray-50 text-left text-sm">
-                          <td colSpan={selectedPlayerDetail.type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                          <td colSpan={selectedPlayerDetail.type === 'batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
                             {label}
                           </td>
                         </tr>
                         <tr>
-                          {(selectedPlayerDetail.type === 'Batter'
+                          {(selectedPlayerDetail.type === 'batter'
                             ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                             : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                           ).map(k => (
@@ -2219,7 +2219,7 @@ export default function RosterPage() {
                     <tr>
                       <th className="border px-2">日期</th>
                       <th className="border px-2">對手</th>
-                      {(selectedPlayerDetail.type === 'Batter'
+                      {(selectedPlayerDetail.type === 'batter'
                         ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                         : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                       ).map(k => (
@@ -2232,7 +2232,7 @@ export default function RosterPage() {
                       <tr key={idx}>
                         <td className="border px-2 py-1">{game.game_date}</td>
                         <td className="border px-2 py-1">{game.opponent}</td>
-                        {(selectedPlayerDetail.type === 'Batter'
+                        {(selectedPlayerDetail.type === 'batter'
                           ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                           : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                         ).map(k => (

@@ -1144,8 +1144,10 @@ export default function RosterPage() {
                       setSelectedPlayerDetail(prev => ({
                         ...prev,
                         statSummary: summary,
-                        last6games: last6.recentGames || []
+                        last6games: last6.recentGames || [],
+                        type: playerType.toLowerCase()   // ✅ 新增這一行，把類型存進去
                       }))
+                      
                     }}
                   >
                     <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>
@@ -2158,7 +2160,7 @@ export default function RosterPage() {
           })()}
         </div>
 
-
+        
 
         {/* 🔻 Tabs 加進來 */}
         <Tabs defaultValue="summary" className="mt-4">
@@ -2174,7 +2176,7 @@ export default function RosterPage() {
                 <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
                   <thead className="bg-gray-100">
                     <tr>
-                      {(playerType === 'Batter'
+                      {(selectedPlayerDetail?.type === 'Batter'
                         ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                         : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                       ).map(k => (
@@ -2186,12 +2188,12 @@ export default function RosterPage() {
                     {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
                       <>
                         <tr className="bg-gray-50 text-left text-sm">
-                          <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                          <td colSpan={selectedPlayerDetail?.type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
                             {label}
                           </td>
                         </tr>
                         <tr>
-                          {(type === 'Batter'
+                          {(selectedPlayerDetail?.type === 'Batter'
                             ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                             : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                           ).map(k => (

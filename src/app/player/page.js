@@ -450,34 +450,6 @@ export default function PlayerPage() {
     const num = parseFloat(val)
     return isNaN(num) ? '0.00' : num.toFixed(2)
   }
-
-  const sendEmailNotification = async (type, playerName, managerName) => {
-    const action = type
-    const recipients = [
-      'mar.hung.0708@gmail.com',
-      'laiyuhung921118@gmail.com',
-      'peter0984541203@gmail.com',
-      'anthonylin6507@gmail.com',
-    ]
-  
-    try {
-      await fetch('/api/send-mail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: recipients.join(','),
-          subject: `⚾️ Fantasy 動態通知：${managerName} ${action} ${playerName}`,
-          html: `
-            <p><b>${managerName}</b>  ${action} <b>${playerName}</b></p>
-            <p>📅 時間：${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}</p>
-          `
-        })
-      })
-      console.log('📧 通知信已發送')
-    } catch (err) {
-      console.error('❌ 發信失敗:', err)
-    }
-  }
   
 
   const renderCell = (val) => {
@@ -1183,7 +1155,7 @@ export default function PlayerPage() {
                   await fetchStatsAndStatus(); // 🧩 加這行！
 
                   // ✅ 呼叫發信函式
-                  await sendEmailNotification(type, confirmPlayer.Name, managerMap[userId] || '未知玩家')
+                  
                   
                 } else {
                   setSuccessMessage(`❌ 錯誤: ${data.error}`);

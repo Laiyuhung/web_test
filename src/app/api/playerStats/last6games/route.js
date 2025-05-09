@@ -41,8 +41,19 @@ export async function POST(req) {
       const H = parseFloat(d.hits_allowed || 0)
       const ER = parseFloat(d.earned_runs || 0)
       const BB = parseFloat(d.walks || 0)
-      const ERA = IP ? (ER * 9) / IP : 0
-      const WHIP = IP ? (BB + H) / IP : 0
+      let ERA = '0.00'
+      if (IP === 0) {
+        ERA = ER > 0 ? 'INF' : '0.00'
+      } else {
+        ERA = ((ER * 9) / IP).toFixed(2)
+      }
+
+      let WHIP = '0.00'
+      if (IP === 0) {
+        WHIP = (BB + H) > 0 ? 'INF' : '0.00'
+      } else {
+        WHIP = ((BB + H) / IP).toFixed(2)
+      }
 
       return {
         game_date: d.game_date.slice(5), // 只取 MM-DD
@@ -58,8 +69,8 @@ export async function POST(req) {
         BB,
         QS: IP >= 6 && ER <= 3 ? 1 : 0,
         OUT,
-        ERA: ERA.toFixed(2),
-        WHIP: WHIP.toFixed(2)
+        ERA: ERA,
+        WHIP: WHIP
       }
     })
 

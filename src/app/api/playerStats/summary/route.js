@@ -102,13 +102,19 @@ export async function POST(req) {
         }
       } else {
         const IP_raw = total.OUT / 3
-        const ERA = IP_raw ? (9 * total.ER / IP_raw) : 0
-        const WHIP = IP_raw ? (total.BB + total.H) / IP_raw : 0
+        const ERA = IP_raw
+          ? (9 * ER / IP_raw).toFixed(2)
+          : (ER > 0 ? 'INF' : '0.00')
+
+        const WHIP = IP_raw
+          ? ((BB + H) / IP_raw).toFixed(2)
+          : ((BB + H) > 0 ? 'INF' : '0.00')
+
         result[label] = {
           ...total,
           IP: formatIP(total.OUT),
-          ERA: ERA.toFixed(2),
-          WHIP: WHIP.toFixed(2)
+          ERA: ERA,
+          WHIP: WHIP
         }
       }
     }

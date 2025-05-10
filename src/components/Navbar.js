@@ -179,32 +179,33 @@ export default function Navbar() {
                   }
                 }}
               >
-                <label className="block mb-2 text-sm">帳號</label>
+                <label className="block mb-2 text-sm text-gray-700">帳號</label>
                 <input
                   name="account"
-                  className="w-full border px-2 py-1 mb-3"
+                  className="w-full border border-gray-400 bg-white px-2 py-1 mb-3"
                   required
                   value={editData.account}
                   onChange={e => setEditData({ ...editData, account: e.target.value })}
                 />
 
-                <label className="block mb-2 text-sm">密碼</label>
+                <label className="block mb-2 text-sm text-gray-700">密碼</label>
                 <input
                   name="password"
-                  className="w-full border px-2 py-1 mb-3"
+                  className="w-full border border-gray-400 bg-white px-2 py-1 mb-3"
                   required
                   value={editData.password}
                   onChange={e => setEditData({ ...editData, password: e.target.value })}
                 />
 
-                <label className="block mb-2 text-sm">隊名</label>
+                <label className="block mb-2 text-sm text-gray-700">隊名</label>
                 <input
                   name="team_name"
-                  className="w-full border px-2 py-1 mb-4"
+                  className="w-full border border-gray-400 bg-white px-2 py-1 mb-4"
                   required
                   value={editData.team_name}
                   onChange={e => setEditData({ ...editData, team_name: e.target.value })}
                 />
+
 
                 <div className="flex justify-end gap-2">
                   <button

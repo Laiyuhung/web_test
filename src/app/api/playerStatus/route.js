@@ -67,26 +67,26 @@ export async function GET() {
         }
       } else if (addCount - dropCount === 0) {
         const lastDrop = playerTx
-  				.filter(t => t.type.includes('Drop'))
- 					.sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
+          .filter(t => t.type.includes('Drop'))
+          .sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
+
         const addList = playerTx.filter(t => t.type.includes('Add'))
-				const lastAdd = addList
-  				.sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
-      
+        const lastAdd = addList
+          .sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
+
+        const taiwanOffsetMs = 8 * 60 * 60 * 1000
+        const nowTWN = new Date(Date.now() + taiwanOffsetMs)
+
         if (lastDrop && lastAdd) {
           const dropTime = new Date(lastDrop.transaction_time)
           const addTime = new Date(lastAdd.transaction_time)
-      
-          // 台灣時區補正（+8 小時）
-          const taiwanOffsetMs = 8 * 60 * 60 * 1000
+
           const dropDateStr = new Date(dropTime.getTime() + taiwanOffsetMs).toISOString().split('T')[0]
           const addDateStr = new Date(addTime.getTime() + taiwanOffsetMs).toISOString().split('T')[0]
-      
+
           if (dropDateStr === addDateStr) {
             status = 'Free Agent'  // 同一天 Add + Drop，不進 Waiver
           } else {
-            const nowTWN = new Date(Date.now() + taiwanOffsetMs)
-
             const dropDateTWN = new Date(dropTime.getTime() + taiwanOffsetMs)
             dropDateTWN.setHours(0, 0, 0, 0)
 
@@ -94,45 +94,32 @@ export async function GET() {
             offDate.setDate(offDate.getDate() + 3)
             offDate.setHours(1, 0, 0, 0)
 
-            const isDropExpired = nowTWN >= offDate
-
-            // 先預設狀態為 Drop 的邏輯判斷
-            if (isDropExpired) {
+            if (nowTWN >= offDate) {
               status = 'Free Agent'
             } else {
               status = 'Waiver'
               offWaivers = new Date(offDate.getTime() - taiwanOffsetMs).toISOString()
             }
-
-            // 👉 在這裡加「新增球員」的 Waiver 判斷邏輯
-            const playerAddedDate = player.add_date
-            if (player.Name === '布坎南' && playerAddedDate) {
-              const baseDate = new Date(playerAddedDate)
-              const addOffDate = new Date(baseDate)
-              addOffDate.setDate(addOffDate.getDate() + 3)
-              addOffDate.setHours(1, 0, 0, 0)
-              const addOffUTC = new Date(addOffDate.getTime() - taiwanOffsetMs)
-
-              console.log(`🕒 ${player.Name} 新增日期: ${baseDate.toISOString()}`)
-              console.log(`📅 ${player.Name} 加入後 +3 天的截止時間（台灣時間 01:00）: ${addOffDate.toISOString()}`)
-              console.log(`⏳ 現在台灣時間: ${nowTWN.toISOString()}`)
-
-              if (nowTWN < addOffDate) {
-                status = 'Waiver'
-                offWaivers = addOffUTC.toISOString()
-                console.log(`⚠️ ${player.Name} 尚在 Waiver 中，解除時間（UTC）為: ${offWaivers}`)
-              } else {
-                console.log(`✅ ${player.Name} 已過 Waiver 期`)
-              }
-            }
-
-
           }
+        } else {
+          // ⛳ 沒有 drop + add，改用 playerslist.add_date 判斷 Waiver
+          const playerAddedDate = player.add_date
+          if (playerAddedDate) {
+            const baseDate = new Date(playerAddedDate)
+            const addOffDate = new Date(baseDate)
+            addOffDate.setDate(addOffDate.getDate() + 3)
+            addOffDate.setHours(1, 0, 0, 0)
 
-          
-          
+            const addOffUTC = new Date(addOffDate.getTime() - taiwanOffsetMs)
+
+            if (nowTWN < addOffDate) {
+              status = 'Waiver'
+              offWaivers = addOffUTC.toISOString()
+            }
+          }
         }
       }
+
       
       
 

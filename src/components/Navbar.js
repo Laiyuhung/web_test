@@ -151,7 +151,7 @@ export default function Navbar() {
       {editDialogOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
           <div className="bg-white rounded shadow p-6 w-[90%] max-w-md">
-            <h2 className="text-lg font-bold mb-4">修改帳號資訊</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-800">修改帳號資訊</h2>
 
             {!editDataLoaded ? (
               <div className="text-center text-gray-500">載入中...</div>
@@ -182,7 +182,7 @@ export default function Navbar() {
                 <label className="block mb-2 text-sm text-gray-700">帳號</label>
                 <input
                   name="account"
-                  className="w-full border border-gray-400 bg-white px-2 py-1 mb-3"
+                  className="w-full border border-gray-400 bg-white text-gray-800 px-2 py-1 mb-3"
                   required
                   value={editData.account}
                   onChange={e => setEditData({ ...editData, account: e.target.value })}
@@ -191,7 +191,7 @@ export default function Navbar() {
                 <label className="block mb-2 text-sm text-gray-700">密碼</label>
                 <input
                   name="password"
-                  className="w-full border border-gray-400 bg-white px-2 py-1 mb-3"
+                  className="w-full border border-gray-400 bg-white text-gray-800 px-2 py-1 mb-3"
                   required
                   value={editData.password}
                   onChange={e => setEditData({ ...editData, password: e.target.value })}
@@ -200,7 +200,7 @@ export default function Navbar() {
                 <label className="block mb-2 text-sm text-gray-700">隊名</label>
                 <input
                   name="team_name"
-                  className="w-full border border-gray-400 bg-white px-2 py-1 mb-4"
+                  className="w-full border border-gray-400 bg-white text-gray-800 px-2 py-1 mb-3"
                   required
                   value={editData.team_name}
                   onChange={e => setEditData({ ...editData, team_name: e.target.value })}

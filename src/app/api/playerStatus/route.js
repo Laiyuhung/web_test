@@ -40,7 +40,7 @@ export async function GET() {
   try {
 
     const [players, transactions, managers] = await Promise.all([
-      fetchAll('playerslist', 'Player_no, Name, Team, identity, B_or_P', q => q.eq('Available', 'V')),
+      fetchAll('playerslist', 'Player_no, Name, Team, identity, B_or_P, add_date', q => q.eq('Available', 'V')),
       fetchAll('transactions', 'Player_no, manager_id, type, transaction_time'),
       fetchAll('managers', 'id, team_name')
     ])
@@ -107,6 +107,26 @@ export async function GET() {
           }
           
           
+        }
+      }
+      else {
+        const playerAddedDate = player.add_date  // ⚠️ 這要是 ISO 字串或 Date 物件
+        if (playerAddedDate) {
+          const baseDate = new Date(playerAddedDate)  // 原本是 UTC 0:00
+
+          const taiwanOffsetMs = 8 * 60 * 60 * 1000
+          const nowTWN = new Date(Date.now() + taiwanOffsetMs)
+
+          const waiverDeadline = new Date(baseDate)
+          waiverDeadline.setDate(waiverDeadline.getDate() + 3)
+          waiverDeadline.setHours(1, 0, 0, 0)  // 台灣時間 01:00
+
+          const waiverDeadlineUTC = new Date(waiverDeadline.getTime() - taiwanOffsetMs)
+
+          if (nowTWN < waiverDeadline) {
+            status = 'Waiver'
+            offWaivers = waiverDeadlineUTC.toISOString()
+          }
         }
       }
       

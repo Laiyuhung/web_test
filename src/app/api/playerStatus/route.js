@@ -113,11 +113,19 @@ export async function GET() {
               addOffDate.setHours(1, 0, 0, 0)
               const addOffUTC = new Date(addOffDate.getTime() - taiwanOffsetMs)
 
+              console.log(`🕒 ${player.Name} 新增日期: ${baseDate.toISOString()}`)
+              console.log(`📅 ${player.Name} 加入後 +3 天的截止時間（台灣時間 01:00）: ${addOffDate.toISOString()}`)
+              console.log(`⏳ 現在台灣時間: ${nowTWN.toISOString()}`)
+
               if (nowTWN < addOffDate) {
                 status = 'Waiver'
                 offWaivers = addOffUTC.toISOString()
+                console.log(`⚠️ ${player.Name} 尚在 Waiver 中，解除時間（UTC）為: ${offWaivers}`)
+              } else {
+                console.log(`✅ ${player.Name} 已過 Waiver 期`)
               }
             }
+
           }
 
           

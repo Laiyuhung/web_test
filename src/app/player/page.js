@@ -17,6 +17,7 @@ import {
 
 export default function PlayerPage() {
   const [filterWatchedOnly, setFilterWatchedOnly] = useState(false)
+  const [gameInfoLoaded, setGameInfoLoaded] = useState(false)
   const [watchedList, setWatchedList] = useState([])
   const [managerMap, setManagerMap] = useState({})
   const [taiwanToday, setTaiwanToday] = useState('')
@@ -261,6 +262,7 @@ export default function PlayerPage() {
         }
       }
       setGameInfoMap(map)
+      setGameInfoLoaded(true)
     }
     fetchGameInfo()
   }, [players, taiwanToday])
@@ -880,8 +882,8 @@ export default function PlayerPage() {
 
       <span className="text-sm text-gray-600">Stats range：{fromDate} ~ {toDate}</span>
 
-      {loading && <div className="mb-4">Loading...</div>}
-      
+      {(loading || !gameInfoLoaded) && <div className="mb-4">Loading...</div>}
+      {!loading && gameInfoLoaded && (
       <div className="overflow-auto max-h-[600px] w-full">
         <table className="text-sm w-full text-center whitespace-nowrap">
           <thead className="bg-gray-200 sticky top-0 z-20">
@@ -1109,6 +1111,8 @@ export default function PlayerPage() {
         </table>
 
       </div>
+
+      )}
     </div>
     <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <AlertDialogContent>

@@ -86,47 +86,42 @@ export async function GET() {
             status = 'Free Agent'  // 同一天 Add + Drop，不進 Waiver
           } else {
             const nowTWN = new Date(Date.now() + taiwanOffsetMs)
-          
-            // 把 dropTime 調成「台灣時間 0:00」
+
             const dropDateTWN = new Date(dropTime.getTime() + taiwanOffsetMs)
             dropDateTWN.setHours(0, 0, 0, 0)
-          
-            // 加 3 天，得到解除 Waiver 的日子
+
             const offDate = new Date(dropDateTWN)
             offDate.setDate(offDate.getDate() + 3)
-            // 再把時間設成 01:00
             offDate.setHours(1, 0, 0, 0)
-          
-            if (nowTWN >= offDate) {
+
+            const isDropExpired = nowTWN >= offDate
+
+            // 先預設狀態為 Drop 的邏輯判斷
+            if (isDropExpired) {
               status = 'Free Agent'
             } else {
               status = 'Waiver'
               offWaivers = new Date(offDate.getTime() - taiwanOffsetMs).toISOString()
-              // 把 offDate 從台灣時間 01:00 調回 UTC，存成標準格式
+            }
+
+            // 👉 在這裡加「新增球員」的 Waiver 判斷邏輯
+            const playerAddedDate = player.add_date
+            if (playerAddedDate) {
+              const baseDate = new Date(playerAddedDate)
+              const addOffDate = new Date(baseDate)
+              addOffDate.setDate(addOffDate.getDate() + 3)
+              addOffDate.setHours(1, 0, 0, 0)
+              const addOffUTC = new Date(addOffDate.getTime() - taiwanOffsetMs)
+
+              if (nowTWN < addOffDate) {
+                status = 'Waiver'
+                offWaivers = addOffUTC.toISOString()
+              }
             }
           }
+
           
           
-        }
-      }
-      else {
-        const playerAddedDate = player.add_date  // ⚠️ 這要是 ISO 字串或 Date 物件
-        if (playerAddedDate) {
-          const baseDate = new Date(playerAddedDate)  // 原本是 UTC 0:00
-
-          const taiwanOffsetMs = 8 * 60 * 60 * 1000
-          const nowTWN = new Date(Date.now() + taiwanOffsetMs)
-
-          const waiverDeadline = new Date(baseDate)
-          waiverDeadline.setDate(waiverDeadline.getDate() + 3)
-          waiverDeadline.setHours(1, 0, 0, 0)  // 台灣時間 01:00
-
-          const waiverDeadlineUTC = new Date(waiverDeadline.getTime() - taiwanOffsetMs)
-
-          if (nowTWN < waiverDeadline) {
-            status = 'Waiver'
-            offWaivers = waiverDeadlineUTC.toISOString()
-          }
         }
       }
       

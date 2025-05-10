@@ -11,9 +11,12 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editData, setEditData] = useState({ account: '', password: '', team_name: '' })
+  const [editDataLoaded, setEditDataLoaded] = useState(false)
+
 
   useEffect(() => {
     if (editDialogOpen && userId) {
+      setEditDataLoaded(false)  // ← 加這行
       fetch('/api/managers/detail', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -27,11 +30,13 @@ export default function Navbar() {
               password: data.password || '',
               team_name: data.team_name || ''
             })
+            setEditDataLoaded(true)  // ← 加這行
           }
         })
         .catch(err => console.error('❌ 取得使用者詳細失敗:', err))
     }
   }, [editDialogOpen, userId])
+
 
 
   // 當使用者登入或登出時，更新 navbar 顯示
@@ -129,7 +134,7 @@ export default function Navbar() {
             <span className="text-lg">👤</span> 歡迎 {userName}
             <button
               onClick={() => setEditDialogOpen(true)}
-              className="text-xs text-yellow-300 underline"
+              className="text-sm text-white hover:text-yellow-300"
             >
               修改帳號資訊
             </button>
@@ -147,71 +152,78 @@ export default function Navbar() {
         <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
           <div className="bg-white rounded shadow p-6 w-[90%] max-w-md">
             <h2 className="text-lg font-bold mb-4">修改帳號資訊</h2>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault()
-                const form = e.target
-                const account = form.account.value
-                const password = form.password.value
-                const team_name = form.team_name.value
 
-                const res = await fetch('/api/managers/update', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ id: userId, account, password, team_name })
-                })
-                const data = await res.json()
-                if (res.ok) {
-                  alert('✅ 更新成功')
-                  setEditDialogOpen(false)
-                } else {
-                  alert(`❌ 錯誤: ${data.error}`)
-                }
-              }}
-            >
-              <label className="block mb-2 text-sm">帳號</label>
-              <input
-                name="account"
-                className="w-full border px-2 py-1 mb-3"
-                required
-                value={editData.account}
-                onChange={e => setEditData({ ...editData, account: e.target.value })}
-              />
+            {!editDataLoaded ? (
+              <div className="text-center text-gray-500">載入中...</div>
+            ) : (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault()
+                  const form = e.target
+                  const account = form.account.value
+                  const password = form.password.value
+                  const team_name = form.team_name.value
 
-              <label className="block mb-2 text-sm">密碼</label>
-              <input
-                name="password"
-                className="w-full border px-2 py-1 mb-3"
-                required
-                value={editData.password}
-                onChange={e => setEditData({ ...editData, password: e.target.value })}
-              />
+                  const res = await fetch('/api/managers/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: userId, account, password, team_name })
+                  })
 
-              <label className="block mb-2 text-sm">隊名</label>
-              <input
-                name="team_name"
-                className="w-full border px-2 py-1 mb-4"
-                required
-                value={editData.team_name}
-                onChange={e => setEditData({ ...editData, team_name: e.target.value })}
-              />
+                  const data = await res.json()
+                  if (res.ok) {
+                    alert('✅ 更新成功')
+                    setEditDialogOpen(false)
+                  } else {
+                    alert(`❌ 錯誤: ${data.error}`)
+                  }
+                }}
+              >
+                <label className="block mb-2 text-sm">帳號</label>
+                <input
+                  name="account"
+                  className="w-full border px-2 py-1 mb-3"
+                  required
+                  value={editData.account}
+                  onChange={e => setEditData({ ...editData, account: e.target.value })}
+                />
 
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditDialogOpen(false)}
-                  className="px-3 py-1 bg-gray-300 rounded"
-                >
-                  取消
-                </button>
-                <button type="submit" className="px-3 py-1 bg-blue-600 text-white rounded">
-                  更新
-                </button>
-              </div>
-            </form>
+                <label className="block mb-2 text-sm">密碼</label>
+                <input
+                  name="password"
+                  className="w-full border px-2 py-1 mb-3"
+                  required
+                  value={editData.password}
+                  onChange={e => setEditData({ ...editData, password: e.target.value })}
+                />
+
+                <label className="block mb-2 text-sm">隊名</label>
+                <input
+                  name="team_name"
+                  className="w-full border px-2 py-1 mb-4"
+                  required
+                  value={editData.team_name}
+                  onChange={e => setEditData({ ...editData, team_name: e.target.value })}
+                />
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditDialogOpen(false)}
+                    className="px-3 py-1 bg-gray-300 rounded"
+                  >
+                    取消
+                  </button>
+                  <button type="submit" className="px-3 py-1 bg-blue-600 text-white rounded">
+                    更新
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
+
     </nav>
   )
 }

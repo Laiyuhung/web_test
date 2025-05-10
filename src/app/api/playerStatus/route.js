@@ -106,7 +106,7 @@ export async function GET() {
 
             // 👉 在這裡加「新增球員」的 Waiver 判斷邏輯
             const playerAddedDate = player.add_date
-            if (playerAddedDate) {
+            if (player.Name === '布坎南' && playerAddedDate) {
               const baseDate = new Date(playerAddedDate)
               const addOffDate = new Date(baseDate)
               addOffDate.setDate(addOffDate.getDate() + 3)
@@ -125,6 +125,7 @@ export async function GET() {
                 console.log(`✅ ${player.Name} 已過 Waiver 期`)
               }
             }
+
 
           }
 

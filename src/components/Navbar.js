@@ -146,17 +146,17 @@ export default function Navbar() {
 
       {/* User and Logout Section (For larger screens, will only show if user is logged in) */}
       <div className="flex items-center space-x-4">
-        {/* {userName && (
+        {userName && (
           <div className="flex items-center gap-2 text-sm">
             <span className="text-lg">👤</span> 歡迎 {userName}
-            <button
+            {/* <button
               onClick={() => setEditDialogOpen(true)}
               className="text-sm text-white hover:text-yellow-300"
             >
               修改帳號資訊
-            </button>
+            </button> */}
           </div>
-        )} */}
+        )}
         <button
           onClick={handleLogout}
           className="text-sm text-white hover:text-red-300"

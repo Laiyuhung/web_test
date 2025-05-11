@@ -13,9 +13,9 @@ export async function POST(req) {
     const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
     const todayStr = taiwanNow.toISOString().slice(0, 10) // '2025-04-17'
 
-    // 查詢 schedule，找出包含今天的週次
+    // 查詢 add_schedule_date，找出包含今天的週次
     const { data: scheduleRows, error: scheduleError } = await supabase
-      .from('schedule_date')
+      .from('add_schedule_date')
       .select('start, end')
     
     if (scheduleError) throw scheduleError

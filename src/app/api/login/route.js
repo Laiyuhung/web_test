@@ -20,10 +20,10 @@ export async function POST(request) {
       return Response.json({ error: '帳號或密碼錯誤', duration }, { status: 401 })
     }
 
-    // ✅ 設定 cookie（7 天）
+    // ✅ 設定 cookie（10 年）
     cookies().set('user_id', data.id, {
       path: '/',
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 60 * 24 * 365 * 10, // 10 年
     })
 
     return Response.json({ id: data.id, duration })

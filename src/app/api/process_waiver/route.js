@@ -32,7 +32,11 @@ async function handleWaiver() {
     const priorities = priorityRes.data
     const playerList = playerRes.data
 
-    if (!waivers || waivers.length === 0) return NextResponse.json({ message: '📭 今日無待處理 Waiver' })
+    if (!waivers || waivers.length === 0){
+
+      console.log('📭 今日無待處理 Waiver')
+      return NextResponse.json({ message: '📭 今日無待處理 Waiver' })
+    } 
 
     const priorityList = priorities.map(p => p.id)
 

@@ -106,30 +106,47 @@ export default function Navbar() {
 
       {/* Dropdown Menu for small screens */}
       {menuOpen && (
-        <div className="absolute top-0 right-0 w-1/2 bg-[#003366] text-white p-4 md:hidden">
-          <div className="flex justify-between items-center mb-4">
+        <div
+          className="fixed inset-0 z-40 flex justify-end"
+          onClick={() => setMenuOpen(false)} // 點擊背景就關閉
+        >
+          <div
+            className="w-1/2 bg-[#003366] text-white p-4"
+            onClick={(e) => e.stopPropagation()} // 防止點選內容時關閉
+          >
+            <div className="flex justify-between items-center mb-4">
+              <button
+                onClick={() => setMenuOpen(false)}
+                className="text-white text-xl"
+              >
+                &times;
+              </button>
+            </div>
+            <Link href="/home" className="block py-2" onClick={() => setMenuOpen(false)}>HOME</Link>
+            <Link href="/roster" className="block py-2" onClick={() => setMenuOpen(false)}>ROSTER</Link>
+            <Link href="/player" className="block py-2" onClick={() => setMenuOpen(false)}>PLAYERS</Link>
+            <Link href="/matchup" className="block py-2" onClick={() => setMenuOpen(false)}>MATCHUP</Link>
+            <Link href="/manager" className="block py-2" onClick={() => setMenuOpen(false)}>MANAGER</Link>
+            {userId === '2' && (
+              <Link href="/bulk-insert" className="block py-2" onClick={() => setMenuOpen(false)}>資料登錄系統</Link>
+            )}
             <button
-              onClick={() => setMenuOpen(false)}
-              className="text-white text-xl"
+              onClick={() => {
+                setEditDialogOpen(true)
+                setMenuOpen(false)
+              }}
+              className="block py-2 text-left w-full text-white hover:text-yellow-300"
             >
-              &times; {/* Close button */}
+              修改帳號資訊
             </button>
           </div>
-          <Link href="/home" className="block py-2" onClick={() => setMenuOpen(false)}>HOME</Link>
-          <Link href="/roster" className="block py-2" onClick={() => setMenuOpen(false)}>ROSTER</Link>
-          <Link href="/player" className="block py-2" onClick={() => setMenuOpen(false)}>PLAYERS</Link>
-          <Link href="/matchup" className="block py-2" onClick={() => setMenuOpen(false)}>MATCHUP</Link>
-          <Link href="/manager" className="block py-2" onClick={() => setMenuOpen(false)}>MANAGER</Link>
-          {userId === '2' && (
-            <Link href="/bulk-insert" className="block py-2" onClick={() => setMenuOpen(false)}>資料登錄系統</Link>
-          )}
-
         </div>
       )}
 
+
       {/* User and Logout Section (For larger screens, will only show if user is logged in) */}
       <div className="flex items-center space-x-4">
-        {userName && (
+        {/* {userName && (
           <div className="flex items-center gap-2 text-sm">
             <span className="text-lg">👤</span> 歡迎 {userName}
             <button
@@ -139,7 +156,7 @@ export default function Navbar() {
               修改帳號資訊
             </button>
           </div>
-        )}
+        )} */}
         <button
           onClick={handleLogout}
           className="text-sm text-white hover:text-red-300"

@@ -18,37 +18,30 @@ async function handleWaiver() {
     const taiwanDate = new Date(now.getTime() + taiwanOffset).toISOString().slice(0, 10)
     console.log(`📆 今日台灣日期: ${taiwanDate}`)
 
-    const { data: waivers, error: waiverError } = await supabase
-      .from('waiver')
-      .select('*')
-      .eq('off_waiver', taiwanDate)
-      .eq('status', 'pending')
+    const [waiverRes, priorityRes, playerRes] = await Promise.all([
+      supabase.from('waiver').select('*').eq('off_waiver', taiwanDate).eq('status', 'pending'),
+      supabase.from('waiver_priority').select('id, priority').order('priority', { ascending: false }),
+      supabase.from('playerslist').select('Name, identity')
+    ])
 
-    if (waiverError) throw new Error('讀取 Waiver 錯誤')
+    if (waiverRes.error) throw new Error('讀取 Waiver 錯誤')
+    if (priorityRes.error) throw new Error('讀取順位錯誤')
+    if (playerRes.error) throw new Error('讀取球員列表錯誤')
+
+    const waivers = waiverRes.data
+    const priorities = priorityRes.data
+    const playerList = playerRes.data
+
     if (!waivers || waivers.length === 0) return NextResponse.json({ message: '📭 今日無待處理 Waiver' })
 
-    console.log(`📌 今日共 ${waivers.length} 筆待處理 Waiver`)
+    const priorityList = priorities.map(p => p.id)
 
-    const { data: priorities, error: priorityError } = await supabase
-      .from('waiver_priority')
-      .select('id, priority')
-      .order('priority', { ascending: false })
-
-    if (priorityError) throw new Error('讀取 Waiver 順位錯誤')
-
-    let priorityList = priorities.map(p => p.id)
-    console.log('📋 當前順位順序:', priorityList)
-
-    for (let i = 0; i < priorityList.length; i++) {
-      const managerId = priorityList[i]
+    for (const managerId of priorityList) {
       const managerWaivers = waivers
         .filter(w => w.manager === managerId)
         .sort((a, b) => a.personal_priority - b.personal_priority)
 
-      if (managerWaivers.length === 0) {
-        console.log(`⏭️ Manager ${managerId} 無待處理項目`)
-        continue
-      }
+      if (managerWaivers.length === 0) continue
 
       const w = managerWaivers[0]
       console.log(`⚙️ 處理 Manager ${managerId} Waiver：新增 ${w.add_player}，移除 ${w.drop_player}`)
@@ -62,11 +55,6 @@ async function handleWaiver() {
       if (posError) throw new Error('讀取陣容錯誤')
 
       const assignedMap = Object.fromEntries(positions.map(p => [p.player_name, p.position]))
-
-      const { data: playerList } = await supabase
-        .from('playerslist')
-        .select('Name, identity')
-
       const isForeign = (name) => {
         const p = playerList.find(p => p.Name === name)
         return p?.identity === '洋將'
@@ -77,52 +65,47 @@ async function handleWaiver() {
       if (w.drop_player) delete assignedMap[w.drop_player]
 
       const assignedEntries = Object.entries(assignedMap)
-      const foreignPlayers = assignedEntries.filter(([n]) => isForeign(n))
       const active = ([, pos]) => !['NA', 'NA(備用)'].includes(pos)
 
+      const foreignPlayers = assignedEntries.filter(([n]) => isForeign(n))
       const activeForeign = foreignPlayers.filter(([, pos]) => active([, pos])).length
       const totalForeign = foreignPlayers.length
-      const activeTotal = assignedEntries.filter(([_, pos]) => active([_, pos])).length
+      const activeTotal = assignedEntries.filter(([, pos]) => active([, pos])).length
 
       console.log(`🔢 模擬後：洋將 OnTeam=${totalForeign}，Active=${activeForeign}，總 Active=${activeTotal}`)
 
       if (activeForeign > 3 || totalForeign > 4 || activeTotal > 26) {
-        console.log('❌ 違反 Roster 限制，標記為 Fail (roster limit)')
         await supabase.from('waiver')
           .update({ status: 'Fail (roster limit)' })
           .eq('apply_no', w.apply_no)
-        continue
+        console.log('❌ 限制不符，處理結束')
+        return NextResponse.json({ message: '❌ 限制不符，處理結束' })
       }
 
-      console.log('✅ 通過 Roster 檢查，標記為 Success')
       await supabase.from('waiver')
         .update({ status: 'Success' })
         .eq('apply_no', w.apply_no)
 
-      const { error: updateOthersError } = await supabase
-        .from('waiver')
+      await supabase.from('waiver')
         .update({ status: 'Fail (low priority)' })
         .eq('off_waiver', taiwanDate)
         .eq('add_player', w.add_player)
         .neq('apply_no', w.apply_no)
         .eq('status', 'pending')
 
-      if (updateOthersError) console.error('❌ 無法更新其他 Waiver:', updateOthersError)
-
       const newPriority = Math.min(...priorities.map(p => p.priority)) - 1
-      console.log(`🔃 調整順位：Manager ${managerId} 新順位 ${newPriority}`)
       await supabase.from('waiver_priority')
         .update({ priority: newPriority })
         .eq('id', managerId)
 
-      priorityList.splice(i, 1)
-      priorityList.push(managerId)
-      i--
+      console.log('✅ 成功處理一筆，終止本輪')
+
+      return NextResponse.json({ message: '✅ 已處理一筆 Waiver' })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ message: '🔚 所有 Waiver 已處理完畢' })
   } catch (e) {
     console.error('❌ 處理失敗:', e)
-    return NextResponse.json({ error: 'Waiver 處理失敗' }, { status: 500 })
+    return NextResponse.json({ error: 'Waiver 處理失敗', detail: e.message }, { status: 500 })
   }
 }

@@ -1154,13 +1154,33 @@ export default function PlayerPage() {
             
                 const data = await res.json();
                 if (res.ok) {
-                  setSuccessMessage(`✅ 成功${type === 'Add' ? '加入' : '移除'}球員`);
+                  setSuccessMessage(`✅ 成功${type === 'Add' ? 'Add' : 'Drop'}球員`);
                   setSuccessDialogOpen(true);
                   await fetchStatsAndStatus(); // 🧩 加這行！
 
-                  // ✅ 呼叫發信函式
-                  
-                  
+                  // ✅ 成功後發信
+                  const recipients = [
+                    "mar.hung.0708@gmail.com",
+                    "laiyuhung921118@gmail.com",
+                    "peter0984541203@gmail.com",
+                    "anthonylin6507@gmail.com"
+                  ];
+                  for (const email of recipients) {
+                    await fetch('/api/email/send', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        to: email,
+                        subject: 'CPBL Fantasy transaction 通知',
+                        html: `
+                          <h2>${type === 'Add' ? 'Add' : 'Drop'} 通知</h2>
+                          <p><strong>玩家 #${userId}</strong> 已成功${type === 'Add' ? 'Add' : 'Drop'}球員：</p>
+                          <ul><li><strong>球員：</strong> ${confirmPlayer.Name}</li></ul>
+                          <p>時間：${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}</p>
+                        `
+                      })
+                    })
+                  }
                 } else {
                   setSuccessMessage(`❌ 錯誤: ${data.error}`);
                   setSuccessDialogOpen(true);
@@ -1473,6 +1493,36 @@ export default function PlayerPage() {
           if (res.ok) {
             setSuccessMessage(`✅ 成功加入球員並 Drop ${dropPlayer}`)
             setSuccessDialogOpen(true)
+
+            // ✅ 寄信通知
+            const recipients = [
+              "mar.hung.0708@gmail.com",
+              "laiyuhung921118@gmail.com",
+              "peter0984541203@gmail.com",
+              "anthonylin6507@gmail.com"
+            ]
+            const taiwanTime = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })
+
+            for (const email of recipients) {
+              await fetch('/api/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  to: email,
+                  subject: 'CPBL Fantasy transaction 通知',
+                  html: `
+                    <h2>複合交易通知</h2>
+                    <p><strong>玩家 #${userId}</strong> 成功進行以下交易：</p>
+                    <ul>
+                      <li><strong>加入：</strong> ${confirmPlayer?.Name}</li>
+                      <li><strong>Drop：</strong> ${dropPlayer}</li>
+                    </ul>
+                    <p>時間：${taiwanTime}</p>
+                  `
+                })
+              })
+            }
+
             await fetchStatsAndStatus()
 
 

@@ -1166,7 +1166,7 @@ export default function PlayerPage() {
                     "anthonylin6507@gmail.com"
                   ];
                   for (const email of recipients) {
-                    await fetch('/api/email/send', {
+                    await fetch('/api/email', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
@@ -1504,7 +1504,7 @@ export default function PlayerPage() {
             const taiwanTime = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })
 
             for (const email of recipients) {
-              await fetch('/api/email/send', {
+              await fetch('/api/email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1512,7 +1512,7 @@ export default function PlayerPage() {
                   subject: 'CPBL Fantasy transaction 通知',
                   html: `
                     <h2>複合交易通知</h2>
-                    <p><strong>玩家 #${userId}</strong> 成功進行以下交易：</p>
+                    <p><strong>玩家 #${userId}</strong> 成功進行以下transaction：</p>
                     <ul>
                       <li><strong>加入：</strong> ${confirmPlayer?.Name}</li>
                       <li><strong>Drop：</strong> ${dropPlayer}</li>

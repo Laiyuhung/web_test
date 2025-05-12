@@ -1,5 +1,7 @@
 "use client";
 
+import { sendTradeNotificationEmail } from '@/lib/email';
+
 const recipients = [
   "mar.hung.0708@gmail.com",
   "laiyuhung921118@gmail.com",
@@ -11,20 +13,12 @@ export default function TestSendMailPage() {
   async function testEmailApi() {
     try {
       for (const email of recipients) {
-        const response = await fetch('/api/email/send', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            to: email,
-            subject: '測試郵件',
-            html: '<h1>這是一封測試郵件</h1>',
-          }),
-        });
-
-        const data = await response.json();
-        console.log(`Response for ${email}:`, data);
+        const result = await sendTradeNotificationEmail(
+          email,
+          '測試郵件',
+          '<h1>這是一封測試郵件</h1>'
+        );
+        console.log(`Response for ${email}:`, result);
       }
     } catch (error) {
       console.error('Error:', error);

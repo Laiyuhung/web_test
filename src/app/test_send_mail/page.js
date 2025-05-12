@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from 'react';
+
 const recipients = [
   "mar.hung.0708@gmail.com",
   "laiyuhung921118@gmail.com",
@@ -8,11 +10,34 @@ const recipients = [
 ];
 
 export default function TestSendMailPage() {
+  const [managerMap, setManagerMap] = useState({});
+
+  useEffect(() => {
+    const fetchManagers = async () => {
+      try {
+        const res = await fetch('/api/managers');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const map = {};
+          data.forEach(m => {
+            map[m.id.toString()] = m.team_name;
+          });
+          setManagerMap(map);
+        }
+      } catch (err) {
+        console.error('❌ 無法取得 manager 名單:', err);
+      }
+    };
+    fetchManagers();
+  }, []);
+
   async function testEmailApi() {
     try {
       console.log('Starting email sending process...');
       for (const email of recipients) {
-        console.log(`Sending email to: ${email}`);
+        const teamName = managerMap[email] || '未知隊名';
+        console.log(`Sending email to: ${email} with team name: ${teamName}`);
+
         const response = await fetch('/api/email', {
           method: 'POST',
           headers: {
@@ -21,7 +46,7 @@ export default function TestSendMailPage() {
           body: JSON.stringify({
             to: email,
             subject: '測試郵件',
-            html: '<h1>這是一封測試郵件</h1>',
+            html: `<h1>這是一封測試郵件</h1><p>隊名: ${teamName}</p>`,
           }),
         });
 

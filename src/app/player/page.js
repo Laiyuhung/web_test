@@ -1174,7 +1174,7 @@ export default function PlayerPage() {
                         subject: 'CPBL Fantasy transaction 通知',
                         html: `
                           <h2>${type === 'Add' ? 'Add' : 'Drop'} 通知</h2>
-                          <p><strong>玩家 #${userId}</strong> 已成功${type === 'Add' ? 'Add' : 'Drop'}球員：</p>
+                          <p><strong>${managerMap[userId]}</strong> 已成功${type === 'Add' ? 'Add' : 'Drop'}球員：</p>
                           <ul><li><strong>球員：</strong> ${confirmPlayer.Name}</li></ul>
                           <p>時間：${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}</p>
                         `
@@ -1511,8 +1511,8 @@ export default function PlayerPage() {
                   to: email,
                   subject: 'CPBL Fantasy transaction 通知',
                   html: `
-                    <h2>複合交易通知</h2>
-                    <p><strong>玩家 #${userId}</strong> 成功進行以下transaction：</p>
+                    <h2>transaction 通知</h2>
+                    <p><strong>${managerMap[userId]}</strong> 成功進行以下transaction：</p>
                     <ul>
                       <li><strong>加入：</strong> ${confirmPlayer?.Name}</li>
                       <li><strong>Drop：</strong> ${dropPlayer}</li>

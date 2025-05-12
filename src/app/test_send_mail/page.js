@@ -11,7 +11,7 @@ export default function TestSendMailPage() {
   async function testEmailApi() {
     try {
       for (const email of recipients) {
-        const response = await fetch('/api/email/send', {
+        const response = await fetch('/api/email', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

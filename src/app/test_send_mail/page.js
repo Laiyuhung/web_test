@@ -1,3 +1,5 @@
+"use client";
+
 const recipients = [
   "mar.hung.0708@gmail.com",
   "laiyuhung921118@gmail.com",

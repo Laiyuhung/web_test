@@ -11,8 +11,16 @@ export default function TestSendMailPage() {
   async function testEmailApi() {
     try {
       for (const email of recipients) {
-        const response = await fetch(`/api/email/send?to=${encodeURIComponent(email)}&subject=${encodeURIComponent('測試郵件')}&html=${encodeURIComponent('<h1>這是一封測試郵件</h1>')}`, {
-          method: 'GET',
+        const response = await fetch('/api/email/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: email,
+            subject: '測試郵件',
+            html: '<h1>這是一封測試郵件</h1>',
+          }),
         });
 
         const data = await response.json();

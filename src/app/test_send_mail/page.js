@@ -10,7 +10,9 @@ const recipients = [
 export default function TestSendMailPage() {
   async function testEmailApi() {
     try {
+      console.log('Starting email sending process...');
       for (const email of recipients) {
+        console.log(`Sending email to: ${email}`);
         const response = await fetch('/api/email', {
           method: 'POST',
           headers: {
@@ -23,11 +25,19 @@ export default function TestSendMailPage() {
           }),
         });
 
+        console.log(`Response status for ${email}:`, response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Error for ${email}:`, errorText);
+          continue;
+        }
+
         const data = await response.json();
-        console.log(`Response for ${email}:`, data);
+        console.log(`Response data for ${email}:`, data);
       }
+      console.log('Email sending process completed.');
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Unexpected Error:', error);
     }
   }
 

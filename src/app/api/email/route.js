@@ -1,8 +1,7 @@
 // pages/api/email/send.js
-import nodemailer from 'nodemailer';
+import { sendTradeNotificationEmail } from '@/lib/email';
 
 export default async function handler(req, res) {
-
   console.log('Incoming request:', {
     method: req.method,
     headers: req.headers,
@@ -21,31 +20,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
-
-  if (!user || !pass) {
-    console.error('EMAIL_USER 或 EMAIL_PASS 未設定在環境變數中');
-    return res.status(500).json({ error: 'EMAIL_USER 或 EMAIL_PASS 未設定在環境變數中' });
-  }
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass },
-  });
-
-  const mailOptions = {
-    from: user,
-    to,
-    subject,
-    html,
-  };
-
   try {
     console.log('Attempting to send email with:', { to, subject, html });
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully:', info.response);
-    res.status(200).json({ success: true, info });
+    const result = await sendTradeNotificationEmail(to, subject, html);
+    console.log('✅ Email sent successfully:', result);
+    res.status(200).json({ success: true, info: result });
   } catch (err) {
     console.error('❌ Email 發送失敗:', err);
     res.status(500).json({ error: 'Email 發送失敗' });

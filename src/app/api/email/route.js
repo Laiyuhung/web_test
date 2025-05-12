@@ -2,16 +2,17 @@
 import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    console.log('Method not allowed:', req.method);
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
 
   console.log('Incoming request:', {
     method: req.method,
     headers: req.headers,
     body: req.body,
   });
+
+  if (req.method !== 'POST') {
+    console.log('Method not allowed:', req.method);
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   const { to, subject, html } = req.body;
 

@@ -35,13 +35,20 @@ export default function ManagerWeeklyStatsPage() {
 
       <label className="block mb-2">
         選擇週次：
-        <input
-          type="text"
+        <select
           value={week}
           onChange={e => setWeek(e.target.value)}
           className="border p-1 ml-2"
-        />
+        >
+          <option value="">-- 選擇週次 --</option>
+          {Array.from({ length: 18 }, (_, i) => (
+            <option key={i + 1} value={`W${i + 1}`}>
+              W{i + 1}
+            </option>
+          ))}
+        </select>
       </label>
+
 
       {error && <p className="text-red-600">❌ {error}</p>}
 

@@ -80,7 +80,7 @@ export default function Navbar() {
         <div className="text-sm font-bold tracking-wide whitespace-nowrap">2025 CPBL FANTASY</div>
       </div>
 
-      /* Menu for larger screens */}
+      {/* Menu for larger screens */}
         <div className="hidden md:flex items-center space-x-8">
           <Link href="/home" className="font-semibold hover:text-gray-300">HOME</Link>
           <Link href="/roster" className="font-semibold hover:text-gray-300">ROSTER</Link>

@@ -1626,47 +1626,35 @@ export default function RosterPage() {
                                         currentPos === 'NA' || currentPos === 'NA(備用)'
                     
                       const fallback = 'BN'
-                      const newPos = canReturn ? currentPos : fallback
+                      const newPos = canReturn ? currentPos : fallback                   
                     
-                      setMoveTarget(null)
-                      setMoveSlots(null)
-                    
-                      setAssignedPositions(prev => {
-                        const updated = { ...prev }
-                        updated[moveTarget.Name] = posKey
-                        updated[p.Name] = newPos
-                      
-                        const activeForeign = calculateActiveForeign(updated)
-                        if (activeForeign > 3) {
-                          setMoveMessage('❌ Active 洋將不可超過 3 位')
-                          setTimeout(() => setMoveMessage(''), 3000)
-                          return prev
-                        }
+                      const updated = { ...assignedPositions }
+                      updated[moveTarget.Name] = posKey
+                      updated[p.Name] = newPos
 
-                        const activePlayers = players.filter(p => !['NA', 'NA(備用)'].includes(updated[p.Name] || 'BN'))
-                        if (activePlayers.length > 26) {
-                          setMoveMessage('❌ Active Roster 不可超過 26 人')
-                          setTimeout(() => setMoveMessage(''), 3000)
-                          return prev
-                        }
+                      const activeForeign = calculateActiveForeign(updated)
+                      if (activeForeign > 3) {
+                        setMoveMessage('❌ Active 洋將不可超過 3 位')
+                        setTimeout(() => setMoveMessage(''), 3000)
+                        return
+                      }
 
-                      
-                        setForeignCount(prevCount => ({
-                          ...prevCount,
-                          active: activeForeign
-                        }))
-                      
-                        saveAssigned(updated)
-                        return updated
-                      })
-                      
-                    
+                      const activePlayers = players.filter(p => !['NA', 'NA(備用)'].includes(updated[p.Name] || 'BN'))
+                      if (activePlayers.length > 26) {
+                        setMoveMessage('❌ Active Roster 不可超過 26 人')
+                        setTimeout(() => setMoveMessage(''), 3000)
+                        return
+                      }
+
+                      setAssignedPositions(updated)
+                      setForeignCount(prev => ({ ...prev, active: activeForeign }))
+                      saveAssigned(updated)
                       setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}，${p.Name} 被移動到 ${newPos}`)
                       setTimeout(() => setMoveMessage(''), 3000)
+                      setMoveTarget(null)
+                      setMoveSlots(null)
                     }}
-                    
-                    
-                    
+
                     className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-2">
@@ -1712,44 +1700,33 @@ export default function RosterPage() {
                     }
                   
                     console.log(`✅ 準備將 ${moveTarget.Name} 移動到 ${posKey}`)
-                    setAssignedPositions(prev => {
-                      const updated = { ...prev, [moveTarget.Name]: posKey }
-                    
-                      // ✅ 檢查新 active 洋將數
-                      const activeForeign = calculateActiveForeign(updated)
-                      if (activeForeign > 3) {
-                        setMoveMessage('❌ Active 洋將不可超過 3 位')
-                        setTimeout(() => setMoveMessage(''), 3000)
-                        return prev  // 不變動
-                      }
+                    const updated = { ...assignedPositions, [moveTarget.Name]: posKey }
 
-                      const activePlayers = players.filter(p => !['NA', 'NA(備用)'].includes(updated[p.Name] || 'BN'))
-                      if (activePlayers.length > 26) {
-                        setMoveMessage('❌ Active Roster 不可超過 26 人')
-                        setTimeout(() => setMoveMessage(''), 3000)
-                        return prev
-                      }
+                    const activeForeign = calculateActiveForeign(updated)
+                    if (activeForeign > 3) {
+                      setMoveMessage('❌ Active 洋將不可超過 3 位')
+                      setTimeout(() => setMoveMessage(''), 3000)
+                      return
+                    }
 
-                    
-                      // ✅ 更新 active 洋將數
-                      setForeignCount(prevCount => ({
-                        ...prevCount,
-                        active: activeForeign
-                      }))
-                    
-                      saveAssigned(updated)
-                      return updated
-                    })
-                    
-                  
+                    const activePlayers = players.filter(p => !['NA', 'NA(備用)'].includes(updated[p.Name] || 'BN'))
+                    if (activePlayers.length > 26) {
+                      setMoveMessage('❌ Active Roster 不可超過 26 人')
+                      setTimeout(() => setMoveMessage(''), 3000)
+                      return
+                    }
+
+                    setAssignedPositions(updated)
+                    setForeignCount(prev => ({ ...prev, active: activeForeign }))
+                    saveAssigned(updated)
+
+                                
                     setMoveMessage(`${moveTarget.Name} 被移動到 ${posKey}`)
                     setTimeout(() => setMoveMessage(''), 2000)
                   
                     setMoveTarget(null)
                     setMoveSlots(null)
-                  }}
-                  
-                  
+                  }}                  
                   
                     className="w-full flex items-center justify-center text-blue-600 font-semibold border-2 border-dashed border-blue-400 p-3 rounded bg-white hover:bg-blue-50"
                   >

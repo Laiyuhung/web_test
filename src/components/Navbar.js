@@ -95,7 +95,7 @@ export default function Navbar() {
             setEditDialogOpen(true)
             setMenuOpen(false)
           }}
-          className="block py-2 text-left w-full text-white hover:text-yellow-300"
+          className="font-semibold hover:text-yellow-300"
         >
           修改帳號資訊
         </button>

@@ -70,13 +70,15 @@ async function fetchAllPitchingStats(from, to) {
 
   while (!done) {
    const { data, error } = await supabase
-      .from('assigned_position_history')
-      .select('*')
-      .gte('date', start)
-      .lte('date', end)
-      .order('date', { ascending: true })
-      .order('created_at', { ascending: true })
-      .range(page * pageSize, (page + 1) * pageSize - 1);
+    .from('pitching_stats')
+    .select('*')
+    .eq('is_major', true)
+    .gte('game_date', from)
+    .lte('game_date', to)
+    .order('game_date', { ascending: true })
+    .order('player_name', { ascending: true })  // 如果資料多、需唯一排序可搭配 id
+    .range(page * pageSize, (page + 1) * pageSize - 1);
+
 
     if (error) throw new Error(`❌ 讀取 pitching_stats 失敗: ${error.message}`);
 

@@ -102,10 +102,15 @@ export async function POST(req) {
     const starters = assigned.filter(row => !['BN', 'NA', 'NA(備用)'].includes(row.position))
 
     const playerMap = {}
+    const assignedMap = {}
     for (const row of starters) {
       if (!playerMap[row.manager_id]) playerMap[row.manager_id] = {}
       if (!playerMap[row.manager_id][row.player_name]) playerMap[row.manager_id][row.player_name] = new Set()
       playerMap[row.manager_id][row.player_name].add(row.date)
+
+      if (!assignedMap[row.manager_id]) assignedMap[row.manager_id] = {}
+      if (!assignedMap[row.manager_id][row.date]) assignedMap[row.manager_id][row.date] = []
+      assignedMap[row.manager_id][row.date].push(row)
     }
 
     const allNames = [...new Set(starters.map(s => s.player_name))]
@@ -156,7 +161,8 @@ export async function POST(req) {
         manager_id: managerId,
         team_name: managerData?.team_name || `Manager #${managerId}`,
         batterRows,
-        pitcherRows
+        pitcherRows,
+        assignedRoster: assignedMap[managerId] || {}
       })
     }
 

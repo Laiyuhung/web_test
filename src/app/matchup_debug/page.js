@@ -1,6 +1,5 @@
 'use client'
 
-
 import { useEffect, useState } from 'react'
 
 export default function ManagerWeeklyStatsPage() {
@@ -89,7 +88,7 @@ export default function ManagerWeeklyStatsPage() {
                 </table>
               </div>
 
-              <div>
+              <div className="mb-6">
                 <h3 className="font-bold">投手資料：</h3>
                 <table className="w-full border mt-2 text-sm">
                   <thead>
@@ -110,6 +109,33 @@ export default function ManagerWeeklyStatsPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="font-bold">每日陣容（assignedRoster）：</h3>
+                {Object.entries(selected.assignedRoster).map(([date, rows]) => (
+                  <div key={date} className="mb-4">
+                    <p className="font-semibold text-blue-700">{date}</p>
+                    <table className="w-full border text-sm mb-2">
+                      <thead>
+                        <tr>
+                          {Object.keys(rows[0]).map(key => (
+                            <th key={key} className="border px-2 py-1">{key}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((row, idx) => (
+                          <tr key={idx}>
+                            {Object.values(row).map((val, j) => (
+                              <td key={j} className="border px-2 py-1 whitespace-nowrap">{val}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
               </div>
             </div>
           )}

@@ -1,6 +1,98 @@
 import { NextResponse } from 'next/server'
 import supabase from '@/lib/supabase'
 
+async function fetchAllAssignedPositionHistory(start, end) {
+  const pageSize = 1000;
+  let allData = [];
+  let page = 0;
+  let done = false;
+
+  while (!done) {
+    const { data, error } = await supabase
+      .from('assigned_position_history')
+      .select('*')
+      .gte('date', start)
+      .lte('date', end)
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (error) throw new Error(`❌ 讀取 assigned_position_history 失敗: ${error.message}`);
+
+    console.log(`📄 assigned_position_history 第 ${page + 1} 頁，拿到 ${data.length} 筆`);
+    allData = allData.concat(data);
+
+    if (data.length < pageSize) {
+      done = true;
+    } else {
+      page++;
+    }
+  }
+
+  console.log(`✅ assigned_position_history 全部讀取完成，共 ${allData.length} 筆`);
+  return allData;
+}
+
+async function fetchAllBattingStats(from, to) {
+  const pageSize = 1000;
+  let allData = [];
+  let page = 0;
+  let done = false;
+
+  while (!done) {
+    const { data, error } = await supabase
+      .from('batting_stats')
+      .select('*')
+      .eq('is_major', true)
+      .gte('game_date', from)
+      .lte('game_date', to)
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (error) throw new Error(`❌ 讀取 batting_stats 失敗: ${error.message}`);
+
+    console.log(`📄 batting_stats 第 ${page + 1} 頁，拿到 ${data.length} 筆`);
+    allData = allData.concat(data);
+
+    if (data.length < pageSize) {
+      done = true;
+    } else {
+      page++;
+    }
+  }
+
+  console.log(`✅ batting_stats 全部讀取完成，共 ${allData.length} 筆`);
+  return allData;
+}
+
+async function fetchAllPitchingStats(from, to) {
+  const pageSize = 1000;
+  let allData = [];
+  let page = 0;
+  let done = false;
+
+  while (!done) {
+    const { data, error } = await supabase
+      .from('pitching_stats')
+      .select('*')
+      .eq('is_major', true)
+      .gte('game_date', from)
+      .lte('game_date', to)
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (error) throw new Error(`❌ 讀取 pitching_stats 失敗: ${error.message}`);
+
+    console.log(`📄 pitching_stats 第 ${page + 1} 頁，拿到 ${data.length} 筆`);
+    allData = allData.concat(data);
+
+    if (data.length < pageSize) {
+      done = true;
+    } else {
+      page++;
+    }
+  }
+
+  console.log(`✅ pitching_stats 全部讀取完成，共 ${allData.length} 筆`);
+  return allData;
+}
+
 export async function POST(req) {
   try {
     const { week } = await req.json()
@@ -19,11 +111,7 @@ export async function POST(req) {
 
     const { start, end } = weekData
 
-    const { data: assigned } = await supabase
-      .from('assigned_position_history')
-      .select('*')
-      .gte('date', start)
-      .lte('date', end)
+    const assigned = await fetchAllAssignedPositionHistory(start, end);
     console.log('📋 assigned_position_history 查找數量:', assigned.length);
 
     const starters = assigned.filter(row => !['BN', 'NA', 'NA(備用)'].includes(row.position))
@@ -45,20 +133,10 @@ export async function POST(req) {
 
     const typeMap = Object.fromEntries(playerTypes.map(p => [p.Name, p.B_or_P]))
 
-    const { data: batStats } = await supabase
-      .from('batting_stats')
-      .select('*')
-      .gte('game_date', start)
-      .lte('game_date', end)
-      .eq('is_major', true)
+    const batStats = await fetchAllBattingStats(start, end);
     console.log('📋 batting_stats 查找數量:', batStats.length);
 
-    const { data: pitStats } = await supabase
-      .from('pitching_stats')
-      .select('*')
-      .gte('game_date', start)
-      .lte('game_date', end)
-      .eq('is_major', true)
+    const pitStats = await fetchAllPitchingStats(start, end);
     console.log('📋 pitching_stats 查找數量:', pitStats.length);
 
     const result = []
@@ -89,9 +167,6 @@ export async function POST(req) {
               batterSum.XBH +=  ((r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0))
               const singles = (r.hits || 0) - ((r.doubles || 0) + (r.triples || 0) + (r.home_runs || 0))
               batterSum.TB += singles + (r.doubles || 0) * 2 + (r.triples || 0) * 3 + (r.home_runs || 0) * 4
-
-              
-
             }
           }
 
@@ -216,8 +291,6 @@ export async function POST(req) {
         r.pitchers.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(1) || '0.0')
       })
     }
-
-
 
     result.forEach(r => {
       const batterTotal = Object.values(r.batters.fantasyPoints || {}).reduce((a, b) => a + b, 0)

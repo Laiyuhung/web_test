@@ -69,12 +69,13 @@ async function fetchAllPitchingStats(from, to) {
   let done = false;
 
   while (!done) {
-    const { data, error } = await supabase
-      .from('pitching_stats')
+   const { data, error } = await supabase
+      .from('assigned_position_history')
       .select('*')
-      .eq('is_major', true)
-      .gte('game_date', from)
-      .lte('game_date', to)
+      .gte('date', start)
+      .lte('date', end)
+      .order('date', { ascending: true })
+      .order('created_at', { ascending: true })
       .range(page * pageSize, (page + 1) * pageSize - 1);
 
     if (error) throw new Error(`❌ 讀取 pitching_stats 失敗: ${error.message}`);

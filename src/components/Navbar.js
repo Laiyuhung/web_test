@@ -90,6 +90,15 @@ export default function Navbar() {
         {userId === '2' && (
           <Link href="/bulk-insert" className="font-semibold hover:text-yellow-300">資料登錄系統</Link>
         )}
+        <button
+          onClick={() => {
+            setEditDialogOpen(true)
+            setMenuOpen(false)
+          }}
+          className="block py-2 text-left w-full text-white hover:text-yellow-300"
+        >
+          修改帳號資訊
+        </button>
       </div>
 
       {/* Hamburger Menu for smaller screens */}

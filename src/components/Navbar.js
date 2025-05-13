@@ -80,18 +80,21 @@ export default function Navbar() {
         <div className="text-sm font-bold tracking-wide whitespace-nowrap">2025 CPBL FANTASY</div>
       </div>
 
-      {/* Menu for larger screens */}
-      <div className="hidden md:flex items-center space-x-8">
-        <Link href="/home" className="font-semibold hover:text-gray-300">HOME</Link>
-        <Link href="/roster" className="font-semibold hover:text-gray-300">ROSTER</Link>
-        <Link href="/player" className="font-semibold hover:text-gray-300">PLAYERS</Link>
-        <Link href="/matchup" className="font-semibold hover:text-gray-300">MATCHUP</Link>
-        <Link href="/manager" className="font-semibold hover:text-gray-300">MANAGER</Link>
-        {userId === '2' && (
+      /* Menu for larger screens */}
+        <div className="hidden md:flex items-center space-x-8">
+          <Link href="/home" className="font-semibold hover:text-gray-300">HOME</Link>
+          <Link href="/roster" className="font-semibold hover:text-gray-300">ROSTER</Link>
+          <Link href="/player" className="font-semibold hover:text-gray-300">PLAYERS</Link>
+          <Link href="/matchup" className="font-semibold hover:text-gray-300">MATCHUP</Link>
+          <Link href="/manager" className="font-semibold hover:text-gray-300">MANAGER</Link>
+          {userId === '2' && (
+            <>
           <Link href="/bulk-insert" className="font-semibold hover:text-yellow-300">資料登錄系統</Link>
-        )}
-        <button
-          onClick={() => {
+          <Link href="/matchup_debug" className="font-semibold hover:text-yellow-300">Debug</Link>
+            </>
+          )}
+          <button
+            onClick={() => {
             setEditDialogOpen(true)
             setMenuOpen(false)
           }}
@@ -137,7 +140,10 @@ export default function Navbar() {
             <Link href="/matchup" className="block py-2" onClick={() => setMenuOpen(false)}>MATCHUP</Link>
             <Link href="/manager" className="block py-2" onClick={() => setMenuOpen(false)}>MANAGER</Link>
             {userId === '2' && (
+              <>
               <Link href="/bulk-insert" className="block py-2" onClick={() => setMenuOpen(false)}>資料登錄系統</Link>
+              <Link href="/matchup_debug" className="block py-2" onClick={() => setMenuOpen(false)}>Debug</Link>
+              </>
             )}
             <button
               onClick={() => {

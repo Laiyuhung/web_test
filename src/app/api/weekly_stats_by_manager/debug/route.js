@@ -13,6 +13,8 @@ async function fetchAllAssignedPositionHistory(start, end) {
       .select('*')
       .gte('date', start)
       .lte('date', end)
+      .order('date', { ascending: true })
+      .order('created_at', { ascending: true })
       .range(page * pageSize, (page + 1) * pageSize - 1);
 
     if (error) throw new Error(`❌ 讀取 assigned_position_history 失敗: ${error.message}`);

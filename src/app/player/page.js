@@ -1514,7 +1514,7 @@ export default function PlayerPage() {
                     <h2>transaction 通知</h2>
                     <p><strong>${managerMap[userId]}</strong> 成功進行以下transaction：</p>
                     <ul>
-                      <li><strong>加入：</strong> ${confirmPlayer?.Name}</li>
+                      <li><strong>Add：</strong> ${confirmPlayer?.Name}</li>
                       <li><strong>Drop：</strong> ${dropPlayer}</li>
                     </ul>
                     <p>時間：${taiwanTime}</p>

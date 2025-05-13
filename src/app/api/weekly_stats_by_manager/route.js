@@ -6,11 +6,14 @@ export async function POST(req) {
     const { week } = await req.json()
     if (!week) return NextResponse.json({ error: '缺少 week 參數' }, { status: 400 })
 
+    console.log('🔍 查找參數:', { week });
+
     const { data: weekData } = await supabase
       .from('schedule_date')
       .select('*')
       .eq('week', week)
       .single()
+    console.log('📋 schedule_date 查找結果:', weekData);
 
     if (!weekData) return NextResponse.json({ error: '查無週次資料' }, { status: 404 })
 
@@ -21,6 +24,7 @@ export async function POST(req) {
       .select('*')
       .gte('date', start)
       .lte('date', end)
+    console.log('📋 assigned_position_history 查找數量:', assigned.length);
 
     const starters = assigned.filter(row => !['BN', 'NA', 'NA(備用)'].includes(row.position))
 
@@ -37,6 +41,7 @@ export async function POST(req) {
       .from('playerslist')
       .select('Name, B_or_P')
       .in('Name', allNames)
+    console.log('📋 playerslist 查找數量:', playerTypes.length);
 
     const typeMap = Object.fromEntries(playerTypes.map(p => [p.Name, p.B_or_P]))
 
@@ -46,6 +51,7 @@ export async function POST(req) {
       .gte('game_date', start)
       .lte('game_date', end)
       .eq('is_major', true)
+    console.log('📋 batting_stats 查找數量:', batStats.length);
 
     const { data: pitStats } = await supabase
       .from('pitching_stats')
@@ -53,6 +59,7 @@ export async function POST(req) {
       .gte('game_date', start)
       .lte('game_date', end)
       .eq('is_major', true)
+    console.log('📋 pitching_stats 查找數量:', pitStats.length);
 
     const result = []
     const allManagerIds = [1, 2, 3, 4]

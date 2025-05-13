@@ -46,13 +46,16 @@ async function fetchAllStats(tableName, from, to) {
   let done = false
 
   while (!done) {
-    const { data, error } = await supabase
+    let query = supabase
       .from(tableName)
       .select('*')
       .eq('is_major', true)
       .gte('game_date', from)
       .lte('game_date', to)
-      .range(page * pageSize, (page + 1) * pageSize - 1)
+      .order('id', { ascending: true }) // 對 id 進行排序
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message)
 

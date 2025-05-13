@@ -11,9 +11,14 @@ async function fetchAll(tableName, columns, whereFn = null) {
   let done = false
 
   while (!done) {
-    let query = supabase.from(tableName).select(columns)
+    let query = supabase.from(tableName).select(columns);
 
-    if (whereFn) query = whereFn(query)
+    if (whereFn) query = whereFn(query);
+
+    // 對特定表進行 id 排序
+    if (['player_movements'].includes(tableName)) {
+      query = query.order('id', { ascending: true });
+    }
 
     query = query.range(page * pageSize, (page + 1) * pageSize - 1)
 

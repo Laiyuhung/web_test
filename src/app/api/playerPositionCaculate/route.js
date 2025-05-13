@@ -15,9 +15,14 @@ async function fetchAll(tableName, columns, where = null) {
     let query = supabase.from(tableName).select(columns)
 
     // 加上 where 條件（例如 .eq('Available', 'V')）
-    if (where) query = where(query)
+    if (where) query = where(query);
 
-    query = query.range(page * pageSize, (page + 1) * pageSize - 1)
+    // 對 batting_stats 和 pitching_stats 的 id 進行排序
+    if (tableName === 'batting_stats' || tableName === 'pitching_stats') {
+      query = query.order('id', { ascending: true });
+    }
+
+    query = query.range(page * pageSize, (page + 1) * pageSize - 1);
 
     const { data, error } = await query
 
@@ -36,9 +41,6 @@ async function fetchAll(tableName, columns, where = null) {
   console.log(`✅ ${tableName} 全部拿完，總筆數:`, allData.length)
   return allData
 }
-
-
-
 
 export async function GET() {
   const [players, posTable, batting, pitching] = await Promise.all([
@@ -102,7 +104,6 @@ export async function GET() {
     })
   })
 
-
   const pitcherStats = {}
   pitching.forEach(row => {
     const cleaned = cleanName(row.name)
@@ -118,14 +119,14 @@ export async function GET() {
 
   console.log('📋 每位球員的出場統計：')
 
-// 打者個別統計
-Object.entries(batterStats).forEach(([playerNo, posStats]) => {
-  const playerName = playerNoToInfo[playerNo]?.name || '(unknown)'
-  const detail = Object.entries(posStats)
-    .map(([pos, count]) => `${pos}: ${count}`)
-    .join(', ')
-  console.log(`🔵 ${playerName}（打者）：${detail}`)
-})
+  // 打者個別統計
+  Object.entries(batterStats).forEach(([playerNo, posStats]) => {
+    const playerName = playerNoToInfo[playerNo]?.name || '(unknown)'
+    const detail = Object.entries(posStats)
+      .map(([pos, count]) => `${pos}: ${count}`)
+      .join(', ')
+    console.log(`🔵 ${playerName}（打者）：${detail}`)
+  })
 
 // 投手個別統計
 // Object.entries(pitcherStats).forEach(([playerNo, stat]) => {

@@ -13,7 +13,10 @@ async function fetchAllAssignedPositionHistory(start, end) {
       .select('*')
       .gte('date', start)
       .lte('date', end)
+      .order('date', { ascending: true })
+      .order('player_name', { ascending: true }) // 也可換成 id 或 created_at，需視你的表而定
       .range(page * pageSize, (page + 1) * pageSize - 1);
+
 
     if (error) throw new Error(`❌ 讀取 assigned_position_history 失敗: ${error.message}`);
 
@@ -69,16 +72,13 @@ async function fetchAllPitchingStats(from, to) {
   let done = false;
 
   while (!done) {
-   const { data, error } = await supabase
-    .from('pitching_stats')
-    .select('*')
-    .eq('is_major', true)
-    .gte('game_date', from)
-    .lte('game_date', to)
-    .order('game_date', { ascending: true })
-    .order('player_name', { ascending: true })  // 如果資料多、需唯一排序可搭配 id
-    .range(page * pageSize, (page + 1) * pageSize - 1);
-
+    const { data, error } = await supabase
+      .from('pitching_stats')
+      .select('*')
+      .eq('is_major', true)
+      .gte('game_date', from)
+      .lte('game_date', to)
+      .range(page * pageSize, (page + 1) * pageSize - 1);
 
     if (error) throw new Error(`❌ 讀取 pitching_stats 失敗: ${error.message}`);
 

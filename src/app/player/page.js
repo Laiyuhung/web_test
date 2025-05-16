@@ -1181,6 +1181,17 @@ export default function PlayerPage() {
                       })
                     })
                   }
+
+                  if (type === 'Drop') {
+                    fetch('/api/check_trade_impact', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        playerName: confirmPlayer.Name,
+                        managerId: userId
+                      }),
+                    })
+                  }
                 } else {
                   setSuccessMessage(`❌ 錯誤: ${data.error}`);
                   setSuccessDialogOpen(true);
@@ -1520,6 +1531,17 @@ export default function PlayerPage() {
                     <p>時間：${taiwanTime}</p>
                   `
                 })
+              })
+            }
+            // ✅ 檢查 dropPlayer 是否影響現有交易包裹
+            if (dropPlayer) {
+              fetch('/api/check_trade_impact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  playerName: dropPlayer,
+                  managerId: userId
+                }),
               })
             }
 

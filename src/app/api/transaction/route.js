@@ -148,59 +148,6 @@ export async function POST(req) {
       }
     }
 
-    // // 📨 新增：交易成功後發信（發給固定四個人）
-    // const recipients = [
-    //   "mar.hung.0708@gmail.com",
-    //   "laiyuhung921118@gmail.com",
-    //   "peter0984541203@gmail.com",
-    //   "anthonylin6507@gmail.com"
-    // ]
-
-    // // 📨 如果有 dropPlayer，先發 Drop 通知
-    // if (dropPlayer || type === 'Drop') {
-    //   for (const email of recipients) {
-    //     try {
-    //       const info = await sendTradeNotificationEmail(
-    //         email,
-    //         `CPBL Fantasy transaction 通知`,
-    //         `<h2>Drop 通知</h2>
-    //         <p><strong>${managerName}</strong> 已成功Drop 球員：</p>
-    //         <ul>
-    //           <li><strong>球員：</strong> ${dropPlayer || playerName}</li>
-    //         </ul>
-    //         <p>時間：${transaction_time}</p>`
-    //       )
-    //       console.log(`✅ 寄 Drop 信成功: ${email}, id: ${info.messageId}`)
-    //     } catch (err) {
-    //       console.error(`❌ Drop 寄信失敗: ${email}, error: ${err.message}`)
-    //     }
-    //   }
-    // }
-
-    // // 📨 如果是 Add，就發 Add 通知
-    // if (type === 'Add') {
-    //   for (const email of recipients) {
-    //     try {
-    //       const info = await sendTradeNotificationEmail(
-    //         email,
-    //         `CPBL Fantasy transaction 通知`,
-    //         `<h2>Add 通知</h2>
-    //         <p><strong>${managerName}</strong> 已成功Add 球員：</p>
-    //         <ul>
-    //           <li><strong>球員：</strong> ${playerName}</li>
-    //         </ul>
-    //         <p>時間：${transaction_time}</p>`
-    //       )
-    //       console.log(`✅ 寄 Add 信成功: ${email}, id: ${info.messageId}`)
-    //     } catch (err) {
-    //       console.error(`❌ Add 寄信失敗: ${email}, error: ${err.message}`)
-    //     }
-    //   }
-    // }
-
-
-    
-
 
     return NextResponse.json({
       message: '交易成功',

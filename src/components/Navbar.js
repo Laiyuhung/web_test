@@ -81,7 +81,7 @@ export default function Navbar() {
       </div>
 
       {/* Menu for larger screens */}
-        <div className="hidden md:flex items-center space-x-8">
+        <div className="hidden md:flex items-center space-x-4 text-sm">
           <Link href="/home" className="font-semibold hover:text-gray-300">HOME</Link>
           <Link href="/roster" className="font-semibold hover:text-gray-300">ROSTER</Link>
           <Link href="/player" className="font-semibold hover:text-gray-300">PLAYERS</Link>
@@ -119,7 +119,7 @@ export default function Navbar() {
       {/* Dropdown Menu for small screens */}
       {menuOpen && (
         <div
-          className="fixed inset-0 z-40 flex justify-end"
+          className="fixed inset-0 z-[999] flex justify-end"
           onClick={() => setMenuOpen(false)} // 點擊背景就關閉
         >
           <div

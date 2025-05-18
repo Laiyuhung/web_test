@@ -1619,11 +1619,14 @@ export default function RosterPage() {
                     
                       // ✅ 原本交換邏輯
                       const currentPos = assignedPositions[moveTarget.Name]
+                      const isTryingToGoNA = currentPos === 'NA'
                       const canReturn = (p.finalPosition || []).includes(currentPos) ||
-                                        (p.B_or_P === 'Batter' && currentPos === 'Util') ||
-                                        (p.B_or_P === 'Pitcher' && currentPos === 'P') ||
-                                        currentPos === 'BN' ||
-                                        currentPos === 'NA' || currentPos === 'NA(備用)'
+                        (p.B_or_P === 'Batter' && currentPos === 'Util') ||
+                        (p.B_or_P === 'Pitcher' && currentPos === 'P') ||
+                        currentPos === 'BN' ||
+                        (currentPos === 'NA(備用)') ||
+                        (currentPos === 'NA' && p.registerStatus !== '一軍')  // ✅ 僅非一軍才能進 NA
+
                     
                       const fallback = 'BN'
                       const newPos = canReturn ? currentPos : fallback                   

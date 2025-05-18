@@ -682,7 +682,7 @@ export default function RosterPage() {
 
   const renderCell = (val) => {
     const displayVal = (val ?? 0).toString()
-    const isGray = displayVal === '0' || displayVal === '0.00' || displayVal === '.000'
+    const isGray = displayVal === '0' || displayVal === '0.00' || displayVal === '.000' || displayVal === '0.0'
     return (
       <td className={`p-2 font-bold whitespace-nowrap text-s ${isGray ? 'text-gray-400' : ''}`}>
         {displayVal}

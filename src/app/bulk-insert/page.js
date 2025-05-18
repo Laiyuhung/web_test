@@ -18,6 +18,12 @@ export default function BulkInsertPage() {
   const todayStr = new Date().toISOString().split('T')[0]
   const [submittedTeams, setSubmittedTeams] = useState([])
 
+  const [makeupGames, setMakeupGames] = useState([])
+  const [loadingMakeups, setLoadingMakeups] = useState(false)
+  const [scheduleDate, setScheduleDate] = useState(todayStr)
+  const [schedules, setSchedules] = useState([])
+  const [editingSchedule, setEditingSchedule] = useState(null)
+
   const [text, setText] = useState('')
   const [date, setDate] = useState(todayStr)
   const [isMajor, setIsMajor] = useState(true)
@@ -45,6 +51,50 @@ export default function BulkInsertPage() {
     return d.toISOString().split('T')[0]
   })
   const [startingPitchers, setStartingPitchers] = useState([])
+
+  const handleLoadMakeupGames = async () => {
+    setLoadingMakeups(true)
+    const res = await fetch('/api/schedule/ppd_schedule')
+    const result = await res.json()
+    if (res.ok) {
+      setMakeupGames(result)
+    }
+    setLoadingMakeups(false)
+  }
+
+  const loadScheduleByDate = async () => {
+    const res = await fetch(`/api/schedule/daily?date=${scheduleDate}`)
+    const result = await res.json()
+    if (res.ok) {
+      setSchedules(result)
+    }
+  }
+
+  const handleEditSchedule = (schedule) => {
+    setEditingSchedule({ ...schedule })  // 深拷貝避免直接改原資料
+  }
+
+  const handleScheduleChange = (field, value) => {
+    setEditingSchedule(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSubmitSchedule = async () => {
+    const res = await fetch('/api/schedule/edit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editingSchedule),
+    })
+    const result = await res.json()
+
+    if (res.ok) {
+      setDialogMessage(editingSchedule.uuid ? '✅ 賽程更新成功' : '✅ 新增賽程成功')
+      setEditingSchedule(null)
+      await loadScheduleByDate()
+    } else {
+      setDialogMessage(`❌ 錯誤：${result.error || '請稍後再試'}`)
+    }
+    setDialogOpen(true)
+  }
 
   const loadSubmittedTeams = async () => {
     const res = await fetch(`/api/starting-lineup/teams?date=${lineupDate}`)
@@ -415,6 +465,110 @@ export default function BulkInsertPage() {
           </div>
         </div>
         <Button onClick={handleSubmitReward}>送出獎金登錄</Button>
+
+        <h2 className="text-lg font-bold mt-10 mb-2">編輯每日賽程</h2>
+
+        <div className="flex items-center gap-4 mb-4">
+          <input
+            type="date"
+            value={scheduleDate}
+            onChange={(e) => setScheduleDate(e.target.value)}
+            className="border px-3 py-1 rounded"
+          />
+          <Button onClick={loadScheduleByDate}>載入賽程</Button>
+        </div>
+
+        <ul className="text-sm mb-4 space-y-2">
+          {schedules.map((game, idx) => (
+            <li key={idx} className="border p-2 rounded flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <span className="font-medium">{game.time}</span> ｜ {game.away} vs {game.home} ｜ {game.stadium}
+              </div>
+              <Button size="sm" onClick={() => handleEditSchedule(game)}>編輯</Button>
+            </li>
+          ))}
+        </ul>
+
+        {/* 編輯表單 */}
+        {editingSchedule && (
+          <div className="border rounded p-4 space-y-3 bg-gray-50">
+            <h3 className="text-base font-semibold">編輯賽程</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <input
+                className="border px-3 py-1 rounded"
+                value={editingSchedule.date}
+                type="date"
+                onChange={(e) => handleScheduleChange('date', e.target.value)}
+              />
+              <input
+                className="border px-3 py-1 rounded"
+                value={editingSchedule.time}
+                placeholder="時間，例如 18:35"
+                onChange={(e) => handleScheduleChange('time', e.target.value)}
+              />
+              <input
+                className="border px-3 py-1 rounded"
+                value={editingSchedule.game_no}
+                placeholder="Game No"
+                onChange={(e) => handleScheduleChange('game_no', e.target.value)}
+              />
+              <input
+                className="border px-3 py-1 rounded"
+                value={editingSchedule.away}
+                placeholder="客隊"
+                onChange={(e) => handleScheduleChange('away', e.target.value)}
+              />
+              <input
+                className="border px-3 py-1 rounded"
+                value={editingSchedule.home}
+                placeholder="主隊"
+                onChange={(e) => handleScheduleChange('home', e.target.value)}
+              />
+              <input
+                className="border px-3 py-1 rounded"
+                value={editingSchedule.stadium}
+                placeholder="球場"
+                onChange={(e) => handleScheduleChange('stadium', e.target.value)}
+              />
+              <select
+                className="border px-3 py-1 rounded"
+                value={editingSchedule.is_postponed ? '1' : '0'}
+                onChange={(e) => handleScheduleChange('is_postponed', e.target.value === '1')}
+              >
+                <option value="0">未延期</option>
+                <option value="1">已延期</option>
+              </select>
+            </div>
+
+            <div className="flex gap-4 mt-3">
+              <Button onClick={handleSubmitSchedule}>送出修改</Button>
+              <Button variant="outline" onClick={() => setEditingSchedule(null)}>取消</Button>
+            </div>
+          </div>
+        )}
+
+
+        <h2 className="text-lg font-bold mt-10 mb-2">補賽賽程查詢</h2>
+        <Button onClick={handleLoadMakeupGames}>載入補賽賽程</Button>
+
+        {loadingMakeups ? (
+          <p className="text-sm mt-2 text-gray-500">載入中...</p>
+        ) : makeupGames.length === 0 ? (
+          <p className="text-sm mt-2 text-gray-500">尚無補賽資料</p>
+        ) : (
+          <ul className="mt-3 space-y-2 text-sm">
+            {makeupGames.map((game, idx) => (
+              <li key={idx} className="border p-2 rounded">
+                <div><strong>比賽日期：</strong>{game.date}</div>
+                <div><strong>時間：</strong>{game.time}</div>
+                <div><strong>對戰：</strong>{game.away} vs {game.home}</div>
+                <div><strong>球場：</strong>{game.stadium}</div>
+                <div><strong>補賽：</strong>{game.is_postponed ? '是（原延期）' : '否（補賽）'}</div>
+              </li>
+            ))}
+          </ul>
+        )}
 
       </div>
 

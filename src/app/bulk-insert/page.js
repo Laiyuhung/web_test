@@ -17,6 +17,8 @@ export default function BulkInsertPage() {
 
   const todayStr = new Date().toISOString().split('T')[0]
   const [submittedTeams, setSubmittedTeams] = useState([])
+  const [newMakeupGame, setNewMakeupGame] = useState({ game_no: '', date: '', time: '', away: '', home: '', stadium: '' })
+
 
   const [makeupGames, setMakeupGames] = useState([])
   const [loadingMakeups, setLoadingMakeups] = useState(false)
@@ -132,6 +134,40 @@ export default function BulkInsertPage() {
     updated[index] = value
     setBattingOrder(updated)
   }
+
+  const handleSubmitNewMakeupGame = async () => {
+    const { game_no, date, time, away, home, stadium } = newMakeupGame
+    if (!game_no || !date || !time || !away || !home || !stadium) {
+      setDialogMessage('⚠️ 請完整填寫所有欄位')
+      setDialogOpen(true)
+      return
+    }
+
+    const res = await fetch('/api/schedule/edit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        game_no,
+        date,
+        time,
+        away,
+        home,
+        stadium,
+        is_postponed: false,
+      }),
+    })
+
+    const result = await res.json()
+    if (res.ok) {
+      setDialogMessage('✅ 補賽新增成功')
+      setNewMakeupGame({ game_no: '', date: '', time: '', away: '', home: '', stadium: '' })
+      await handleLoadMakeupGames()
+    } else {
+      setDialogMessage(`❌ 錯誤：${result.error || '請稍後再試'}`)
+    }
+    setDialogOpen(true)
+  }
+
   
   const handleSubmitLineup = async () => {
     if (!lineupTeam) {
@@ -611,6 +647,23 @@ export default function BulkInsertPage() {
             </div>
           </div>
         )}
+
+        <h2 className="text-lg font-bold mt-10 mb-2">獨立新增補賽</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+          <input className="border px-3 py-1 rounded" placeholder="Game No" value={newMakeupGame.game_no}
+            onChange={(e) => setNewMakeupGame({ ...newMakeupGame, game_no: e.target.value })} />
+          <input className="border px-3 py-1 rounded" placeholder="日期" type="date" value={newMakeupGame.date}
+            onChange={(e) => setNewMakeupGame({ ...newMakeupGame, date: e.target.value })} />
+          <input className="border px-3 py-1 rounded" placeholder="時間" value={newMakeupGame.time}
+            onChange={(e) => setNewMakeupGame({ ...newMakeupGame, time: e.target.value })} />
+          <input className="border px-3 py-1 rounded" placeholder="客隊" value={newMakeupGame.away}
+            onChange={(e) => setNewMakeupGame({ ...newMakeupGame, away: e.target.value })} />
+          <input className="border px-3 py-1 rounded" placeholder="主隊" value={newMakeupGame.home}
+            onChange={(e) => setNewMakeupGame({ ...newMakeupGame, home: e.target.value })} />
+          <input className="border px-3 py-1 rounded" placeholder="球場" value={newMakeupGame.stadium}
+            onChange={(e) => setNewMakeupGame({ ...newMakeupGame, stadium: e.target.value })} />
+        </div>
+        <Button onClick={handleSubmitNewMakeupGame}>送出新增補賽</Button>
 
 
         <h2 className="text-lg font-bold mt-10 mb-2">補賽賽程查詢</h2>

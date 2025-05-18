@@ -89,6 +89,28 @@ export default function BulkInsertPage() {
 
     if (res.ok) {
       setDialogMessage(editingSchedule.uuid ? '✅ 賽程更新成功' : '✅ 新增賽程成功')
+      // 如果是延期，且補賽資訊都有填，就新增一筆補賽記錄
+      if (
+        editingSchedule.is_postponed &&
+        editingSchedule.makeup_date &&
+        editingSchedule.makeup_time &&
+        editingSchedule.makeup_stadium
+      ) {
+        await fetch('/api/schedule/edit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date: editingSchedule.makeup_date,
+            time: editingSchedule.makeup_time,
+            game_no: editingSchedule.game_no,
+            away: editingSchedule.away,
+            home: editingSchedule.home,
+            stadium: editingSchedule.makeup_stadium,
+            is_postponed: false,
+          }),
+        })
+      }
+
       setEditingSchedule(null)
       await loadScheduleByDate()
     } else {
@@ -496,36 +518,42 @@ export default function BulkInsertPage() {
             <h3 className="text-base font-semibold">編輯賽程</h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <label className="block text-sm mb-1">日期</label>
               <input
                 className="border px-3 py-1 rounded"
                 value={editingSchedule.date}
                 type="date"
                 onChange={(e) => handleScheduleChange('date', e.target.value)}
               />
+              <label className="block text-sm mb-1">時間</label>
               <input
                 className="border px-3 py-1 rounded"
                 value={editingSchedule.time}
                 placeholder="時間，例如 18:35"
                 onChange={(e) => handleScheduleChange('time', e.target.value)}
               />
+              <label className="block text-sm mb-1">賽事編號</label>
               <input
                 className="border px-3 py-1 rounded"
                 value={editingSchedule.game_no}
                 placeholder="Game No"
                 onChange={(e) => handleScheduleChange('game_no', e.target.value)}
               />
+              <label className="block text-sm mb-1">客隊</label>
               <input
                 className="border px-3 py-1 rounded"
                 value={editingSchedule.away}
                 placeholder="客隊"
                 onChange={(e) => handleScheduleChange('away', e.target.value)}
               />
+              <label className="block text-sm mb-1">主隊</label>
               <input
                 className="border px-3 py-1 rounded"
                 value={editingSchedule.home}
                 placeholder="主隊"
                 onChange={(e) => handleScheduleChange('home', e.target.value)}
               />
+              <label className="block text-sm mb-1">球場</label>
               <input
                 className="border px-3 py-1 rounded"
                 value={editingSchedule.stadium}
@@ -537,9 +565,32 @@ export default function BulkInsertPage() {
                 value={editingSchedule.is_postponed ? '1' : '0'}
                 onChange={(e) => handleScheduleChange('is_postponed', e.target.value === '1')}
               >
-                <option value="0">未延期</option>
-                <option value="1">已延期</option>
+                <option value="0">正常進行</option>
+                <option value="1">延賽</option>
               </select>
+              {editingSchedule.is_postponed && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                  <input
+                    className="border px-3 py-1 rounded"
+                    placeholder="補賽日期，如 2025-05-25 或 待定"
+                    value={editingSchedule.makeup_date || ''}
+                    onChange={(e) => handleScheduleChange('makeup_date', e.target.value)}
+                  />
+                  <input
+                    className="border px-3 py-1 rounded"
+                    placeholder="補賽時間，如 18:35 或 待定"
+                    value={editingSchedule.makeup_time || ''}
+                    onChange={(e) => handleScheduleChange('makeup_time', e.target.value)}
+                  />
+                  <input
+                    className="border px-3 py-1 rounded"
+                    placeholder="補賽球場，如 洲際 或 待定"
+                    value={editingSchedule.makeup_stadium || ''}
+                    onChange={(e) => handleScheduleChange('makeup_stadium', e.target.value)}
+                  />
+                </div>
+              )}
+
             </div>
 
             <div className="flex gap-4 mt-3">
@@ -558,17 +609,41 @@ export default function BulkInsertPage() {
         ) : makeupGames.length === 0 ? (
           <p className="text-sm mt-2 text-gray-500">尚無補賽資料</p>
         ) : (
-          <ul className="mt-3 space-y-2 text-sm">
-            {makeupGames.map((game, idx) => (
-              <li key={idx} className="border p-2 rounded">
-                <div><strong>比賽日期：</strong>{game.date}</div>
-                <div><strong>時間：</strong>{game.time}</div>
-                <div><strong>對戰：</strong>{game.away} vs {game.home}</div>
-                <div><strong>球場：</strong>{game.stadium}</div>
-                <div><strong>補賽：</strong>{game.is_postponed ? '是（原延期）' : '否（補賽）'}</div>
-              </li>
-            ))}
-          </ul>
+          <div className="overflow-x-auto mt-3">
+            <table className="table-auto border text-sm min-w-full">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-2 py-1">Game No</th>
+                  <th className="border px-2 py-1">場次</th>
+                  <th className="border px-2 py-1">日期</th>
+                  <th className="border px-2 py-1">時間</th>
+                  <th className="border px-2 py-1">對戰</th>
+                  <th className="border px-2 py-1">球場</th>
+                  <th className="border px-2 py-1">是否延期</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(makeupGames).map(([gameNo, games]) => (
+                  games.map((game, idx) => (
+                    <tr key={`${gameNo}-${idx}`} className="text-center">
+                      {idx === 0 && (
+                        <td className="border px-2 py-1 font-semibold" rowSpan={games.length}>
+                          {gameNo}
+                        </td>
+                      )}
+                      <td className="border px-2 py-1">{idx + 1}</td>
+                      <td className="border px-2 py-1">{game.date}</td>
+                      <td className="border px-2 py-1">{game.time}</td>
+                      <td className="border px-2 py-1">{game.away} vs {game.home}</td>
+                      <td className="border px-2 py-1">{game.stadium}</td>
+                      <td className="border px-2 py-1">{game.is_postponed ? '是（原延期）' : '否（補賽）'}</td>
+                    </tr>
+                  ))
+                ))}
+              </tbody>
+            </table>
+          </div>
+
         )}
 
       </div>

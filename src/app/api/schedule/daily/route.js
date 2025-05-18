@@ -1,10 +1,14 @@
-// /api/schedule.js
-import { createClient } from '@supabase/supabase-js'
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
+// /app/api/schedule/daily/route.js
+import { NextResponse } from 'next/server'
+import supabase from '@/lib/supabaseServer'
 
-export default async function handler(req, res) {
-  const { date } = req.query
-  if (!date) return res.status(400).json({ error: 'Missing date' })
+export async function GET(req) {
+  const { searchParams } = new URL(req.url)
+  const date = searchParams.get('date')
+
+  if (!date) {
+    return NextResponse.json({ error: 'Missing date' }, { status: 400 })
+  }
 
   const { data, error } = await supabase
     .from('cpbl_schedule')
@@ -12,6 +16,9 @@ export default async function handler(req, res) {
     .eq('date', date)
     .order('time', { ascending: true })
 
-  if (error) return res.status(500).json({ error: error.message })
-  res.status(200).json(data)
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json(data)
 }

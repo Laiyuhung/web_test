@@ -518,6 +518,7 @@ export default function BulkInsertPage() {
             <h3 className="text-base font-semibold">編輯賽程</h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
               <label className="block text-sm mb-1">日期</label>
               <input
                 className="border px-3 py-1 rounded"
@@ -525,6 +526,8 @@ export default function BulkInsertPage() {
                 type="date"
                 onChange={(e) => handleScheduleChange('date', e.target.value)}
               />
+              </div>
+              <div>
               <label className="block text-sm mb-1">時間</label>
               <input
                 className="border px-3 py-1 rounded"
@@ -532,6 +535,8 @@ export default function BulkInsertPage() {
                 placeholder="時間，例如 18:35"
                 onChange={(e) => handleScheduleChange('time', e.target.value)}
               />
+              </div>
+              <div>
               <label className="block text-sm mb-1">賽事編號</label>
               <input
                 className="border px-3 py-1 rounded"
@@ -539,6 +544,8 @@ export default function BulkInsertPage() {
                 placeholder="Game No"
                 onChange={(e) => handleScheduleChange('game_no', e.target.value)}
               />
+              </div>
+              <div>
               <label className="block text-sm mb-1">客隊</label>
               <input
                 className="border px-3 py-1 rounded"
@@ -546,6 +553,8 @@ export default function BulkInsertPage() {
                 placeholder="客隊"
                 onChange={(e) => handleScheduleChange('away', e.target.value)}
               />
+              </div>
+              <div>
               <label className="block text-sm mb-1">主隊</label>
               <input
                 className="border px-3 py-1 rounded"
@@ -553,6 +562,8 @@ export default function BulkInsertPage() {
                 placeholder="主隊"
                 onChange={(e) => handleScheduleChange('home', e.target.value)}
               />
+              </div>
+              <div>
               <label className="block text-sm mb-1">球場</label>
               <input
                 className="border px-3 py-1 rounded"
@@ -560,6 +571,7 @@ export default function BulkInsertPage() {
                 placeholder="球場"
                 onChange={(e) => handleScheduleChange('stadium', e.target.value)}
               />
+              </div>
               <select
                 className="border px-3 py-1 rounded"
                 value={editingSchedule.is_postponed ? '1' : '0'}

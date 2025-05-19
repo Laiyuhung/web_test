@@ -2112,6 +2112,12 @@ export default function RosterPage() {
             <div>status：{selectedPlayerDetail?.status}</div>
             <div>升降：{selectedPlayerDetail?.registerStatus}</div>
           </div>
+          <img
+            src={`/photo/${selectedPlayerDetail?.Name}.png`}
+            alt={selectedPlayerDetail?.Name}
+            className="w-14 h-14 rounded-full"
+            onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
+          />
 
           {/* 右側動態按鈕 */}
           {(() => {

@@ -947,7 +947,7 @@ export default function PlayerPage() {
                     {/* 第一行：名字、隊伍、守位 */}
                     <div className="flex items-center gap-2">
                       <span
-                        className="text-base font-bold text-[#0155A0] cursor-pointer underline"
+                        className="text-base font-bold text-[#0155A0] cursor-pointer"
                         onClick={async () => {
                           setSelectedPlayerDetail(p)
                           setDetailDialogOpen(true)

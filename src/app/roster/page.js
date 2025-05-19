@@ -28,6 +28,8 @@ export default function RosterPage() {
   const [confirmDialogMessage, setConfirmDialogMessage] = useState('')
   const [onConfirmAction, setOnConfirmAction] = useState(() => () => {})
   const [taiwanToday, setTaiwanToday] = useState('')
+  const [confirmPlayer, setConfirmPlayer] = useState(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false)
   const [waiverList, setWaiverList] = useState([])

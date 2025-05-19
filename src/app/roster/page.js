@@ -2120,7 +2120,7 @@ export default function RosterPage() {
             <img
               src={`/photo/${selectedPlayerDetail?.Name}.png`}
               alt={selectedPlayerDetail?.Name}
-              className="w-14 h-14 rounded-full"
+              className="w-24 h-24 object-cover border border-gray-300"
               onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
             />
           </div>

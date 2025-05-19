@@ -1295,13 +1295,24 @@ export default function PlayerPage() {
       <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
       <AlertDialogDescription className="relative px-1">
         <div className="sticky top-0 z-20 bg-white border-b py-2 px-2 flex items-start justify-between gap-4 text-sm text-gray-700">
-          {/* 左側文字資料 */}
-          <div className="space-y-1 text-left">
-            <div>team：{selectedPlayerDetail?.Team}</div>
-            <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
-            <div>identity：{selectedPlayerDetail?.identity}</div>
-            <div>status：{selectedPlayerDetail?.status}</div>
-            <div>升降：{selectedPlayerDetail?.registerStatus}</div>
+          
+          <div className="flex items-start gap-4">
+            {/* 左側文字區塊 */}
+            <div className="space-y-1 text-left">
+              <div>team：{selectedPlayerDetail?.Team}</div>
+              <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
+              <div>identity：{selectedPlayerDetail?.identity}</div>
+              <div>status：{selectedPlayerDetail?.status}</div>
+              <div>升降：{selectedPlayerDetail?.registerStatus}</div>
+            </div>
+
+            {/* 右側圖片 */}
+            <img
+              src={`/photo/${selectedPlayerDetail?.Name}.png`}
+              alt={selectedPlayerDetail?.Name}
+              className="w-24 h-30 object-cover border border-gray-300"
+              onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
+            />
           </div>
 
           {/* 右側動態按鈕 */}

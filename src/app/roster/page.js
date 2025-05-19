@@ -2138,8 +2138,30 @@ export default function RosterPage() {
             const isOwner = ownerId === userId
 
             const openConfirmDialog = () => {
+              setDetailDialogOpen(false)  // ✅ 關閉詳細資料彈窗
               setConfirmPlayer(p)
-              setDialogOpen(true)
+              showConfirm(`確定要將 ${p.Name} Drop 嗎？`, async () => {
+                try {
+                  const res = await fetch('/api/drop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      player_name: p.Name,
+                      manager_id: userId,
+                      drop_date: selectedDate,
+                    }),
+                  })
+
+                  const data = await res.json()
+                  if (!res.ok) throw new Error(data.error || 'Drop 失敗')
+
+                  showMessage(`✅ 已成功 Drop ${p.Name}`, 'success')
+                  await reloadRoster()
+                } catch (err) {
+                  console.error('❌ Drop 錯誤:', err)
+                  showMessage(`❌ Drop 失敗：${err.message}`, 'error')
+                }
+              })
             }
 
             let symbol = '⇄'
@@ -2175,7 +2197,8 @@ export default function RosterPage() {
                   setSuccessDialogOpen(true)
                   return
                 }
-                openConfirmDialog()
+                setConfirmPlayer(p)
+                setDialogOpen(true)
               }
             }
 
@@ -2285,6 +2308,65 @@ export default function RosterPage() {
     </AlertDialogFooter>
   </AlertDialogContent>
 </AlertDialog>
+
+<AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>
+        {confirmPlayer?.status?.toLowerCase().includes('on team') &&
+        confirmPlayer?.manager_id?.toString() === userId
+          ? '確定要 Drop 嗎？'
+          : '確定要 Add 嗎？'}
+      </AlertDialogTitle>
+      <AlertDialogDescription>
+        您即將
+        {confirmPlayer?.status?.toLowerCase().includes('on team') &&
+        confirmPlayer?.manager_id?.toString() === userId
+          ? 'Drop'
+          : 'Add'}：<strong>{confirmPlayer?.Name}</strong>
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>取消</AlertDialogCancel>
+      <AlertDialogAction
+        onClick={async () => {
+          if (!confirmPlayer) return;
+
+          const isOwner = confirmPlayer.manager_id?.toString() === userId;
+          const type = isOwner ? 'Drop' : 'Add';
+
+          try {
+            const res = await fetch('/api/transaction', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                playerName: confirmPlayer.Name,
+                type,
+              }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              showMessage(`✅ 成功 ${type} ${confirmPlayer.Name}`, 'success');
+              await reloadRoster();
+            } else {
+              showMessage(`❌ ${data.error}`, 'error');
+            }
+          } catch (err) {
+            console.error('❌ 處理錯誤:', err);
+            showMessage(`❌ 操作失敗`, 'error');
+          }
+
+          setDialogOpen(false);
+          setConfirmPlayer(null);
+        }}
+      >
+        確定
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
 
 </>
 

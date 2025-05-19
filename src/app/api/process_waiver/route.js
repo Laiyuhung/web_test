@@ -97,10 +97,61 @@ async function handleWaiver() {
         .neq('apply_no', w.apply_no)
         .eq('status', 'pending')
 
-      const newPriority = Math.min(...priorities.map(p => p.priority)) - 1
+      const currentPriority = priorities.find(p => p.id === managerId)?.priority;
+      if (currentPriority === undefined) {
+        console.error(`❌ 找不到 Manager ${managerId} 的當前順位`);
+        continue;
+      }
+
+      // 將原本在該玩家後面的往前移動 1 格
+      await Promise.all(
+        priorities
+          .filter(p => p.priority > currentPriority)
+          .map(p =>
+            supabase.from('waiver_priority')
+              .update({ priority: p.priority - 1 })
+              .eq('id', p.id)
+          )
+      );
+
+      // 將該玩家移動到最後一位
+      const newPriority = Math.max(...priorities.map(p => p.priority)) + 1;
       await supabase.from('waiver_priority')
         .update({ priority: newPriority })
-        .eq('id', managerId)
+        .eq('id', managerId);
+
+      // 如果通過所有檢查，將球員寫入 transactions
+      const { data: addPlayerData } = await supabase
+        .from('playerslist')
+        .select('Player_no')
+        .eq('Name', w.add_player)
+        .single();
+
+      if (addPlayerData?.Player_no) {
+        await supabase.from('transactions').insert({
+          transaction_time: new Date().toISOString(),
+          manager_id: managerId,
+          type: 'Waiver Add',
+          Player_no: addPlayerData.Player_no
+        });
+      }
+
+      if (w.drop_player) {
+        const { data: dropPlayerData } = await supabase
+          .from('playerslist')
+          .select('Player_no')
+          .eq('Name', w.drop_player)
+          .single();
+
+        if (dropPlayerData?.Player_no) {
+          await supabase.from('transactions').insert({
+            transaction_time: new Date().toISOString(),
+            manager_id: managerId,
+            type: 'Waiver Drop',
+            Player_no: dropPlayerData.Player_no
+          });
+        }
+      }
 
       console.log('✅ 成功處理一筆，終止本輪')
 

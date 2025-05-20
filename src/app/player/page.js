@@ -946,7 +946,7 @@ export default function PlayerPage() {
                   <img
                       src={`/photo/${p.Name}.png`} // 根據球員名稱動態加載圖片
                       alt={`${p.Name} Avatar`}
-                      className="w-8 h-8 rounded-full"
+                      className="w-12 h-12 rounded-full"
                       onError={(e) => e.target.src = '/photo/defaultPlayer.png'} // 若沒有圖片，顯示預設圖片
                     />
                   

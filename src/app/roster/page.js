@@ -2142,15 +2142,15 @@ export default function RosterPage() {
               setConfirmPlayer(p)
               showConfirm(`確定要將 ${p.Name} Drop 嗎？`, async () => {
                 try {
-                  const res = await fetch('/api/drop', {
+
+                  const res = await fetch('/api/transaction', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                      player_name: p.Name,
-                      manager_id: userId,
-                      drop_date: selectedDate,
+                      playerName: p.Name,
+                      type: 'Drop',
                     }),
-                  })
+                  });
 
                   const data = await res.json()
                   if (!res.ok) throw new Error(data.error || 'Drop 失敗')

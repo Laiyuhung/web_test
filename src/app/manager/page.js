@@ -16,7 +16,6 @@ import {
 
 export default function RosterPage() {
   const [waiverPriority, setWaiverPriority] = useState(null)
-  const [selectedPlayerDetail, setSelectedPlayerDetail] = useState(null)
   const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
   const [myTradePlayers, setMyTradePlayers] = useState([])
   const [opponentTradePlayers, setOpponentTradePlayers] = useState([])
@@ -24,9 +23,6 @@ export default function RosterPage() {
   const [successMessage, setSuccessMessage] = useState('')
   const [myRosterPlayers, setMyRosterPlayers] = useState([])
   const [opponentPlayers, setOpponentPlayers] = useState([])
-
-  const [selectedPlayer, setSelectedPlayer] = useState(null)
-  const [showPlayerDetail, setShowPlayerDetail] = useState(false)
 
 
   const [selectedManager, setSelectedManager] = useState(null)
@@ -732,11 +728,6 @@ export default function RosterPage() {
     )
   }
   
-  const openPlayerDetail = (player) => {
-    setSelectedPlayer(player)
-    setShowPlayerDetail(true)
-  }
-
 
   const renderRow = (p, type) => {
     return (
@@ -759,13 +750,7 @@ export default function RosterPage() {
               <div className="flex flex-col">
                 {/* 第一行：名字 + Team + Position */}
                 <div className="flex items-center gap-2">
-                  <span
-                    className="text-base font-bold text-[#0155A0] cursor-pointer hover:underline"
-                    onClick={() => openPlayerDetail(p)}
-                  >
-                    {p.Name}
-                  </span>
-
+                  <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>
                   <span className="text-sm text-gray-500">{p.Team}</span>
                   <span className="text-sm text-gray-500">- {(p.finalPosition || []).join(', ')}</span>
                 </div>
@@ -1371,252 +1356,9 @@ export default function RosterPage() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
     
-    <AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-      <AlertDialogContent className="w-full max-w-[95vw] max-h-[80vh] overflow-y-auto px-4">
-        <AlertDialogHeader>
-          <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
-          <AlertDialogDescription className="relative px-1">
-            <div className="sticky top-0 z-20 bg-white border-b py-2 px-2 flex items-start justify-between gap-4 text-sm text-gray-700">
 
-              {/* 左側資料＋圖片排成一列 */}
-              <div className="flex items-start gap-4">
-                {/* 左側文字區塊 */}
-                <div className="space-y-1 text-left">
-                  <div>team：{selectedPlayerDetail?.Team}</div>
-                  <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
-                  <div>identity：{selectedPlayerDetail?.identity}</div>
-                  <div>status：{selectedPlayerDetail?.status}</div>
-                  <div>升降：{selectedPlayerDetail?.registerStatus}</div>
-                </div>
-
-                {/* 右側圖片 */}
-                <img
-                  src={`/photo/${selectedPlayerDetail?.Name}.png`}
-                  alt={selectedPlayerDetail?.Name}
-                  className="w-24 h-30 object-cover border border-gray-300"
-                  onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
-                />
-              </div>
-              
-
-              {/* 右側動態按鈕 */}
-              {/* {(() => {
-                const p = selectedPlayerDetail
-                if (!p) return null
-
-                const status = (p.status || '').toLowerCase()
-                const ownerId = p.manager_id?.toString()
-                const isOwner = ownerId === userId
-
-                const openConfirmDialog = () => {
-                  setDetailDialogOpen(false)  // ✅ 關閉詳細資料彈窗
-                  setConfirmPlayer(p)
-                  showConfirm(`確定要將 ${p.Name} Drop 嗎？`, async () => {
-                    try {
-                      const res = await fetch('/api/transaction', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          playerName: p.Name,
-                          type: 'Drop',
-                        }),
-                      });
-
-                      const data = await res.json()
-                      if (!res.ok) throw new Error(data.error || 'Drop 失敗')
-
-                      showMessage(`✅ 已成功 Drop ${p.Name}`, 'success')
-
-                      // ✅ 成功後發信
-                      const recipients = [
-                        "mar.hung.0708@gmail.com",
-                        "laiyuhung921118@gmail.com",
-                        "peter0984541203@gmail.com",
-                        "anthonylin6507@gmail.com"
-                      ];
-                      for (const email of recipients) {
-                        await fetch('/api/email', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            to: email,
-                            subject: 'CPBL Fantasy transaction 通知',
-                            html: `
-                              <h2>${type === 'Add' ? 'Add' : 'Drop'} 通知</h2>
-                              <p><strong>${managerMap[userId]}</strong> 已成功${type === 'Add' ? 'Add' : 'Drop'}球員：</p>
-                              <ul><li><strong>球員：</strong> ${confirmPlayer.Name}</li></ul>
-                              <p>時間：${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}</p>
-                            `
-                          })
-                        })
-                      }
-
-                      if (type === 'Drop') {
-                        fetch('/api/check_trade_impact', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            playerName: confirmPlayer.Name,
-                            managerId: userId
-                          }),
-                        })
-                      }
-
-                      await reloadRoster()
-                    } catch (err) {
-                      console.error('❌ Drop 錯誤:', err)
-                      showMessage(`❌ Drop 失敗：${err.message}`, 'error')
-                    }
-                  })
-                }
-
-                let symbol = '⇄'
-                let borderColor = 'border-blue-600'
-                let textColor = 'text-blue-600'
-                let onClickHandler = () => {
-                  setSelectedTradeTarget(p)
-                  setTradeDialogOpen(true)
-                }
-
-                if (status === 'free agent') {
-                  symbol = '＋'
-                  borderColor = 'border-green-600'
-                  textColor = 'text-green-600'
-                  onClickHandler = () => {
-                    checkAddConstraints(p)
-                  }
-                } else if (status.includes('waiver')) {
-                  symbol = '＋'
-                  borderColor = 'border-yellow-500'
-                  textColor = 'text-yellow-500'
-                  onClickHandler = () => {
-                    setConfirmPlayer(p)
-                    setWaiverDialogOpen(true)
-                  }
-                } else if (status.includes('on team') && p.owner && p.owner !== '-' && isOwner) {
-                  symbol = '－'
-                  borderColor = 'border-red-600'
-                  textColor = 'text-red-600'
-                  onClickHandler = () => {
-                    if (isDropBlocked(p)) {
-                      setSuccessMessage('⚠️ 該球員已開賽，無法進行 Drop 操作')
-                      setSuccessDialogOpen(true)
-                      return
-                    }
-                    setConfirmPlayer(p)
-                    setDialogOpen(true)
-                  }
-                }
-
-                return (
-                  <div
-                    className={`border-2 ${borderColor} rounded-full p-2 flex items-center justify-center cursor-pointer`}
-                    onClick={onClickHandler}
-                    title={symbol === '＋' ? '加入' : symbol === '－' ? '移除' : '交易'}
-                  >
-                    <span className={`${textColor} font-bold text-lg`}>{symbol}</span>
-                  </div>
-                )
-              })()} */}
-            </div>
-
-            
-
-            {/* 🔻 Tabs 加進來 */}
-            <Tabs defaultValue="summary" className="mt-4">
-              <TabsList className="mb-2">
-                <TabsTrigger value="summary">統計區間</TabsTrigger>
-                <TabsTrigger value="last6">前六場</TabsTrigger>
-              </TabsList>
-
-              {/* 🔹 summary 區塊 */}
-              <TabsContent value="summary">
-                {selectedPlayerDetail?.statSummary && (
-                  <div className="overflow-x-auto">
-                    <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          {(selectedPlayerDetail.type === 'batter'
-                            ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                            : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                          ).map(k => (
-                            <th key={k} className="border px-2">{k}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
-                          <>
-                            <tr className="bg-gray-50 text-left text-sm">
-                              <td colSpan={selectedPlayerDetail.type === 'batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
-                                {label}
-                              </td>
-                            </tr>
-                            <tr>
-                              {(selectedPlayerDetail.type === 'batter'
-                                ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                                : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                              ).map(k => (
-                                <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
-                              ))}
-                            </tr>
-                          </>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </TabsContent>
-
-              {/* 🔹 last6 區塊 */}
-              <TabsContent value="last6">
-                {selectedPlayerDetail?.last6games && (
-                  <div className="overflow-x-auto">
-                    <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="border px-2">日期</th>
-                          <th className="border px-2">對手</th>
-                          {(selectedPlayerDetail.type === 'batter'
-                            ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                            : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                          ).map(k => (
-                            <th key={k} className="border px-2">{k}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedPlayerDetail.last6games.map((game, idx) => (
-                          <tr key={idx}>
-                            <td className="border px-2 py-1">{game.game_date}</td>
-                            <td className="border px-2 py-1">{game.opponent}</td>
-                            {(selectedPlayerDetail.type === 'batter'
-                              ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                              : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                            ).map(k => (
-                              <td key={k} className="border px-2 py-1 text-center">{game?.[k] ?? '-'}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </AlertDialogDescription>
-
-        </AlertDialogHeader>
-        <AlertDialogFooter className="sticky bottom-0 bg-white border-t pt-2">
-          <AlertDialogAction onClick={() => setDetailDialogOpen(false)}>
-            關閉
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-    
-    
     </>  
 
   )

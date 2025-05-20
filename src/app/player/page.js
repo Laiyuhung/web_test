@@ -361,7 +361,13 @@ export default function PlayerPage() {
       })
   
       const filtered = merged.filter(p => {
-        if (search && !p.Name.includes(search)) return false
+        if (search) {
+          return p.Name.includes(search) &&
+            ((type === 'Batter' && p.B_or_P === 'Batter') ||
+            (type === 'Pitcher' && p.B_or_P === 'Pitcher'));
+        }
+
+        // 🔽 以下是原本的篩選條件，search 為空才會走這邊
         if (type === 'Batter' && p.B_or_P !== 'Batter') return false
         if (type === 'Pitcher' && p.B_or_P !== 'Pitcher') return false
         if (identity !== 'All Identities' && p.identity !== identity) return false
@@ -394,6 +400,7 @@ export default function PlayerPage() {
         }
         return true
       })
+
   
       const sorted = [...filtered].sort((a, b) => {
         const aVal = parseFloat(a[sortBy] || 0)

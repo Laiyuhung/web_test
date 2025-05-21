@@ -98,6 +98,8 @@ export async function POST(req) {
         if (rawIP >= 6 && row.earned_runs <= 3) total.QS += 1
       }
 
+      console.log('🧪 OUT:', total.OUT, 'ER:', total.ER, 'BB:', total.BB, 'H:', total.H)
+
       const IP_raw = total.OUT / 3
       const ERA = IP_raw ? (9 * total.ER / IP_raw) : 0
       const WHIP = IP_raw ? (total.BB + total.H) / IP_raw : 0

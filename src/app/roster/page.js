@@ -660,7 +660,14 @@ export default function RosterPage() {
   const openMoveModal = (player) => {
     console.log('🔁 可選位置:', player.finalPosition)
   
-    const baseSlots = [...(player.finalPosition || []), player.B_or_P === 'Batter' ? 'Util' : 'P', 'BN']
+    let baseSlots = []
+
+    if (player.B_or_P === 'Batter') {
+      baseSlots = [...(player.finalPosition || []), 'Util', 'Batter_BN']
+    } else if (player.B_or_P === 'Pitcher') {
+      baseSlots = [...(player.finalPosition || []), 'P', 'Pitcher_BN']
+    }
+
     const naSlots = player.registerStatus === '一軍' ? ['NA(備用)'] : ['NA', 'NA(備用)']
     const allSlots = [...baseSlots, ...naSlots]
   
@@ -707,13 +714,29 @@ export default function RosterPage() {
           }
         }
       } else {
-        const assigned = players.filter(p => assignedPositions[p.Name] === pos)
-        slotStatus[pos] = {
-          displayAs: pos,
-          count: assigned.length,
-          max: slotLimit[pos] || 99,
-          players: assigned
+        if (pos === 'Batter_BN' || pos === 'Pitcher_BN') {
+          const bnKey = pos === 'Batter_BN' ? 'BN' : 'BN'
+          const assigned = players.filter(p =>
+            assignedPositions[p.Name] === 'BN' &&
+            ((pos === 'Batter_BN' && p.B_or_P === 'Batter') ||
+            (pos === 'Pitcher_BN' && p.B_or_P === 'Pitcher'))
+          )
+          slotStatus[pos] = {
+            displayAs: 'BN', // 顯示仍為 BN
+            count: assigned.length,
+            max: slotLimit['BN'] || 99,
+            players: assigned
+          }
+        } else {
+          const assigned = players.filter(p => assignedPositions[p.Name] === pos)
+          slotStatus[pos] = {
+            displayAs: pos,
+            count: assigned.length,
+            max: slotLimit[pos] || 99,
+            players: assigned
+          }
         }
+
       }
     })
   
@@ -1634,7 +1657,9 @@ export default function RosterPage() {
                       const newPos = canReturn ? currentPos : fallback                   
                     
                       const updated = { ...assignedPositions }
-                      updated[moveTarget.Name] = posKey
+
+                      // ✅ 將 "Batter_BN" / "Pitcher_BN" 實際轉成 'BN'
+                      updated[moveTarget.Name] = ['Batter_BN', 'Pitcher_BN'].includes(posKey) ? 'BN' : posKey
                       updated[p.Name] = newPos
 
                       const activeForeign = calculateActiveForeign(updated)
@@ -1744,7 +1769,7 @@ export default function RosterPage() {
                     }
                   
                     console.log(`✅ 準備將 ${moveTarget.Name} 移動到 ${posKey}`)
-                    const updated = { ...assignedPositions, [moveTarget.Name]: posKey }
+                    const updated = { ...assignedPositions, [moveTarget.Name]: ['Batter_BN', 'Pitcher_BN'].includes(posKey) ? 'BN' : posKey }
 
                     const activeForeign = calculateActiveForeign(updated)
                     if (activeForeign > 3) {

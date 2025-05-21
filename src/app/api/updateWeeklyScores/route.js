@@ -18,7 +18,7 @@ export async function POST() {
     .single()
 
   // 若查不到週次，預設更新 W18
-  const week = current?.week || 'W18'
+  const cleanWeek = week?.trim() || current?.week || 'W18'
   const team1 = current?.team1
   const team2 = current?.team2
   const team3 = current?.team3
@@ -36,7 +36,7 @@ export async function POST() {
   const res = await fetch('https://cpblfantasy.vercel.app/api/weekly_stats_by_manager', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ week })
+    body: JSON.stringify({ week: cleanWeek })
   })
   const result = await res.json()
 

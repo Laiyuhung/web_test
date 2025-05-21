@@ -1662,15 +1662,54 @@ export default function RosterPage() {
 
                     className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"
                   >
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={`/photo/${p.Name}.png`}
-                        className="w-6 h-6 rounded-full"
-                        onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
-                      />
-                      <span className="text-sm font-medium">{p.Name}</span>
-                      <span className="text-xs text-gray-400">{p.Team}</span>
+                    <div className="flex flex-col items-start gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={`/photo/${p.Name}.png`}
+                          className="w-6 h-6 rounded-full"
+                          onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
+                        />
+                        <span className="text-sm font-medium">{p.Name}</span>
+                        <span className="text-xs text-gray-400">{p.Team}</span>
+
+                        {/* 顯示守備位置 */}
+                        <span className="text-xs text-gray-500">- {(p.finalPosition || []).join(', ')}</span>
+                      </div>
+
+                      <div className="text-xs text-gray-500 pl-8">
+                        {gameInfoMap[p.Team] ?? 'No game'}
+
+                        {(() => {
+                          const found = startingLineup.find(l => l.name === p.Name)
+                          if (found) {
+                            return (
+                              <span className="ml-1 text-white bg-green-700 text-xs font-bold px-1.5 rounded">
+                                {found.batting_no}
+                              </span>
+                            )
+                          }
+
+                          if (p.B_or_P === 'Pitcher') return null
+
+                          if (lineupTeams.includes(p.Team)) {
+                            return (
+                              <span className="ml-1 text-white bg-red-600 text-xs font-bold px-1.5 rounded">
+                                X
+                              </span>
+                            )
+                          }
+
+                          return null
+                        })()}
+
+                        {startingPitchers.some(sp => sp.name === p.Name) && (
+                          <span className="ml-1 text-white bg-green-700 text-xs font-bold px-1.5 rounded">
+                            V
+                          </span>
+                        )}
+                      </div>
                     </div>
+
                     <span className="text-blue-500">↔</span>
                   </button>
                 ))}

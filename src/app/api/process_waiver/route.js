@@ -136,6 +136,37 @@ async function handleWaiver() {
         });
       }
 
+      const todayStr = taiwanDate
+      const endStr = '2025-11-30'
+      const dateList = []
+
+      const startDate = new Date(`${todayStr}T00:00:00`)
+      const endDate = new Date(`${endStr}T00:00:00`)
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const year = d.getFullYear()
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        dateList.push(`${year}-${month}-${day}`)
+      }
+
+      const rows = dateList.map(date => ({
+        date,
+        manager_id: managerId,
+        player_name: w.add_player,
+        position: 'BN',
+      }))
+
+      const { error: assignError } = await supabase
+        .from('assigned_position_history')
+        .insert(rows)
+
+      if (assignError) {
+        console.warn('⚠️ Waiver Add 寫入位置失敗:', assignError.message)
+      }
+
+
+
+
       if (w.drop_player) {
         const { data: dropPlayerData } = await supabase
           .from('playerslist')
@@ -150,8 +181,32 @@ async function handleWaiver() {
             type: 'Waiver Drop',
             Player_no: dropPlayerData.Player_no
           });
+
+          // 🔻 移除 drop player 的位置記錄
+          const startDate = new Date(`${taiwanDate}T00:00:00`)
+          const endDate = new Date(`2025-11-30T00:00:00`)
+          const dropDateList = []
+
+          for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const year = d.getFullYear()
+            const month = String(d.getMonth() + 1).padStart(2, '0')
+            const day = String(d.getDate()).padStart(2, '0')
+            dropDateList.push(`${year}-${month}-${day}`)
+          }
+
+          const { error: deleteError } = await supabase
+            .from('assigned_position_history')
+            .delete()
+            .in('date', dropDateList)
+            .eq('manager_id', managerId)
+            .eq('player_name', w.drop_player)
+
+          if (deleteError) {
+            console.warn('⚠️ Waiver Drop 移除位置失敗:', deleteError.message)
+          }
         }
       }
+
 
       console.log('✅ 成功處理一筆，終止本輪')
 

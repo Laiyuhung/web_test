@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 export default function MatchupTable() {
-  const [week, setWeek] = useState('')
+  const [week, setWeek] = useState(null)
   const [dateRange, setDateRange] = useState('')  // 用來顯示日期區間
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
@@ -34,6 +34,7 @@ export default function MatchupTable() {
   }, [])
 
   useEffect(() => {
+    if (!week) return  // ✅ 還沒抓到週次時不查
     const fetchData = async () => {
       setLoading(true)
       try {
@@ -152,12 +153,14 @@ export default function MatchupTable() {
       <div className="mb-6 flex gap-4 items-center">
         <label className="text-sm font-semibold">Select Week:</label>
         <select
-          value={week}
+          value={week ?? ''}
           onChange={(e) => setWeek(e.target.value)}
           className="px-3 py-2 border rounded text-sm"
         >
+          <option value="" disabled>請選擇週次</option> {/* 初始提示 */}
           {weeks.map(w => <option key={w}>{w}</option>)}
         </select>
+
 
         {dateRange && (
             <p className="mt-1 text-sm text-gray-500">本週賽事日期：{dateRange}</p>

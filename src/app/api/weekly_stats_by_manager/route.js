@@ -98,7 +98,8 @@ async function fetchAllPitchingStats(from, to) {
 
 export async function POST(req) {
   try {
-    const { week } = await req.json()
+    let { week } = await req.json()
+    week = week?.trim()
     if (!week) return NextResponse.json({ error: '缺少 week 參數' }, { status: 400 })
 
     console.log('🔍 查找參數:', { week });

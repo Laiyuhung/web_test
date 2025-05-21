@@ -1666,7 +1666,7 @@ export default function RosterPage() {
                       <div className="flex items-center gap-2">
                         <img
                           src={`/photo/${p.Name}.png`}
-                          className="w-6 h-6 rounded-full"
+                          className="w-9 h-9 rounded-full"
                           onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
                         />
                         <span className="text-sm font-medium">{p.Name}</span>

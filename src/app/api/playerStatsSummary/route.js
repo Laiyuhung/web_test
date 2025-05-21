@@ -84,6 +84,8 @@ export async function POST(req) {
         const rawIP = row.innings_pitched || 0
         const outs = Math.floor(rawIP) * 3 + Math.round((rawIP % 1) * 10)
 
+        console.log(`🎯 ${row.name} | Date: ${row.game_date} | IP: ${rawIP}, ER: ${row.earned_runs}, H: ${row.hits_allowed}, BB: ${row.walks}`)
+
         total.OUT += outs
         total.H += row.hits_allowed || 0
         total.ER += row.earned_runs || 0

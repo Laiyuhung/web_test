@@ -30,8 +30,14 @@ export async function POST(req) {
 
     const opponentMap = {}
     for (const g of schedules || []) {
-      opponentMap[g.date] = g.home === team ? g.away : g.home
+      const isHome = g.home === team
+      const opponent = isHome ? g.away : g.home
+      opponentMap[g.date] = opponent
+
+      console.log(`📅 ${g.date} | Home: ${g.home}, Away: ${g.away}`)
+      console.log(`🏠 我方: ${team} (${isHome ? 'Home' : 'Away'}) → 對手: ${opponent}`)
     }
+
 
     const processed = stats.map(d => {
       const rawIP = d.innings_pitched || 0

@@ -56,7 +56,7 @@ export async function POST() {
   await supabase
     .from('schedule')
     .update(updatedScores)
-    .eq('week', week)
+    .eq('week', cleanWeek)
 
-  return NextResponse.json({ message: `✅ 已更新 ${week} 的比分`, scores: updatedScores })
+  return NextResponse.json({ message: `✅ 已更新 ${cleanWeek} 的比分`, scores: updatedScores })
 }

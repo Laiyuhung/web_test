@@ -30,13 +30,18 @@ export async function POST(req) {
 
     const opponentMap = {}
     for (const g of schedules || []) {
-      const isHome = g.home === team
-      const opponent = isHome ? g.away : g.home
-      opponentMap[g.date] = opponent
-
-      console.log(`📅 ${g.date} | Home: ${g.home}, Away: ${g.away}`)
-      console.log(`🏠 我方: ${team} (${isHome ? 'Home' : 'Away'}) → 對手: ${opponent}`)
+      if (g.home === team) {
+        opponentMap[g.date] = g.away
+        console.log(`📅 ${g.date} | Home: ${g.home}, Away: ${g.away}`)
+        console.log(`🏠 我方: ${team} (Home) → 對手: ${g.away}`)
+      } else if (g.away === team) {
+        opponentMap[g.date] = g.home
+        console.log(`📅 ${g.date} | Home: ${g.home}, Away: ${g.away}`)
+        console.log(`🏠 我方: ${team} (Away) → 對手: ${g.home}`)
+      }
+      // ❌ 如果這場不是我們的比賽，就不要寫入 opponentMap
     }
+
 
 
     const processed = stats.map(d => {

@@ -84,8 +84,6 @@ export async function POST(req) {
         const rawIP = row.innings_pitched || 0
         const outs = Math.floor(rawIP) * 3 + Math.round((rawIP % 1) * 10)
 
-        console.log(`🎯 ${row.name} | Date: ${row.game_date} | IP: ${rawIP}, ER: ${row.earned_runs}, H: ${row.hits_allowed}, BB: ${row.walks}`)
-
         total.OUT += outs
         total.H += row.hits_allowed || 0
         total.ER += row.earned_runs || 0
@@ -99,8 +97,6 @@ export async function POST(req) {
         if (record === 'S') total.SV += 1
         if (rawIP >= 6 && row.earned_runs <= 3) total.QS += 1
       }
-
-      console.log('🧪 OUT:', total.OUT, 'ER:', total.ER, 'BB:', total.BB, 'H:', total.H)
 
       const IP_raw = total.OUT / 3
       const ERA = IP_raw ? (9 * total.ER / IP_raw) : 0

@@ -103,12 +103,12 @@ export async function POST(req) {
       } else {
         const IP_raw = total.OUT / 3
         const ERA = IP_raw
-          ? (9 * ER / IP_raw).toFixed(2)
-          : (ER > 0 ? 'INF' : '0.00')
+          ? (9 * total.ER / IP_raw).toFixed(2)
+          : (total.ER > 0 ? 'INF' : '0.00')
 
         const WHIP = IP_raw
-          ? ((BB + H) / IP_raw).toFixed(2)
-          : ((BB + H) > 0 ? 'INF' : '0.00')
+          ? ((total.BB + total.H) / IP_raw).toFixed(2)
+          : ((total.BB + total.H) > 0 ? 'INF' : '0.00')
 
         result[label] = {
           ...total,

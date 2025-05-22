@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -6,54 +7,42 @@ export default function LoginPage() {
   const [account, setAccount] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [elapsed, setElapsed] = useState(null)
   const router = useRouter()
 
-  // ✅ 一進頁面檢查 cookie 中是否有 user_id（用於保持登入狀態）
   useEffect(() => {
-    const cookie = document.cookie.split('; ').find(row => row.startsWith('user_id='))
-    const userId = cookie?.split('=')[1]
-    if (!userId) return
+    const cookieUserId = document.cookie.split('; ').find(row => row.startsWith('user_id='))
+    if (!cookieUserId) return
+    const user_id = cookieUserId.split('=')[1]
 
     fetch('/api/username', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId }),
+      body: JSON.stringify({ user_id }),
     })
       .then(res => res.json())
       .then(data => {
-        if (data?.name) {
-          router.push('/home') // ✅ 驗證成功才導向首頁
-        }
+        if (data?.name) router.push('/home')
       })
-      .catch(() => {}) // 驗證失敗不處理
+      .catch(() => {})
   }, [router])
 
-  // ✅ 登入後由後端設置 cookie，前端不用再儲存任何東西
   const handleLogin = async () => {
     setError('')
-    setElapsed(null)
-
-    const start = Date.now()
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ⬅️ 建議加上這行，確保 cookie 正確處理（雖然不是必要）
         body: JSON.stringify({ account, password }),
       })
-
       const result = await res.json()
-      const duration = Date.now() - start
-
       if (!res.ok || result.error) {
         setError(result.error || '登入失敗')
       } else {
-        setElapsed(duration)
-        router.push('/home') // ✅ cookie 驗證即可，不用存 localStorage
+        // ❌ 不要用 localStorage
+        router.push('/home')
       }
     } catch (err) {
-      setError(err.message)
+      setError('登入錯誤，請稍後再試')
     }
   }
 
@@ -80,6 +69,7 @@ export default function LoginPage() {
         >
           登入
         </button>
+
         {error && <div className="text-red-600 mt-4">⚠️ {error}</div>}
       </div>
     </div>

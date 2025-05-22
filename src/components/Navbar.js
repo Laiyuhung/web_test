@@ -41,25 +41,28 @@ export default function Navbar() {
 
   // 當使用者登入或登出時，更新 navbar 顯示
   useEffect(() => {
-    const id = localStorage.getItem('user_id') // 改為從 localStorage 取出 user_id
-    if (id) {
-      setUserId(id)
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('user_id='))
+    const uid = cookie?.split('=')[1]
 
-      // 獲取使用者名稱
-      fetch('/api/username', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: id }),
+    if (!uid) return router.push('/login')
+
+    fetch('/api/username', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: uid }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data?.name) {
+          setUserId(uid)
+          setUserName(data.name)
+        } else {
+          router.push('/login')
+        }
       })
-        .then(res => res.json())
-        .then(data => {
-          if (data.name) setUserName(data.name)
-        })
-        .catch(err => console.error('❌ username fetch 錯誤:', err))
-    } else {
-      router.push('/login') // ✅ 沒登入就導向登入頁
-    }
+      .catch(() => router.push('/login'))
   }, [])
+
 
   const handleLogout = async () => {
     await fetch('/api/logout', { method: 'POST' })

@@ -32,6 +32,7 @@ export default function LoginPage() {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // ✅ 必加這行才能接受 Set-Cookie
         body: JSON.stringify({ account, password }),
       })
       const result = await res.json()

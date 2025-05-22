@@ -167,12 +167,17 @@ export async function GET() {
       }
     }
 
+    const orderedFinalPos = Array.from(finalPos).sort(
+      (a, b) => desiredOrder.indexOf(a) - desiredOrder.indexOf(b)
+    )
+
     return {
       player_no: playerNo,
       name: info.name,
       B_or_P: info.B_or_P,
-      finalPosition: Array.from(finalPos)
+      finalPosition: orderedFinalPos
     }
+
   })
 
   return NextResponse.json(results)

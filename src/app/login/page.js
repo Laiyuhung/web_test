@@ -1,4 +1,3 @@
-// LoginPage.js
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -10,11 +9,12 @@ export default function LoginPage() {
   const [elapsed, setElapsed] = useState(null)
   const router = useRouter()
 
+  // ✅ 一進頁面檢查 cookie 中是否有 user_id（用於保持登入狀態）
   useEffect(() => {
-    const userId = localStorage.getItem('user_id')
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('user_id='))
+    const userId = cookie?.split('=')[1]
     if (!userId) return
-  
-    // 向後端驗證 user_id 是否有效（可以簡單打個 /api/username）
+
     fetch('/api/username', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -23,17 +23,13 @@ export default function LoginPage() {
       .then(res => res.json())
       .then(data => {
         if (data?.name) {
-          router.push('/home') // 有效才導向首頁
-        } else {
-          localStorage.removeItem('user_id') // ❌ 無效 → 強制登出
+          router.push('/home') // ✅ 驗證成功才導向首頁
         }
       })
-      .catch(() => {
-        localStorage.removeItem('user_id') // ❌ API 故障 → 清除 user_id
-      })
+      .catch(() => {}) // 驗證失敗不處理
   }, [router])
-  
 
+  // ✅ 登入後由後端設置 cookie，前端不用再儲存任何東西
   const handleLogin = async () => {
     setError('')
     setElapsed(null)
@@ -43,18 +39,18 @@ export default function LoginPage() {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // ⬅️ 建議加上這行，確保 cookie 正確處理（雖然不是必要）
         body: JSON.stringify({ account, password }),
       })
+
       const result = await res.json()
       const duration = Date.now() - start
 
       if (!res.ok || result.error) {
         setError(result.error || '登入失敗')
       } else {
-        // 儲存 user_id 到 localStorage（這樣即便關閉瀏覽器也能保持登入狀態）
-        localStorage.setItem('user_id', result.id)
         setElapsed(duration)
-        router.push('/home')
+        router.push('/home') // ✅ cookie 驗證即可，不用存 localStorage
       }
     } catch (err) {
       setError(err.message)
@@ -84,7 +80,6 @@ export default function LoginPage() {
         >
           登入
         </button>
-
         {error && <div className="text-red-600 mt-4">⚠️ {error}</div>}
       </div>
     </div>

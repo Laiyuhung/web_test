@@ -3,6 +3,8 @@ import supabase from '@/lib/supabaseServer'
 
 const cleanName = (name) => name?.replace(/[◎#*]/g, '').trim()
 const validPositions = ['C', '1B', '2B', '3B', 'SS', 'OF']
+const desiredOrder = ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util', 'SP', 'RP', 'P']
+
 const isValidPosition = (p) => validPositions.includes(p)
 
 async function fetchAll(tableName, columns, where = null) {

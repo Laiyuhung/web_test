@@ -25,9 +25,9 @@ export default function Home() {
         </button>
       </div>
 
-      <button className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-white hover:bg-gray-100 border border-gray-300 shadow">
-        <Cog6ToothIcon className="w-6 h-6 text-gray-600" />
-        <span className="text-gray-700 font-medium">Settings</span>
+      <button className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-[#5D4037] hover:bg-[#4E342E] shadow">
+        <Cog6ToothIcon className="w-6 h-6 text-white" />
+        <span className="text-white font-medium">Settings</span>
       </button>
     </main>
   )

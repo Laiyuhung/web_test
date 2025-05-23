@@ -18,7 +18,7 @@ export default function Home() {
         <span className="text-3xl font-semibold w-12 text-center">{count}</span>
 
         <button className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-[#5D4037] hover:bg-[#4E342E] shadow">
-          <Cog6ToothIcon className="w-6 h-6 text-white" />
+          {/* <Cog6ToothIcon className="w-6 h-6 text-white" /> */}
           <span className="text-white font-medium">+</span>
         </button>
       </div>

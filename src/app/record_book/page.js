@@ -170,6 +170,7 @@ export default function RecordBook() {
       {!loading && (
         <>
           {/* 新增：每週每隊數據 debug 區塊 */}
+          {/*
           <section className="mb-12">
             <h2 className="text-lg font-bold text-[#0155A0] mb-4">每週每隊數據 (Debug)</h2>
             {weeklyData.map(({ week, data }) => (
@@ -222,9 +223,10 @@ export default function RecordBook() {
               </div>
             ))}
           </section>
+          */}
 
           <section className="mb-12">
-            <h2 className="text-lg font-bold text-[#0155A0] mb-4">單週最佳紀錄</h2>
+            <h2 className="text-lg font-bold text-[#0155A0] mb-4">單週紀錄</h2>
             <div className="overflow-x-auto">
               <table className="table-auto border w-full text-sm">
                 <thead>
@@ -232,9 +234,9 @@ export default function RecordBook() {
                     <th className="border px-3 py-2 text-center">類型</th>
                     <th className="border px-3 py-2 text-center">數據</th>
                     <th className="border px-3 py-2 text-center">最佳值</th>
-                    <th className="border px-3 py-2 text-center">球隊/週次</th>
+                    <th className="border px-3 py-2 text-center">玩家(週次)</th>
                     <th className="border px-3 py-2 text-center">最差值</th>
-                    <th className="border px-3 py-2 text-center">球隊/週次</th>
+                    <th className="border px-3 py-2 text-center">玩家(週次)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -273,7 +275,7 @@ export default function RecordBook() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-[#0155A0] mb-4">W1~W{currentWeekIdx} 各隊累計</h2>
+            <h2 className="text-lg font-bold text-[#0155A0] mb-4">累計數據</h2>
             <div className="overflow-x-auto mb-8">
               <h3 className="font-semibold mb-2">打者累計</h3>
               <table className="table-auto border w-full text-sm">

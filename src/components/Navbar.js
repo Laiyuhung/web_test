@@ -90,6 +90,7 @@ export default function Navbar() {
           <Link href="/player" className="font-semibold hover:text-gray-300">PLAYERS</Link>
           <Link href="/matchup" className="font-semibold hover:text-gray-300">MATCHUP</Link>
           <Link href="/manager" className="font-semibold hover:text-gray-300">MANAGER</Link>
+          <Link href="/record_book" className="font-semibold hover:text-gray-300">RECORD BOOK</Link>
           {userId === '2' && (
             <>
           <Link href="/bulk-insert" className="font-semibold hover:text-yellow-300">資料登錄系統</Link>
@@ -142,6 +143,7 @@ export default function Navbar() {
             <Link href="/player" className="block py-2" onClick={() => setMenuOpen(false)}>PLAYERS</Link>
             <Link href="/matchup" className="block py-2" onClick={() => setMenuOpen(false)}>MATCHUP</Link>
             <Link href="/manager" className="block py-2" onClick={() => setMenuOpen(false)}>MANAGER</Link>
+            <Link href="/record_book" className="block py-2" onClick={() => setMenuOpen(false)}>RECORD BOOK</Link>
             {userId === '2' && (
               <>
               <Link href="/bulk-insert" className="block py-2" onClick={() => setMenuOpen(false)}>資料登錄系統</Link>

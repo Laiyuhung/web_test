@@ -148,6 +148,60 @@ export default function RecordBook() {
 
       {!loading && (
         <>
+          {/* 新增：每週每隊數據 debug 區塊 */}
+          <section className="mb-12">
+            <h2 className="text-lg font-bold text-[#0155A0] mb-4">每週每隊數據 (Debug)</h2>
+            {weeklyData.map(({ week, data }) => (
+              <div key={week} className="mb-4">
+                <h3 className="font-semibold mb-2">{week}</h3>
+                <table className="table-auto border w-full text-xs mb-2">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border px-2 py-1">球隊</th>
+                      <th className="border px-2 py-1">AB</th>
+                      <th className="border px-2 py-1">H</th>
+                      <th className="border px-2 py-1">AVG</th>
+                      <th className="border px-2 py-1">OPS</th>
+                      <th className="border px-2 py-1">R</th>
+                      <th className="border px-2 py-1">HR</th>
+                      <th className="border px-2 py-1">RBI</th>
+                      <th className="border px-2 py-1">SB</th>
+                      <th className="border px-2 py-1">K</th>
+                      <th className="border px-2 py-1">BB</th>
+                      <th className="border px-2 py-1">TB</th>
+                      <th className="border px-2 py-1">投手IP</th>
+                      <th className="border px-2 py-1">投手H</th>
+                      <th className="border px-2 py-1">ERA</th>
+                      <th className="border px-2 py-1">WHIP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map(team => (
+                      <tr key={team.team_name}>
+                        <td className="border px-2 py-1">{team.team_name}</td>
+                        <td className="border px-2 py-1">{team.batters.AB}</td>
+                        <td className="border px-2 py-1">{team.batters.H}</td>
+                        <td className="border px-2 py-1">{team.batters.AVG}</td>
+                        <td className="border px-2 py-1">{team.batters.OPS}</td>
+                        <td className="border px-2 py-1">{team.batters.R}</td>
+                        <td className="border px-2 py-1">{team.batters.HR}</td>
+                        <td className="border px-2 py-1">{team.batters.RBI}</td>
+                        <td className="border px-2 py-1">{team.batters.SB}</td>
+                        <td className="border px-2 py-1">{team.batters.K}</td>
+                        <td className="border px-2 py-1">{team.batters.BB}</td>
+                        <td className="border px-2 py-1">{team.batters.TB}</td>
+                        <td className="border px-2 py-1">{team.pitchers.IP}</td>
+                        <td className="border px-2 py-1">{team.pitchers.H}</td>
+                        <td className="border px-2 py-1">{team.pitchers.ERA}</td>
+                        <td className="border px-2 py-1">{team.pitchers.WHIP}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </section>
+
           <section className="mb-12">
             <h2 className="text-lg font-bold text-[#0155A0] mb-4">單週最佳紀錄</h2>
             <div className="overflow-x-auto">
@@ -206,7 +260,7 @@ export default function RecordBook() {
                   <tr className="bg-gray-200">
                     <th className="border px-3 py-2 text-center">球隊</th>
                     <th className="border px-3 py-2 text-center">AB</th>
-                    {batterKeys.map(k => (
+                    {batterKeys.filter(k => !["AVG", "OPS"].includes(k)).map(k => (
                       <th key={k} className="border px-3 py-2 text-center">{k}</th>
                     ))}
                     <th className="border px-3 py-2 text-center">AVG</th>
@@ -218,7 +272,7 @@ export default function RecordBook() {
                     <tr key={team}>
                       <td className="border px-3 py-2 text-left font-bold bg-gray-100">{team}</td>
                       <td className="border px-3 py-2 text-center">{t.batters.AB || 0}</td>
-                      {batterKeys.map(k => (
+                      {batterKeys.filter(k => !["AVG", "OPS"].includes(k)).map(k => (
                         <td key={k} className="border px-3 py-2 text-center">{t.batters[k] || 0}</td>
                       ))}
                       <td className="border px-3 py-2 text-center">{t.batters.AVG}</td>
@@ -235,7 +289,7 @@ export default function RecordBook() {
                   <tr className="bg-gray-200">
                     <th className="border px-3 py-2 text-center">球隊</th>
                     <th className="border px-3 py-2 text-center">IP</th>
-                    {pitcherKeys.map(k => (
+                    {pitcherKeys.filter(k => !["ERA", "WHIP"].includes(k)).map(k => (
                       <th key={k} className="border px-3 py-2 text-center">{k}</th>
                     ))}
                     <th className="border px-3 py-2 text-center">ERA</th>
@@ -247,7 +301,7 @@ export default function RecordBook() {
                     <tr key={team}>
                       <td className="border px-3 py-2 text-left font-bold bg-gray-100">{team}</td>
                       <td className="border px-3 py-2 text-center">{t.pitchers.IP}</td>
-                      {pitcherKeys.map(k => (
+                      {pitcherKeys.filter(k => !["ERA", "WHIP"].includes(k)).map(k => (
                         <td key={k} className="border px-3 py-2 text-center">{t.pitchers[k] || 0}</td>
                       ))}
                       <td className="border px-3 py-2 text-center">{t.pitchers.ERA}</td>

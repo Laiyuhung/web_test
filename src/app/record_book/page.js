@@ -105,9 +105,12 @@ export default function RecordBook() {
           for (const team of data) {
             const t = totalMap[team.team_name] ||= { batters: {}, pitchers: {} }
             for (const k of batterKeys) {
+              // ERA, WHIP, AVG, OPS 這些由後端傳，前端不再累加或重算
+              if (["AVG", "OPS"].includes(k)) continue
               t.batters[k] = (t.batters[k] || 0) + (Number(team.batters?.[k]) || 0)
             }
             for (const k of pitcherKeys) {
+              if (["ERA", "WHIP"].includes(k)) continue
               t.pitchers[k] = (t.pitchers[k] || 0) + (Number(team.pitchers?.[k]) || 0)
             }
             // AB/IP 累加
@@ -120,30 +123,15 @@ export default function RecordBook() {
             t.pitchers.ER = (t.pitchers.ER || 0) + (Number(team.pitchers?.ER) || 0)
             t.pitchers.H = (t.pitchers.H || 0) + (Number(team.pitchers?.H) || 0)
             t.pitchers.BB = (t.pitchers.BB || 0) + (Number(team.pitchers?.BB) || 0)
+            // ERA, WHIP, AVG, OPS 直接用後端傳來的
+            t.batters.AVG = team.batters.AVG
+            t.batters.OPS = team.batters.OPS
+            t.pitchers.ERA = team.pitchers.ERA
+            t.pitchers.WHIP = team.pitchers.WHIP
+            t.pitchers.IP = team.pitchers.IP
           }
         }
-        // 計算AVG/OPS/ERA/WHIP
-        for (const [team, t] of Object.entries(totalMap)) {
-          // AVG
-          t.batters.AVG = t.batters.AB ? (t.batters.H / t.batters.AB).toFixed(3).replace(/^0\./, '.') : '0.000'
-          // OBP
-          const obpDen = (t.batters.AB || 0) + (t.batters.BB || 0)
-          const obpNum = (t.batters.H || 0) + (t.batters.BB || 0)
-          const OBP = obpDen ? (obpNum / obpDen) : 0
-          // SLG
-          const SLG = t.batters.AB ? (t.batters.TB / t.batters.AB) : 0
-          // OPS
-          t.batters.OPS = (OBP + SLG).toFixed(3).replace(/^0\./, '.')
-          // ERA
-          const IP = t.pitchers.OUT ? t.pitchers.OUT / 3 : 0
-          t.pitchers.IP = IP.toFixed(2)
-          t.pitchers.ERA = IP ? (9 * t.pitchers.ER / IP).toFixed(2) : '0.00'
-          // WHIP
-          t.pitchers.WHIP = IP ? ((t.pitchers.H + t.pitchers.BB) / IP).toFixed(2) : '0.00'
-          // 加總過程log
-          console.log(`[加總] ${team} 打者:`, t.batters)
-          console.log(`[加總] ${team} 投手:`, t.pitchers)
-        }
+        // ERA/WHIP/AVG/OPS 不再前端重算
         setTotals(totalMap)
       } catch (err) {
         console.error('❌ record_book fetch error:', err)

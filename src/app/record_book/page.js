@@ -40,8 +40,7 @@ export default function RecordBook() {
     if (currentWeekIdx === 0) return
     const fetchAllWeeks = async () => {
       setLoading(true)
-      try {
-        const validWeeks = weeks.slice(0, currentWeekIdx)
+      try {        const validWeeks = weeks.slice(0, currentWeekIdx + 1)
         // 改呼叫 sum 版 API
         const results = await Promise.all(
           validWeeks.map(week =>

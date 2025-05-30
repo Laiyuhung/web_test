@@ -157,13 +157,13 @@ export default function MatchupTable() {
           onChange={(e) => setWeek(e.target.value)}
           className="px-3 py-2 border rounded text-sm"
         >
-          <option value="" disabled>請選擇週次</option> {/* 初始提示 */}
+          <option value="" disabled>週次</option> {/* 初始提示 */}
           {weeks.map(w => <option key={w}>{w}</option>)}
         </select>
 
 
         {dateRange && (
-            <p className="mt-1 text-sm text-gray-500">本週賽事日期：{dateRange}</p>
+            <p className="mt-1 text-sm text-gray-500">本週日期：{dateRange}</p>
         )}
       </div>
 

@@ -124,7 +124,7 @@ export async function POST(req) {
               batterSum.R += r.runs || 0
               batterSum.H += r.hits || 0
               // 針對 H(安打) 加總過程加 log
-              console.log(`[週${week}] Manager#${managerId} ${name} ${date} H(安打) +=`, r.hits || 0, '=>', batterSum.H)
+            //   console.log(`[週${week}] Manager#${managerId} ${name} ${date} H(安打) +=`, r.hits || 0, '=>', batterSum.H)
               batterSum.HR += r.home_runs || 0
               batterSum.RBI += r.rbis || 0
               batterSum.SB += r.stolen_bases || 0
@@ -160,6 +160,8 @@ export async function POST(req) {
           }
         }
       }
+      // 新增：每隊每週 H(安打) 總和 log
+      console.log(`[週${week}] Manager#${managerId} H(安打) 總和 =`, batterSum.H)
       const AB = batterSum.AB || 0
       const IP = pitcherSum.OUT / 3 || 0
       // AVG

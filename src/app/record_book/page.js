@@ -55,10 +55,12 @@ export default function RecordBook() {
         )
         setWeeklyData(results)
 
-        // 單週最佳/最差
+        // 只取已完成週次做單週最佳/最差（不含本週與查無資料的週）
         const best = {}
         const worst = {}
-        for (const { week, data } of results) {
+        // 找出已完成週次（有資料且不是最後一週）
+        const finishedWeeks = results.slice(0, currentWeekIdx)
+        for (const { week, data } of finishedWeeks) {
           for (const team of data) {
             for (const { type, key } of allKeys) {
               const value = team[type]?.[key]

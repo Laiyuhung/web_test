@@ -103,7 +103,9 @@ async function handleWaiver() {
         continue;
       }
 
-      // 將原本在該玩家後面的往前移動 1 格
+      // ✅ 修正：將順位 > 該 manager 的玩家往前移動，該 manager 排最後（維持總數不變）
+      const totalManagers = priorities.length;
+
       await Promise.all(
         priorities
           .filter(p => p.priority > currentPriority)
@@ -114,11 +116,10 @@ async function handleWaiver() {
           )
       );
 
-      // 將該玩家移動到最後一位
-      const newPriority = Math.max(...priorities.map(p => p.priority)) + 1;
       await supabase.from('waiver_priority')
-        .update({ priority: newPriority })
+        .update({ priority: totalManagers })
         .eq('id', managerId);
+
 
       // 如果通過所有檢查，將球員寫入 transactions
       const { data: addPlayerData } = await supabase

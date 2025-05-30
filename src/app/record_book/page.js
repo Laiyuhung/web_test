@@ -10,7 +10,14 @@ const allKeys = [
 ]
 
 const weeks = Array.from({ length: 18 }, (_, i) => `W${i + 1}`)
-const lowerBetterKeys = ['K', 'GIDP', 'L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
+const lowerBetterKeys = ['GIDP', 'L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
+
+function isLowerBetter(type, key) {
+  // 打者BB、投手K不是越低越好
+  if (type === 'batters' && key === 'BB') return false
+  if (type === 'pitchers' && key === 'K') return false
+  return lowerBetterKeys.includes(key)
+}
 
 export default function RecordBook() {
   const [loading, setLoading] = useState(false)
@@ -71,7 +78,7 @@ export default function RecordBook() {
                 best[`${type}_${key}`] = { value: numVal, teams: [{ team: team.team_name, week, value }] }
               } else {
                 const cmp = best[`${type}_${key}`].value
-                const isLower = lowerBetterKeys.includes(key)
+                const isLower = isLowerBetter(type, key)
                 if (
                   (isLower && numVal < cmp) ||
                   (!isLower && numVal > cmp)
@@ -82,7 +89,7 @@ export default function RecordBook() {
                 }
               }
               // 最差（只針對低為佳的數據）
-              if (lowerBetterKeys.includes(key)) {
+              if (isLowerBetter(type, key)) {
                 if (!worst[`${type}_${key}`]) {
                   worst[`${type}_${key}`] = { value: numVal, teams: [{ team: team.team_name, week, value }] }
                 } else {
@@ -244,7 +251,8 @@ export default function RecordBook() {
                 <tbody>
                   {allKeys.map(({ type, key }) => {
                     const rec = bestRecords[`${type}_${key}`]
-                    const worst = lowerBetterKeys.includes(key) ? worstRecords[`${type}_${key}`] : null
+                    // const worst = lowerBetterKeys.includes(key) ? worstRecords[`${type}_${key}`] : null
+                    const worst = isLowerBetter(type, key) ? worstRecords[`${type}_${key}`] : null
                     if (!rec && !worst) return null
                     return (
                       <tr key={`${type}_${key}`}>

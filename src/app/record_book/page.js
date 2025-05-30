@@ -103,35 +103,57 @@ export default function RecordBook() {
         const totalMap = {}
         for (const { data } of results) {
           for (const team of data) {
-            const t = totalMap[team.team_name] ||= { batters: {}, pitchers: {} }
-            for (const k of batterKeys) {
-              // ERA, WHIP, AVG, OPS 這些由後端傳，前端不再累加或重算
-              if (["AVG", "OPS"].includes(k)) continue
-              t.batters[k] = (t.batters[k] || 0) + (Number(team.batters?.[k]) || 0)
+            const t = totalMap[team.team_name] ||= {
+              batters: { AB: 0, H: 0, BB: 0, TB: 0, R: 0, HR: 0, RBI: 0, SB: 0, K: 0, GIDP: 0, XBH: 0 },
+              pitchers: { OUT: 0, ER: 0, H: 0, BB: 0, W: 0, L: 0, HLD: 0, SV: 0, K: 0, QS: 0 }
             }
-            for (const k of pitcherKeys) {
-              if (["ERA", "WHIP"].includes(k)) continue
-              t.pitchers[k] = (t.pitchers[k] || 0) + (Number(team.pitchers?.[k]) || 0)
-            }
-            // AB/IP 累加
-            t.batters.AB = (t.batters.AB || 0) + (Number(team.batters?.AB) || 0)
-            t.pitchers.OUT = (t.pitchers.OUT || 0) + (Number(team.pitchers?.OUT) || 0)
-            // H, BB, TB, ER, H (投手), BB (投手) 也要累加
-            t.batters.H = (t.batters.H || 0) + (Number(team.batters?.H) || 0)
-            t.batters.BB = (t.batters.BB || 0) + (Number(team.batters?.BB) || 0)
-            t.batters.TB = (t.batters.TB || 0) + (Number(team.batters?.TB) || 0)
-            t.pitchers.ER = (t.pitchers.ER || 0) + (Number(team.pitchers?.ER) || 0)
-            t.pitchers.H = (t.pitchers.H || 0) + (Number(team.pitchers?.H) || 0)
-            t.pitchers.BB = (t.pitchers.BB || 0) + (Number(team.pitchers?.BB) || 0)
-            // ERA, WHIP, AVG, OPS 直接用後端傳來的
-            t.batters.AVG = team.batters.AVG
-            t.batters.OPS = team.batters.OPS
-            t.pitchers.ERA = team.pitchers.ERA
-            t.pitchers.WHIP = team.pitchers.WHIP
-            t.pitchers.IP = team.pitchers.IP
+            // 打者累加
+            t.batters.AB += Number(team.batters?.AB) || 0
+            t.batters.H += Number(team.batters?.H) || 0
+            t.batters.BB += Number(team.batters?.BB) || 0
+            t.batters.TB += Number(team.batters?.TB) || 0
+            t.batters.R += Number(team.batters?.R) || 0
+            t.batters.HR += Number(team.batters?.HR) || 0
+            t.batters.RBI += Number(team.batters?.RBI) || 0
+            t.batters.SB += Number(team.batters?.SB) || 0
+            t.batters.K += Number(team.batters?.K) || 0
+            t.batters.GIDP += Number(team.batters?.GIDP) || 0
+            t.batters.XBH += Number(team.batters?.XBH) || 0
+            // 投手累加
+            t.pitchers.OUT += Number(team.pitchers?.OUT) || 0
+            t.pitchers.ER += Number(team.pitchers?.ER) || 0
+            t.pitchers.H += Number(team.pitchers?.H) || 0
+            t.pitchers.BB += Number(team.pitchers?.BB) || 0
+            t.pitchers.W += Number(team.pitchers?.W) || 0
+            t.pitchers.L += Number(team.pitchers?.L) || 0
+            t.pitchers.HLD += Number(team.pitchers?.HLD) || 0
+            t.pitchers.SV += Number(team.pitchers?.SV) || 0
+            t.pitchers.K += Number(team.pitchers?.K) || 0
+            t.pitchers.QS += Number(team.pitchers?.QS) || 0
           }
         }
-        // ERA/WHIP/AVG/OPS 不再前端重算
+        // 正確計算 AVG/OPS/ERA/WHIP
+        for (const [team, t] of Object.entries(totalMap)) {
+          // AVG
+          t.batters.AVG = t.batters.AB ? (t.batters.H / t.batters.AB).toFixed(3).replace(/^0\./, '.') : '0.000'
+          // OBP
+          const obpDen = (t.batters.AB || 0) + (t.batters.BB || 0)
+          const obpNum = (t.batters.H || 0) + (t.batters.BB || 0)
+          const OBP = obpDen ? (obpNum / obpDen) : 0
+          // SLG
+          const SLG = t.batters.AB ? (t.batters.TB / t.batters.AB) : 0
+          // OPS
+          t.batters.OPS = (OBP + SLG).toFixed(3).replace(/^0\./, '.')
+          // ERA/WHIP
+          const OUT = t.pitchers.OUT || 0
+          const fullInnings = Math.floor(OUT / 3)
+          const outsRemainder = OUT % 3
+          // IP 顯示為 x.0, x.1, x.2
+          t.pitchers.IP = `${fullInnings}.${outsRemainder}`
+          const IP = OUT ? OUT / 3 : 0
+          t.pitchers.ERA = IP ? (9 * t.pitchers.ER / IP).toFixed(2) : '0.00'
+          t.pitchers.WHIP = IP ? ((t.pitchers.H + t.pitchers.BB) / IP).toFixed(2) : '0.00'
+        }
         setTotals(totalMap)
       } catch (err) {
         console.error('❌ record_book fetch error:', err)

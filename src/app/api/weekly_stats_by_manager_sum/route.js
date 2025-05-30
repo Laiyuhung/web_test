@@ -174,6 +174,9 @@ export async function POST(req) {
       const ERA = IP ? (9 * pitcherSum.ER / IP).toFixed(2) : '0.00'
       // WHIP
       const WHIP = IP ? ((pitcherSum.H + pitcherSum.BB) / IP).toFixed(2) : '0.00'
+      // 顯示分週加總過程
+      console.log(`[週${week}] Manager#${managerId} 打者加總`, batterSum, `AVG=${AVG} OBP=${OBP.toFixed(3)} SLG=${SLG.toFixed(3)} OPS=${OPS}`)
+      console.log(`[週${week}] Manager#${managerId} 投手加總`, pitcherSum, `IP=${IP.toFixed(2)} ERA=${ERA} WHIP=${WHIP}`)
       const { data: managerData } = await supabase
         .from('managers')
         .select('team_name')

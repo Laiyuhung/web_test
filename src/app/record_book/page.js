@@ -123,7 +123,7 @@ export default function RecordBook() {
           }
         }
         // 計算AVG/OPS/ERA/WHIP
-        for (const t of Object.values(totalMap)) {
+        for (const [team, t] of Object.entries(totalMap)) {
           // AVG
           t.batters.AVG = t.batters.AB ? (t.batters.H / t.batters.AB).toFixed(3).replace(/^0\./, '.') : '0.000'
           // OBP
@@ -140,6 +140,9 @@ export default function RecordBook() {
           t.pitchers.ERA = IP ? (9 * t.pitchers.ER / IP).toFixed(2) : '0.00'
           // WHIP
           t.pitchers.WHIP = IP ? ((t.pitchers.H + t.pitchers.BB) / IP).toFixed(2) : '0.00'
+          // 加總過程log
+          console.log(`[加總] ${team} 打者:`, t.batters)
+          console.log(`[加總] ${team} 投手:`, t.pitchers)
         }
         setTotals(totalMap)
       } catch (err) {

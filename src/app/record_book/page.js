@@ -13,7 +13,8 @@ const weeks = Array.from({ length: 18 }, (_, i) => `W${i + 1}`)
 const lowerBetterKeys = ['GIDP', 'L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
 
 function isLowerBetter(type, key) {
-  // 打者BB、投手K不是越低越好
+  // 打者K越少越好、打者BB越多越好
+  if (type === 'batters' && key === 'K') return true
   if (type === 'batters' && key === 'BB') return false
   if (type === 'pitchers' && key === 'K') return false
   return lowerBetterKeys.includes(key)

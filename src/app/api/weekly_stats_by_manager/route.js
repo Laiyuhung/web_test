@@ -304,6 +304,63 @@ export async function POST(req) {
       }
     })
 
+    // === 新增：檢查是否為過去週次，並修正 IP 未達 30 局的隊伍分數 ===
+    // 1. 判斷是否為過去週次（不是本週）
+    const isPastWeek = (() => {
+      // W18 一律視為非賽事期間
+      // if (week === 'W18') return true;
+      // 取得今天日期
+      const today = new Date().toISOString().slice(0, 10);
+      // 本週區間
+      if (weekData && weekData.start && weekData.end) {
+        return today < weekData.start || today > weekData.end;
+      }
+      return false;
+    })();
+
+    // 2. 檢查是否為過去週次
+    if (isPastWeek) {
+      // 只針對 W1~W17 處理 IP 未達 30 局
+      // 先收集所有隊伍的 IP
+      const teamIPs = result.map(r => ({
+        team: r.team_name,
+        ip: parseFloat(r.pitchers.IP)
+      }));
+      // 找出未達 30 局的隊伍
+      const under30 = teamIPs.filter(t => t.ip < 30);
+      if (under30.length > 0) {
+        // 找出所有隊伍的投手 fantasyPoints 總分
+        const pitcherTotals = result.map(r => {
+          const pts = Object.values(r.pitchers.fantasyPoints || {}).reduce((a, b) => a + b, 0);
+          return { team: r.team_name, pts };
+        });
+        // 找出最低分
+        const minTotal = Math.min(...pitcherTotals.map(p => p.pts));
+        // 平分最低分
+        const share = minTotal / under30.length;
+        // 修正未達標隊伍的投手分數
+        result.forEach(r => {
+          if (under30.some(t => t.team === r.team_name)) {
+            // 每個投手項目都設為 0，Total 設為 share
+            Object.keys(r.pitchers.fantasyPoints).forEach(k => {
+              r.pitchers.fantasyPoints[k] = 0;
+            });
+            // 只給一個項目設 share，其他 0（或全部平均分配，依你規則）
+            r.pitchers.fantasyPoints['IP'] = parseFloat(share.toFixed(1));
+          }
+        });
+        // 重新計算 fantasyPoints.Total
+        result.forEach(r => {
+          const batterTotal = Object.values(r.batters.fantasyPoints || {}).reduce((a, b) => a + b, 0);
+          const pitcherTotal = Object.values(r.pitchers.fantasyPoints || {}).reduce((a, b) => a + b, 0);
+          r.fantasyPoints = {
+            Total: (batterTotal + pitcherTotal).toFixed(1)
+          };
+        });
+      }
+    }
+
+
     return NextResponse.json(result)
   } catch (err) {
     console.error('❌ weekSummary 錯誤:', err)

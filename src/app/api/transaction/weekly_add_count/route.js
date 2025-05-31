@@ -36,6 +36,7 @@ export async function POST(req) {
       .select('*', { count: 'exact', head: true })
       .eq('manager_id', manager_id)
       .ilike('type', '%Add%')  // 不區分大小寫的模糊比對
+			.not.ilike('type', '%Trade Add%')
       .gte('transaction_time', startUtc)
       .lte('transaction_time', endUtc)
 

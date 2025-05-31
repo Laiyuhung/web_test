@@ -29,14 +29,14 @@ export default function RecordBook() {
   const [bestRecords, setBestRecords] = useState({})
   const [worstRecords, setWorstRecords] = useState({})
   const [totals, setTotals] = useState({})
-  const [currentWeekIdx, setCurrentWeekIdx] = useState(weeks.length)
+  const [currentWeekIdx, setCurrentWeekIdx] = useState(null)
 
   useEffect(() => {
     // 查找目前週次
     const fetchCurrentWeek = async () => {
       try {
         const res = await fetch('/api/getCurrentWeek')
-        if (!res.ok) return
+        if (!res.ok) return setCurrentWeekIdx(weeks.length)
         const { week } = await res.json()
         const idx = weeks.findIndex(w => w === week)
         setCurrentWeekIdx(idx === -1 ? weeks.length : idx)
@@ -48,7 +48,7 @@ export default function RecordBook() {
   }, [])
 
   useEffect(() => {
-    if (currentWeekIdx === 0) return
+    if (currentWeekIdx === null || currentWeekIdx === 0) return
     const fetchAllWeeks = async () => {
       setLoading(true)
       try {        const validWeeks = weeks.slice(0, currentWeekIdx + 1)
@@ -178,9 +178,9 @@ export default function RecordBook() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">RECORD BOOK</h1>
-      {loading && <div className="text-blue-600 font-semibold">Loading...</div>}
+      {(loading || currentWeekIdx === null) && <div className="text-blue-600 font-semibold">Loading...</div>}
 
-      {!loading && (
+      {!loading && currentWeekIdx !== null && (
         <>
           {/* 新增：每週每隊數據 debug 區塊 */}
           {/*

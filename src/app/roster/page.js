@@ -628,7 +628,7 @@ export default function RosterPage() {
       const [h, m] = timeStr.split(':')
     
       const gameDateTime = new Date(`${selectedDate}T${h}:${m}:00+08:00`)
-      const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+      const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Taipei' }))
     
       // console.log('🕓 gameDateTime:', gameDateTime.toISOString())
       // console.log('🕒 taiwanNow:', taiwanNow.toISOString())
@@ -916,8 +916,27 @@ export default function RosterPage() {
           identityMap[p.Name] = p.identity
         })
 
-        console.log('🧩 identityMap:', identityMap)
-
+        // ⛔ 新增：檢查雙方所有涉及球員是否已開賽
+        const allInvolvedPlayers = [...myPlayers, ...opponentPlayers];
+        const playerTeamMap = {};
+        statusData.forEach(p => { playerTeamMap[p.Name] = p.Team });
+        let lockedPlayers = [];
+        for (const name of allInvolvedPlayers) {
+          const team = playerTeamMap[name];
+          const gameInfo = gameInfoMap[team];
+          if (!gameInfo || gameInfo.startsWith('PPD') || gameInfo.startsWith('No game')) continue;
+          const timeStr = gameInfo.slice(0, 5); // 18:35
+          const [h, m] = timeStr.split(':');
+          const gameDateTime = new Date(`${selectedDate}T${h}:${m}:00+08:00`);
+          const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Taipei' }));
+          if (taiwanNow >= gameDateTime) {
+            lockedPlayers.push(name);
+          }
+        }
+        if (lockedPlayers.length > 0) {
+          alert(`以下球員比賽已開賽，禁止交易：\n${lockedPlayers.join(', ')}`);
+          return;
+        }
         console.log('🧩 開始交易模擬:', { myManagerId, opponentManagerId, myPlayers, opponentPlayers })
     
         // 抓自己、對方的 saveAssigned
@@ -1754,7 +1773,7 @@ export default function RosterPage() {
                     }
                   
                     const now = new Date()
-                    const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+                    const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Taipei' }))
                     console.log('🕒 現在台灣時間:', taiwanNow.toISOString())
                   
                     const gameDateTime = getGameDateTime(moveTarget.Team)
@@ -1796,7 +1815,7 @@ export default function RosterPage() {
                     setMoveTarget(null)
                     setMoveSlots(null)
                   }}                  
-                  
+
                     className="w-full flex items-center justify-center text-blue-600 font-semibold border-2 border-dashed border-blue-400 p-3 rounded bg-white hover:bg-blue-50"
                   >
                     ➕ Empty

@@ -143,17 +143,23 @@ export default function MatchupTable() {
             </tr>
         </thead>
         <tbody>
-            {data.map((d) => (
+            {data.map((d) => {
+              // 判斷是否違規
+              const isViolated = violationList.some(v => v.manager_id === d.manager_id)
+              return (
                 <tr key={d.team_name} className="text-sm">
                 <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">{d.rank}</td>
                 <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
-                {keys.map((key) => (
-                    <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                    {d[type][key]}
-                    </td>
-                ))}
+                {keys.map((key) => {
+                  // 投手IP欄位且違規才標紅
+                  const highlight = type === 'pitchers' && key === 'IP' && isViolated
+                  return (
+                    <td key={key} className={`border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap ${highlight ? 'bg-red-600 text-white' : ''}`}>{d[type][key]}</td>
+                  )
+                })}
                 </tr>
-            ))}
+              )
+            })}
         </tbody>
 
       </table>

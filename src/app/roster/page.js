@@ -628,7 +628,7 @@ export default function RosterPage() {
       const [h, m] = timeStr.split(':')
     
       const gameDateTime = new Date(`${selectedDate}T${h}:${m}:00+08:00`)
-      const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Taipei' }))
+      const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
     
       // console.log('🕓 gameDateTime:', gameDateTime.toISOString())
       // console.log('🕒 taiwanNow:', taiwanNow.toISOString())
@@ -928,7 +928,7 @@ export default function RosterPage() {
           const timeStr = gameInfo.slice(0, 5); // 18:35
           const [h, m] = timeStr.split(':');
           const gameDateTime = new Date(`${selectedDate}T${h}:${m}:00+08:00`);
-          const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Taipei' }));
+          const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
           if (taiwanNow >= gameDateTime) {
             lockedPlayers.push(name);
           }

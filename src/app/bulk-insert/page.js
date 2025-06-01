@@ -54,6 +54,13 @@ export default function BulkInsertPage() {
   })
   const [startingPitchers, setStartingPitchers] = useState([])
 
+  // 投手違規名單
+  const [violationWeek, setViolationWeek] = useState('')
+  const [violationManagerId, setViolationManagerId] = useState('')
+  const [violationLoading, setViolationLoading] = useState(false)
+  const [violationList, setViolationList] = useState([])
+  const weeks = Array.from({ length: 18 }, (_, i) => `W${i + 1}`)
+
   const handleLoadMakeupGames = async () => {
     setLoadingMakeups(true)
     const res = await fetch('/api/schedule/ppd_schedule')
@@ -304,6 +311,37 @@ export default function BulkInsertPage() {
     setDialogOpen(true)
   }
 
+  const fetchViolationList = async () => {
+    const res = await fetch('/api/pitcher_violation')
+    const result = await res.json()
+    if (res.ok) setViolationList(result)
+  }
+
+  const handleAddViolation = async () => {
+    if (!violationWeek || !violationManagerId) {
+      setDialogMessage('⚠️ 請選擇週次與球隊')
+      setDialogOpen(true)
+      return
+    }
+    setViolationLoading(true)
+    const res = await fetch('/api/pitcher_violation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ week: violationWeek, manager_id: violationManagerId })
+    })
+    const result = await res.json()
+    if (res.ok) {
+      setDialogMessage('✅ 違規名單已新增')
+      setViolationWeek('')
+      setViolationManagerId('')
+      fetchViolationList()
+    } else {
+      setDialogMessage(`❌ 錯誤：${result.error || '請稍後再試'}`)
+    }
+    setViolationLoading(false)
+    setDialogOpen(true)
+  }
+
   useEffect(() => {
     const fetchManagers = async () => {
       const res = await fetch('/api/rewards/managers')
@@ -322,6 +360,10 @@ export default function BulkInsertPage() {
   useEffect(() => {
     loadSubmittedTeams()
   }, [lineupDate]) // 👈 每當 lineupDate 改變就重新載入球隊列表
+
+  useEffect(() => {
+    fetchViolationList()
+  }, [])
 
   return (
     <>
@@ -710,6 +752,46 @@ export default function BulkInsertPage() {
           </div>
 
         )}
+
+        <h2 className="text-lg font-bold mt-10 mb-2">投手違規名單登錄</h2>
+        <div className="flex flex-wrap gap-4 mb-4 items-end">
+          <div>
+            <label className="block text-sm mb-1">週次</label>
+            <select className="border px-3 py-1 rounded" value={violationWeek} onChange={e => setViolationWeek(e.target.value)}>
+              <option value="">請選擇</option>
+              {weeks.map(w => <option key={w} value={w}>{w}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm mb-1">球隊（Manager）</label>
+            <select className="border px-3 py-1 rounded" value={violationManagerId} onChange={e => setViolationManagerId(e.target.value)}>
+              <option value="">請選擇</option>
+              {managers.map(m => <option key={m.id} value={m.id}>{m.team_name}</option>)}
+            </select>
+          </div>
+          <Button onClick={handleAddViolation} disabled={violationLoading}>新增違規</Button>
+        </div>
+        <div className="mb-6">
+          <h3 className="font-semibold mb-2">已登錄違規名單</h3>
+          <table className="table-auto border text-sm min-w-[300px]">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border px-2 py-1">週次</th>
+                <th className="border px-2 py-1">球隊</th>
+              </tr>
+            </thead>
+            <tbody>
+              {violationList.length === 0 ? (
+                <tr><td colSpan={2} className="text-center text-gray-400">尚無資料</td></tr>
+              ) : violationList.map(v => (
+                <tr key={v.id}>
+                  <td className="border px-2 py-1">{v.week}</td>
+                  <td className="border px-2 py-1">{v.managers?.team_name || v.manager_id}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
       </div>
 

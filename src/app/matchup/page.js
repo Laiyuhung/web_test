@@ -7,6 +7,7 @@ export default function MatchupTable() {
   const [dateRange, setDateRange] = useState('')  // 用來顯示日期區間
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
+  const [violationList, setViolationList] = useState([])
   const weeks = Array.from({ length: 18 }, (_, i) => `W${i + 1}`)
 
   const batterKeys = ['R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
@@ -16,7 +17,6 @@ export default function MatchupTable() {
     ...pitcherKeys.map(k => `p_${k}`)
   ]
   
-
 
   useEffect(() => {
     const fetchDefaultWeek = async () => {
@@ -69,6 +69,21 @@ export default function MatchupTable() {
     fetchData()
   }, [week])
   
+  // 取得違規名單
+  const fetchViolationList = async (week) => {
+    const res = await fetch('/api/pitcher_violation')
+    const result = await res.json()
+    if (res.ok) {
+      setViolationList(result.filter(v => v.week === week))
+      // 比對結果印出到 console
+      console.log('本週違規名單:', result.filter(v => v.week === week))
+    }
+  }
+
+  useEffect(() => {
+    if (!week) return
+    fetchViolationList(week)
+  }, [week])
 
   const renderScoreTable = () => (
     <div className="mb-6">

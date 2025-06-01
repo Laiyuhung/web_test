@@ -4,7 +4,7 @@ import supabase from '@/lib/supabase'
 export async function GET(request) {
   const { data, error } = await supabase
     .from('pitcher_violation')
-    .select('id, week, manager_id, managers(team_name)')
+    .select('id, week, manager_id')
     .order('week', { ascending: true })
     .order('manager_id', { ascending: true })
 

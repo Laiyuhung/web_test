@@ -263,20 +263,32 @@ export async function POST(req) {
       })
     }
 
+    // === 新增：根據違規名單，投手項目排名時視為最差 ===
+    const { data: violationList, error: violationError } = await supabase
+      .from('pitcher_violation')
+      .select('manager_id')
+      .eq('week', week);
+    if (violationError) {
+      console.error('❌ 讀取違規名單失敗:', violationError.message);
+    }
+    const violationIds = (violationList || []).map(v => v.manager_id);
+
     const pitcherStats = ['W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
     const pitcherLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
 
     for (const stat of pitcherStats) {
       const isLowerBetter = pitcherLowerBetter.includes(stat)
-
+      // 暫存原始值
+      const originalVals = result.map(r => r.pitchers[stat])
+      // 排名用值，違規隊伍設為最差
       const values = result.map(r => ({
         team: r.team_name,
-        value: isNaN(r.pitchers[stat]) ? 0 : parseFloat(r.pitchers[stat]),
+        manager_id: r.manager_id,
+        value: violationIds.includes(r.manager_id)
+          ? (isLowerBetter ? Infinity : -1)
+          : (isNaN(r.pitchers[stat]) ? 0 : parseFloat(r.pitchers[stat]))
       }))
-
       values.sort((a, b) => isLowerBetter ? a.value - b.value : b.value - a.value)
-      console.log(`📊 [投手] 排名計算 - ${stat}:`, values)
-
       let i = 0
       const scores = {}
       while (i < values.length) {
@@ -289,10 +301,11 @@ export async function POST(req) {
         }
         i = j + 1
       }
-
-      result.forEach(r => {
+      result.forEach((r, idx) => {
         if (!r.pitchers.fantasyPoints) r.pitchers.fantasyPoints = {}
         r.pitchers.fantasyPoints[stat] = parseFloat(scores[r.team_name]?.toFixed(1) || '0.0')
+        // 還原原始值
+        r.pitchers[stat] = originalVals[idx]
       })
     }
 

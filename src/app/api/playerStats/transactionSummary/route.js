@@ -60,7 +60,7 @@ export async function POST(req) {
         : new Date().toISOString().slice(0, 10)
       // 新增 owner 欄位
       let owner = null
-      if ((tx.type === 'Add' || tx.type === 'Draft Add') && tx.manager_id && managerMap[tx.manager_id]) {
+      if ((tx.type === 'Add' || tx.type === 'Draft Add' || tx.type === 'Trade Add' || tx.type === 'Waiver Add') && tx.manager_id && managerMap[tx.manager_id]) {
         owner = managerMap[tx.manager_id]
       }
       intervals.push({
@@ -108,12 +108,15 @@ export async function POST(req) {
         const OBP = OBP_den ? (total.H + total.BB + total.HBP) / OBP_den : 0
         const SLG = total.AB ? total.TB / total.AB : 0
         const AVG = total.AB ? total.H / total.AB : 0
+        const OPS = OBP + SLG
+        const formattedAVG = AVG < 1 ? AVG.toFixed(3).slice(1) : AVG.toFixed(3)
+        const formattedOPS = OPS < 1 ? OPS.toFixed(3).slice(1) : OPS.toFixed(3)
         result.push({
           ...interval,
           stats: {
             ...total,
-            AVG: AVG.toFixed(3),
-            OPS: (OBP + SLG).toFixed(3)
+            AVG: formattedAVG,
+            OPS: formattedOPS
           }
         })
       } else {

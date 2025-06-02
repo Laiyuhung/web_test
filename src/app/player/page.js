@@ -1496,7 +1496,7 @@ export default function PlayerPage() {
                       <>
                         <tr className="bg-gray-50 text-left text-sm">
                           <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
-                            {seg.from} ~ {seg.to}｜{seg.type === 'Add' ? '持有' : seg.type === 'Drop' ? 'FA' : seg.type}
+                            {seg.from} ~ {seg.to}｜{seg.owner ? seg.owner : (seg.type === 'Drop' ? 'FA' : seg.type)}
                           </td>
                         </tr>
                         <tr>
@@ -1731,4 +1731,3 @@ export default function PlayerPage() {
   )
 }
 
-  

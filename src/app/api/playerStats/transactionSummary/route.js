@@ -34,14 +34,21 @@ export async function POST(req) {
     if (playerError || !playerData) return NextResponse.json({ error: '找不到球員' }, { status: 404 })
     const Player_no = playerData.Player_no
 
-    // 2. 撈出所有異動紀錄
+    // 2. 撈出所有異動紀錄（加上 manager_id）
     const { data: txs, error: txError } = await supabase
       .from('transactions')
-      .select('transaction_time, type')
+      .select('transaction_time, type, manager_id')
       .eq('Player_no', Player_no)
       .order('transaction_time', { ascending: true })
     if (txError) return NextResponse.json({ error: '異動查詢失敗' }, { status: 500 })
     if (!txs || txs.length === 0) return NextResponse.json({ error: '無異動紀錄' }, { status: 404 })
+
+    // 2.5 撈出所有 manager 對應表
+    const { data: managers, error: mgrErr } = await supabase
+      .from('managers')
+      .select('id, team_name')
+    const managerMap = {}
+    if (managers) managers.forEach(m => { managerMap[m.id] = m.team_name })
 
     // 3. 切分區間
     const intervals = []
@@ -51,11 +58,17 @@ export async function POST(req) {
       const to = (i + 1 < txs.length)
         ? getPrevDay(txs[i + 1].transaction_time.slice(0, 10))
         : '2025-11-30' // season end
+      // 新增 owner 欄位
+      let owner = null
+      if (tx.type === 'Add' && tx.manager_id && managerMap[tx.manager_id]) {
+        owner = managerMap[tx.manager_id]
+      }
       intervals.push({
         type: tx.type,
         from,
         to,
-        tx_time: tx.transaction_time
+        tx_time: tx.transaction_time,
+        owner
       })
     }
 

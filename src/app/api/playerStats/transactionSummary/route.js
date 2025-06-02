@@ -57,7 +57,7 @@ export async function POST(req) {
       const from = tx.transaction_time.slice(0, 10) // 異動當天
       const to = (i + 1 < txs.length)
         ? getPrevDay(txs[i + 1].transaction_time.slice(0, 10))
-        : '2025-11-30' // season end
+        : new Date().toISOString().slice(0, 10)
       // 新增 owner 欄位
       let owner = null
       if (tx.type === 'Add' && tx.manager_id && managerMap[tx.manager_id]) {

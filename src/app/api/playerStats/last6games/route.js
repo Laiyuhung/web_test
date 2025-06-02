@@ -134,7 +134,7 @@ export async function POST(req) {
       const TB = single + 2 * G2B + 3 * G3B + 4 * HR
       const OBP_den = AB + BB + HBP + SF
       const OBP = OBP_den ? (H + BB + HBP) / OBP_den : 0
-      const SLG = AB ? TB / AB : 0
+      const SLG = AB ? (TB / AB) : 0
       const AVG = AB ? (H / AB) : 0
       const OPS = OBP + SLG
 

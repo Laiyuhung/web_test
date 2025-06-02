@@ -138,9 +138,9 @@ export async function POST(req) {
       const AVG = AB ? (H / AB) : 0
       const OPS = OBP + SLG
 
-      // 修正格式：AVG、OPS 三位小數，前面補零
-      const formattedAVG = AVG.toFixed(3)
-      const formattedOPS = OPS.toFixed(3)
+      // 修正格式：AVG、OPS 三位小數，若 <1 則不顯示整數部分
+      const formattedAVG = AVG < 1 ? AVG.toFixed(3).slice(1) : AVG.toFixed(3)
+      const formattedOPS = OPS < 1 ? OPS.toFixed(3).slice(1) : OPS.toFixed(3)
 
 
       results.push({

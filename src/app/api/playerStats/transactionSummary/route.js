@@ -41,22 +41,6 @@ export async function POST(req) {
       .eq('Player_no', Player_no)
       .order('transaction_time', { ascending: true })
     if (txError) return NextResponse.json({ error: '異動查詢失敗' }, { status: 500 })
-    if (!txs || txs.length === 0) return NextResponse.json({ error: '無異動紀錄' }, { status: 404 })
-
-    // 2.5 撈出所有 manager 對應表
-    const { data: managers, error: mgrErr } = await supabase
-      .from('managers')
-      .select('id, team_name')
-    const managerMap = {}
-    if (managers) managers.forEach(m => { managerMap[m.id] = m.team_name })
-
-    // 3. 切分區間
-    const intervals = []
-    const SEASON_START = '2025-03-29'
-    const today = new Date().toISOString().slice(0, 10)
-    const isAddType = t => ['Add', 'Draft Add', 'Trade Add', 'Waiver Add'].includes(t)
-    const isDropType = t => ['Drop', 'Trade Drop', 'Waiver Drop'].includes(t)
-
     if (!txs || txs.length === 0) {
       // 沒有異動紀錄，直接給一段FA區間
       intervals.push({
@@ -67,65 +51,90 @@ export async function POST(req) {
         owner: null
       })
     } else {
-      // 如果第一筆異動不是 SEASON_START，補一段 FA
-      const firstTxDate = txs[0].transaction_time.slice(0, 10)
-      if (firstTxDate > SEASON_START) {
-        // 找到第一個 add 類型異動
-        let nextAddIdx = txs.findIndex(tx => isAddType(tx.type))
-        let to = nextAddIdx !== -1 ? txs[nextAddIdx].transaction_time.slice(0, 10) : today
+      // 2.5 撈出所有 manager 對應表
+      const { data: managers, error: mgrErr } = await supabase
+        .from('managers')
+        .select('id, team_name')
+      const managerMap = {}
+      if (managers) managers.forEach(m => { managerMap[m.id] = m.team_name })
+
+      // 3. 切分區間
+      const intervals = []
+      const SEASON_START = '2025-03-29'
+      const today = new Date().toISOString().slice(0, 10)
+      const isAddType = t => ['Add', 'Draft Add', 'Trade Add', 'Waiver Add'].includes(t)
+      const isDropType = t => ['Drop', 'Trade Drop', 'Waiver Drop'].includes(t)
+
+      if (!txs || txs.length === 0) {
+        // 沒有異動紀錄，直接給一段FA區間
         intervals.push({
           type: 'Drop',
           from: SEASON_START,
-          to,
+          to: today,
           tx_time: null,
           owner: null
         })
-      }
-      let i = 0
-      while (i < txs.length) {
-        const tx = txs[i]
-        const txDate = tx.transaction_time.slice(0, 10)
-        let owner = null
-        if (isAddType(tx.type) && tx.manager_id && managerMap[tx.manager_id]) {
-          owner = managerMap[tx.manager_id]
-        }
-        if (isAddType(tx.type)) {
-          // 找下一個 drop/FA
-          let j = i + 1
-          while (j < txs.length && !isDropType(txs[j].type)) j++
-          let to = j < txs.length ? txs[j].transaction_time.slice(0, 10) : today
+      } else {
+        // 如果第一筆異動不是 SEASON_START，補一段 FA
+        const firstTxDate = txs[0].transaction_time.slice(0, 10)
+        if (firstTxDate > SEASON_START) {
+          // 找到第一個 add 類型異動
+          let nextAddIdx = txs.findIndex(tx => isAddType(tx.type))
+          let to = nextAddIdx !== -1 ? txs[nextAddIdx].transaction_time.slice(0, 10) : today
           intervals.push({
-            type: tx.type,
-            from: txDate,
+            type: 'Drop',
+            from: SEASON_START,
             to,
-            tx_time: tx.transaction_time,
-            owner
-          })
-          i = j
-        } else if (isDropType(tx.type)) {
-          // 找下一個 add
-          let j = i + 1
-          while (j < txs.length && !isAddType(txs[j].type)) j++
-          let to = j < txs.length ? txs[j].transaction_time.slice(0, 10) : today
-          intervals.push({
-            type: tx.type,
-            from: txDate,
-            to,
-            tx_time: tx.transaction_time,
+            tx_time: null,
             owner: null
           })
-          i = j
-        } else {
-          // 其他型態，照舊
-          let to = (i + 1 < txs.length) ? getPrevDay(txs[i + 1].transaction_time.slice(0, 10)) : today
-          intervals.push({
-            type: tx.type,
-            from: txDate,
-            to,
-            tx_time: tx.transaction_time,
-            owner
-          })
-          i++
+        }
+        let i = 0
+        while (i < txs.length) {
+          const tx = txs[i]
+          const txDate = tx.transaction_time.slice(0, 10)
+          let owner = null
+          if (isAddType(tx.type) && tx.manager_id && managerMap[tx.manager_id]) {
+            owner = managerMap[tx.manager_id]
+          }
+          if (isAddType(tx.type)) {
+            // 找下一個 drop/FA
+            let j = i + 1
+            while (j < txs.length && !isDropType(txs[j].type)) j++
+            let to = j < txs.length ? txs[j].transaction_time.slice(0, 10) : today
+            intervals.push({
+              type: tx.type,
+              from: txDate,
+              to,
+              tx_time: tx.transaction_time,
+              owner
+            })
+            i = j
+          } else if (isDropType(tx.type)) {
+            // 找下一個 add
+            let j = i + 1
+            while (j < txs.length && !isAddType(txs[j].type)) j++
+            let to = j < txs.length ? txs[j].transaction_time.slice(0, 10) : today
+            intervals.push({
+              type: tx.type,
+              from: txDate,
+              to,
+              tx_time: tx.transaction_time,
+              owner: null
+            })
+            i = j
+          } else {
+            // 其他型態，照舊
+            let to = (i + 1 < txs.length) ? getPrevDay(txs[i + 1].transaction_time.slice(0, 10)) : today
+            intervals.push({
+              type: tx.type,
+              from: txDate,
+              to,
+              tx_time: tx.transaction_time,
+              owner
+            })
+            i++
+          }
         }
       }
     }

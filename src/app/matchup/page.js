@@ -57,6 +57,8 @@ export default function MatchupTable() {
             })
           }
         })
+        // 👉 直接印出 /api/weekly_stats_by_manager 回傳的資料
+        console.log('weekly_stats_by_manager result:', result)
         setData(result)
   
         // 🔥 加這段：撈該週的日期區間

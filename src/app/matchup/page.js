@@ -49,6 +49,14 @@ export default function MatchupTable() {
         // 排名處理：依照 fantasyPoints.Total 排序
         result.sort((a, b) => parseFloat(b.fantasyPoints?.Total || '0') - parseFloat(a.fantasyPoints?.Total || '0'))
         result.forEach((r, i) => r.rank = i + 1)
+        // 👉 Console 後端傳來的每隊 fantasyPoints
+        result.forEach((r) => {
+          if (r.fantasyPoints) {
+            Object.entries(r.fantasyPoints).forEach(([k, v]) => {
+              console.log('team:', r.team_name, k + ':', v)
+            })
+          }
+        })
         setData(result)
   
         // 🔥 加這段：撈該週的日期區間

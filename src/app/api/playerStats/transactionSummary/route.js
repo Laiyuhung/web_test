@@ -20,6 +20,13 @@ function getPrevDay(dateStr) {
   return d.toISOString().slice(0, 10)
 }
 
+// 轉台灣時間（+8）並取日期
+function toTaiwanDateStr(utcStr) {
+  const d = new Date(utcStr)
+  d.setHours(d.getHours() + 8)
+  return d.toISOString().slice(0, 10)
+}
+
 export async function POST(req) {
   try {
     const { name, type } = await req.json()
@@ -67,10 +74,10 @@ export async function POST(req) {
       })
     } else {
       // 如果第一筆異動不是 SEASON_START，補一段 FA
-      const firstTxDate = txs[0].transaction_time.slice(0, 10)
+      const firstTxDate = toTaiwanDateStr(txs[0].transaction_time)
       if (firstTxDate > SEASON_START) {
         let nextAddIdx = txs.findIndex(tx => isAddType(tx.type))
-        let to = nextAddIdx !== -1 ? txs[nextAddIdx].transaction_time.slice(0, 10) : today
+        let to = nextAddIdx !== -1 ? toTaiwanDateStr(txs[nextAddIdx].transaction_time) : today
         intervals.push({
           type: 'Drop',
           from: SEASON_START,
@@ -82,7 +89,7 @@ export async function POST(req) {
       let i = 0
       while (i < txs.length) {
         const tx = txs[i]
-        const txDate = tx.transaction_time.slice(0, 10)
+        const txDate = toTaiwanDateStr(tx.transaction_time)
         let owner = null
         if (isAddType(tx.type) && tx.manager_id && managerMap[tx.manager_id]) {
           owner = managerMap[tx.manager_id]
@@ -91,7 +98,7 @@ export async function POST(req) {
           // 找下一個 drop/FA
           let j = i + 1
           while (j < txs.length && !isDropType(txs[j].type)) j++
-          let to = j < txs.length ? txs[j].transaction_time.slice(0, 10) : today
+          let to = j < txs.length ? toTaiwanDateStr(txs[j].transaction_time) : today
           intervals.push({
             type: tx.type,
             from: txDate,
@@ -104,7 +111,7 @@ export async function POST(req) {
           // 找下一個 add
           let j = i + 1
           while (j < txs.length && !isAddType(txs[j].type)) j++
-          let to = j < txs.length ? txs[j].transaction_time.slice(0, 10) : today
+          let to = j < txs.length ? toTaiwanDateStr(txs[j].transaction_time) : today
           intervals.push({
             type: tx.type,
             from: txDate,
@@ -115,7 +122,7 @@ export async function POST(req) {
           i = j
         } else {
           // 其他型態，照舊
-          let to = (i + 1 < txs.length) ? getPrevDay(txs[i + 1].transaction_time.slice(0, 10)) : today
+          let to = (i + 1 < txs.length) ? getPrevDay(toTaiwanDateStr(txs[i + 1].transaction_time)) : today
           intervals.push({
             type: tx.type,
             from: txDate,

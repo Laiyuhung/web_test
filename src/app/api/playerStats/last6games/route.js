@@ -138,8 +138,9 @@ export async function POST(req) {
       const AVG = AB ? (H / AB) : 0
       const OPS = OBP + SLG
 
-      const formattedAVG = `.${(AVG.toFixed(3) + '').split('.')[1] || '000'}`
-      const formattedOPS = `.${(OPS.toFixed(3) + '').split('.')[1] || '000'}`
+      // 修正格式：AVG、OPS 三位小數，前面補零
+      const formattedAVG = AVG.toFixed(3)
+      const formattedOPS = OPS.toFixed(3)
 
 
       results.push({

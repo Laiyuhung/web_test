@@ -958,10 +958,8 @@ export default function PlayerPage() {
                         onClick={async () => {
                           setSelectedPlayerDetail(p)
                           setDetailDialogOpen(true)
-                        
                           // Stat summary
                           const summary = await fetchPlayerStatSummary(p.Name, type.toLowerCase())
-                        
                           // Last 6 games
                           const res = await fetch('/api/playerStats/last6games', {
                             method: 'POST',
@@ -969,16 +967,15 @@ export default function PlayerPage() {
                             body: JSON.stringify({ name: p.Name, team: p.Team, type: type.toLowerCase() })
                           })
                           const last6 = await res.json()
-                          
-                          console.log('🐛 last6 回傳內容:', last6)
-                        
+                          // 異動區間 summary
+                          const txSummary = await fetchPlayerTransactionSummary(p.Name, type)
                           // Merge
                           setSelectedPlayerDetail(prev => ({
                             ...prev,
                             statSummary: summary,
-                            last6games: last6.recentGames || [] // 改這行，避免 undefined  或錯誤型別
+                            last6games: last6.recentGames || [],
+                            transactionSummary: txSummary || []
                           }))
-                          
                         }}
                         
                       >
@@ -1392,6 +1389,7 @@ export default function PlayerPage() {
           <TabsList className="mb-2">
             <TabsTrigger value="summary">統計區間</TabsTrigger>
             <TabsTrigger value="last6">前六場</TabsTrigger>
+            <TabsTrigger value="txsummary">異動區間</TabsTrigger>
           </TabsList>
 
           {/* 🔹 summary 區塊 */}
@@ -1468,9 +1466,42 @@ export default function PlayerPage() {
               </div>
             )}
           </TabsContent>
+
+          {/* 🔹 異動區間 區塊 */}
+          <TabsContent value="txsummary">
+            {selectedPlayerDetail?.transactionSummary && selectedPlayerDetail.transactionSummary.length > 0 && (
+              <div className="overflow-x-auto">
+                <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="border px-2" colSpan={type === 'Batter' ? 13 : 13}>區間/持有狀態</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedPlayerDetail.transactionSummary.map((seg, idx) => (
+                      <>
+                        <tr className="bg-gray-50 text-left text-sm">
+                          <td colSpan={type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                            {seg.from} ~ {seg.to}｜{seg.type === 'Add' ? '持有' : seg.type === 'Drop' ? 'FA' : seg.type}
+                          </td>
+                        </tr>
+                        <tr>
+                          {(type === 'Batter'
+                            ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                            : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                          ).map(k => (
+                            <td key={k} className="border px-2 py-1 text-center">{seg.stats?.[k] ?? '-'}</td>
+                          ))}
+                        </tr>
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </AlertDialogDescription>
-
     </AlertDialogHeader>
     <AlertDialogFooter className="sticky bottom-0 bg-white border-t pt-2">
       <AlertDialogAction onClick={() => setDetailDialogOpen(false)}>
@@ -1682,7 +1713,6 @@ export default function PlayerPage() {
 </AlertDialog>
 
 
-
-    </>
+  </>
   )
 }

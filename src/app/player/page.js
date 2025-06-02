@@ -518,6 +518,20 @@ export default function PlayerPage() {
     return false
   }
   
+  // 取得異動區間 summary
+  const fetchPlayerTransactionSummary = async (playerName, type) => {
+    try {
+      const res = await fetch('/api/playerStats/transactionSummary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: playerName, type: type.toLowerCase() })
+      })
+      if (!res.ok) return []
+      return await res.json()
+    } catch (e) {
+      return []
+    }
+  }
   
   
   const fetchWatchedList = async () => {
@@ -1716,3 +1730,5 @@ export default function PlayerPage() {
   </>
   )
 }
+
+  

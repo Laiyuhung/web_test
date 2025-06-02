@@ -52,6 +52,20 @@ export async function POST(req) {
 
     // 3. 切分區間
     const intervals = []
+    // 新增：如果第一筆異動不是 2025-03-29，補一段 FA
+    const SEASON_START = '2025-03-29'
+    if (txs.length > 0) {
+      const firstTxDate = txs[0].transaction_time.slice(0, 10)
+      if (firstTxDate > SEASON_START) {
+        intervals.push({
+          type: 'Drop',
+          from: SEASON_START,
+          to: getPrevDay(firstTxDate),
+          tx_time: null,
+          owner: null
+        })
+      }
+    }
     for (let i = 0; i < txs.length; i++) {
       const tx = txs[i]
       const from = tx.transaction_time.slice(0, 10) // 異動當天

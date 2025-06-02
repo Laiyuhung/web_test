@@ -77,7 +77,7 @@ export async function POST(req) {
       const firstTxDate = toTaiwanDateStr(txs[0].transaction_time)
       if (firstTxDate > SEASON_START) {
         let nextAddIdx = txs.findIndex(tx => isAddType(tx.type))
-        let to = nextAddIdx !== -1 ? toTaiwanDateStr(txs[nextAddIdx].transaction_time) : today
+        let to = nextAddIdx !== -1 ? getPrevDay(toTaiwanDateStr(txs[nextAddIdx].transaction_time)) : today
         intervals.push({
           type: 'Drop',
           from: SEASON_START,
@@ -94,11 +94,16 @@ export async function POST(req) {
         if (isAddType(tx.type) && tx.manager_id && managerMap[tx.manager_id]) {
           owner = managerMap[tx.manager_id]
         }
+        // 跳過 TRADE DROP 區間
+        if (tx.type === 'Trade Drop') {
+          i++;
+          continue;
+        }
         if (isAddType(tx.type)) {
           // 找下一個 drop/FA
           let j = i + 1
           while (j < txs.length && !isDropType(txs[j].type)) j++
-          let to = j < txs.length ? toTaiwanDateStr(txs[j].transaction_time) : today
+          let to = j < txs.length ? getPrevDay(toTaiwanDateStr(txs[j].transaction_time)) : today
           intervals.push({
             type: tx.type,
             from: txDate,
@@ -111,7 +116,7 @@ export async function POST(req) {
           // 找下一個 add
           let j = i + 1
           while (j < txs.length && !isAddType(txs[j].type)) j++
-          let to = j < txs.length ? toTaiwanDateStr(txs[j].transaction_time) : today
+          let to = j < txs.length ? getPrevDay(toTaiwanDateStr(txs[j].transaction_time)) : today
           intervals.push({
             type: tx.type,
             from: txDate,

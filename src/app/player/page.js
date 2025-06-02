@@ -1490,6 +1490,14 @@ export default function PlayerPage() {
                     <tr>
                       <th className="border px-2" colSpan={type === 'Batter' ? 13 : 13}>區間/持有狀態</th>
                     </tr>
+                    <tr>
+                      {(type === 'Batter'
+                        ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                        : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                      ).map(k => (
+                        <th key={k} className="border px-2">{k}</th>
+                      ))}
+                    </tr>
                   </thead>
                   <tbody>
                     {selectedPlayerDetail.transactionSummary.map((seg, idx) => (

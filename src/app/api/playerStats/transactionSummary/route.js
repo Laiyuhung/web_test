@@ -60,7 +60,7 @@ export async function POST(req) {
         : new Date().toISOString().slice(0, 10)
       // 新增 owner 欄位
       let owner = null
-      if (tx.type === 'Add' && tx.manager_id && managerMap[tx.manager_id]) {
+      if ((tx.type === 'Add' || tx.type === 'Draft Add') && tx.manager_id && managerMap[tx.manager_id]) {
         owner = managerMap[tx.manager_id]
       }
       intervals.push({

@@ -1772,7 +1772,7 @@ export default function RosterPage() {
                     }
                   
                     const now = new Date()
-                    const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Taipei' }))
+                    const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
                     console.log('🕒 現在台灣時間:', taiwanNow.toISOString())
                   
                     const gameDateTime = getGameDateTime(moveTarget.Team)

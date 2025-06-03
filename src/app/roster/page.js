@@ -2237,44 +2237,47 @@ export default function RosterPage() {
                   const data = await res.json()
                   if (!res.ok) throw new Error(data.error || 'Drop 失敗')
 
-                  showMessage(`✅ 已成功 Drop ${p.Name}`, 'success')
+                  
+                  if (res.ok) {
+                    showMessage(`✅ 已成功 Drop ${p.Name}`, 'success')
 
-                  // ✅ 成功後發信
-                  const recipients = [
-                    "mar.hung.0708@gmail.com",
-                    "laiyuhung921118@gmail.com",
-                    "peter0984541203@gmail.com",
-                    "anthonylin6507@gmail.com"
-                  ];
-                  for (const email of recipients) {
-                    await fetch('/api/email', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        to: email,
-                        subject: 'CPBL Fantasy transaction 通知',
-                        html: `
-                          <h2>${type === 'Add' ? 'Add' : 'Drop'} 通知</h2>
-                          <p><strong>${managerMap[userId]}</strong> 已成功${type === 'Add' ? 'Add' : 'Drop'}球員：</p>
-                          <ul><li><strong>球員：</strong> ${confirmPlayer.Name}</li></ul>
-                          <p>時間：${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}</p>
-                        `
+                    // ✅ 成功後發信
+                    const recipients = [
+                      "mar.hung.0708@gmail.com",
+                      "laiyuhung921118@gmail.com",
+                      "peter0984541203@gmail.com",
+                      "anthonylin6507@gmail.com"
+                    ];
+                    for (const email of recipients) {
+                      await fetch('/api/email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          to: email,
+                          subject: 'CPBL Fantasy transaction 通知',
+                          html: `
+                            <h2>${type === 'Add' ? 'Add' : 'Drop'} 通知</h2>
+                            <p><strong>${managerMap[userId]}</strong> 已成功${type === 'Add' ? 'Add' : 'Drop'}球員：</p>
+                            <ul><li><strong>球員：</strong> ${confirmPlayer.Name}</li></ul>
+                            <p>時間：${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}</p>
+                          `
+                        })
                       })
-                    })
-                  }
+                    }
 
-                  if (type === 'Drop') {
-                    fetch('/api/check_trade_impact', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        playerName: confirmPlayer.Name,
-                        managerId: userId
-                      }),
-                    })
-                  }
+                    if (type === 'Drop') {
+                      fetch('/api/check_trade_impact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          playerName: confirmPlayer.Name,
+                          managerId: userId
+                        }),
+                      })
+                    }
 
-                  await reloadRoster()
+                    await reloadRoster()
+                  }
                 } catch (err) {
                   console.error('❌ Drop 錯誤:', err)
                   showMessage(`❌ Drop 失敗：${err.message}`, 'error')

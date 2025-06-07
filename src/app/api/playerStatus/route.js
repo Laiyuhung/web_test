@@ -69,7 +69,7 @@ export async function GET() {
         const lastDrop = playerTx
           .filter(t => ['Drop', 'Waiver Drop'].includes(t.type))
           .sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
-        const addList = playerTx.filter(t => t.type.include('Add'))
+        const addList = playerTx.filter(t => ['Add', 'Waiver Add', 'Draft Add'].includes(t.type))
         const lastAdd = addList
           .sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
 

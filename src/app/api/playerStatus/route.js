@@ -67,7 +67,7 @@ export async function GET() {
         }
       } else if (addCount - dropCount === 0) {
         const lastDrop = playerTx
-          .filter(t => t.type === 'Drop')
+          .filter(t => ['Drop', 'Trade Drop'].includes(t.type))
           .sort((a, b) => new Date(b.transaction_time) - new Date(a.transaction_time))[0]
         const addList = playerTx.filter(t => t.type.includes('Add'))
         const lastAdd = addList

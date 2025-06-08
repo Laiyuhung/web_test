@@ -1314,7 +1314,7 @@ export default function PlayerPage() {
       <AlertDialogDescription className="relative px-1">
         <div className="sticky top-0 z-20 bg-white border-b py-2 px-2 flex items-start justify-between gap-4 text-sm text-gray-700">
           
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-4"> 
             {/* 左側文字區塊 */}
             <div className="space-y-1 text-left">
               <div>team：{selectedPlayerDetail?.Team}</div>

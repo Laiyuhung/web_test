@@ -1561,6 +1561,13 @@ export default function PlayerPage() {
       <AlertDialogAction
         disabled={!dropPlayer}
         onClick={async () => {
+          // 強制 Drop 也要檢查是否已開賽且先發
+          const dropObj = myRosterPlayers.find(p => p.Name === dropPlayer);
+          if (dropObj && isDropBlocked(dropObj)) {
+            setSuccessMessage('⚠️ 該球員已開賽，無法進行 Drop 操作');
+            setSuccessDialogOpen(true);
+            return;
+          }
           const res = await fetch('/api/transaction', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

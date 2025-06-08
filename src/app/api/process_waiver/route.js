@@ -86,6 +86,29 @@ async function handleWaiver() {
         return NextResponse.json({ message: '❌ 限制不符，處理結束' })
       }
 
+      // 在設為 Success 前，檢查 drop player 是否在隊上
+      if (w.drop_player) {
+        const { data: dropAssigned, error: dropAssignedError } = await supabase
+          .from('assigned_position_history')
+          .select('player_name')
+          .eq('date', taiwanDate)
+          .eq('manager_id', managerId)
+          .eq('player_name', w.drop_player)
+
+        if (dropAssignedError) {
+          console.warn('⚠️ 查詢 drop player 是否在隊上失敗:', dropAssignedError.message)
+        }
+
+        if (!dropAssigned || dropAssigned.length === 0) {
+          // 沒有在隊上，waiver fail，結束本輪
+          await supabase.from('waiver')
+            .update({ status: 'Fail (drop not on team)' })
+            .eq('apply_no', w.apply_no)
+          console.log('❌ Drop player 不在隊上，處理結束')
+          return NextResponse.json({ message: '❌ Drop player 不在隊上，處理結束' })
+        }
+      }
+
       await supabase.from('waiver')
         .update({ status: 'Success' })
         .eq('apply_no', w.apply_no)
@@ -169,27 +192,6 @@ async function handleWaiver() {
 
 
       if (w.drop_player) {
-        // 先檢查當天 assigned_position_history 是否有 drop player
-        const { data: dropAssigned, error: dropAssignedError } = await supabase
-          .from('assigned_position_history')
-          .select('player_name')
-          .eq('date', taiwanDate)
-          .eq('manager_id', managerId)
-          .eq('player_name', w.drop_player)
-
-        if (dropAssignedError) {
-          console.warn('⚠️ 查詢 drop player 是否在隊上失敗:', dropAssignedError.message)
-        }
-
-        if (!dropAssigned || dropAssigned.length === 0) {
-          // 沒有在隊上，waiver fail，結束本輪
-          await supabase.from('waiver')
-            .update({ status: 'Fail (drop not on team)' })
-            .eq('apply_no', w.apply_no)
-          console.log('❌ Drop player 不在隊上，處理結束')
-          return NextResponse.json({ message: '❌ Drop player 不在隊上，處理結束' })
-        }
-
         const { data: dropPlayerData } = await supabase
           .from('playerslist')
           .select('Player_no')

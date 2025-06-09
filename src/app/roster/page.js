@@ -2111,7 +2111,15 @@ export default function RosterPage() {
             return (
               <div key={date} className="border rounded-lg p-4 shadow-sm bg-gray-50 mb-6">
                 {/* 日期 */}
-                <div className="font-bold text-[#0155A0] text-base mb-4">{date}</div>
+                <div className="font-bold text-[#0155A0] text-base mb-4">
+                  {(() => {
+                    // 將 off_waiver 轉成 mm/dd 格式
+                    const d = new Date(date)
+                    const mm = d.getMonth() + 1
+                    const dd = d.getDate()
+                    return `off waivers ${mm}/${dd}`
+                  })()}
+                </div>
                 {/* 每一筆 waiver（每一個 box） */}
                 <div className="flex flex-col gap-4">
                   {sortedWaivers.map((w, idx) => (

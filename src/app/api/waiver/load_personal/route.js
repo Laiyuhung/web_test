@@ -11,11 +11,20 @@ export async function POST(req) {
       return NextResponse.json({ error: '缺少 manager_id' }, { status: 400 })
     }
 
+    // 取得台灣時間（UTC+8）
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const taiwan = new Date(utc + 8 * 60 * 60 * 1000);
+    const yyyy = taiwan.getFullYear();
+    const mm = String(taiwan.getMonth() + 1).padStart(2, '0');
+    const dd = String(taiwan.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
     const { data, error } = await supabase
       .from('waiver')
       .select('*')
       .eq('manager', manager_id)
-      .eq('status', 'pending')
+      .or(`status.eq.pending,off_waiver.gte.${todayStr}`)
 
     if (error) {
       console.error('❌ 查詢失敗:', error)

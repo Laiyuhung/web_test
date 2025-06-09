@@ -2088,99 +2088,96 @@ export default function RosterPage() {
 </AlertDialog>
 
 <AlertDialog open={waiverDialogOpen} onOpenChange={setWaiverDialogOpen}>
-<AlertDialogContent className="max-w-xl w-[90vw]">
-  <AlertDialogHeader>
-    <AlertDialogTitle>Waiver 申請紀錄</AlertDialogTitle>
-  </AlertDialogHeader>
+    <AlertDialogContent className="max-w-xl w-[90vw]">
+      <AlertDialogHeader>
+        <AlertDialogTitle>Waiver 申請紀錄</AlertDialogTitle>
+      </AlertDialogHeader>
 
-  <div className="mt-2 text-sm">
-    {waiverList.length === 0 ? (
-      <div className="text-gray-500 text-sm">目前沒有 pending 的 Waiver</div>
-    ) : (
-      Object.entries(
-        waiverList.reduce((acc, w) => {
-          const date = w.off_waiver
-          if (!acc[date]) acc[date] = []
-          acc[date].push(w)
-          return acc
-        }, {})
-      ).map(([date, waivers]) => (
-        <div key={date} className="border rounded-lg p-4 shadow-sm bg-gray-50 mb-6">
-          {/* 日期 */}
-          <div className="font-bold text-[#0155A0] text-base mb-4">{date}</div>
+      {/* 滾輪區塊 */}
+      <div className="mt-2 text-sm max-h-[400px] overflow-y-auto">
+        {waiverList.length === 0 ? (
+          <div className="text-gray-500 text-sm">目前沒有 pending 的 Waiver</div>
+        ) : (
+          Object.entries(
+            waiverList.reduce((acc, w) => {
+              const date = w.off_waiver
+              if (!acc[date]) acc[date] = []
+              acc[date].push(w)
+              return acc
+            }, {})
+          ).map(([date, waivers]) => (
+            <div key={date} className="border rounded-lg p-4 shadow-sm bg-gray-50 mb-6">
+              {/* 日期 */}
+              <div className="font-bold text-[#0155A0] text-base mb-4">{date}</div>
 
-          {/* 每一筆 waiver（每一個 box） */}
-          <div className="flex flex-col gap-4">
-            {waivers.map((w, idx) => (
-              <div key={idx} className="border rounded-md bg-white p-3 shadow relative">
+              {/* 每一筆 waiver（每一個 box） */}
+              <div className="flex flex-col gap-4">
+                {waivers.map((w, idx) => (
+                  <div key={idx} className="border rounded-md bg-white p-3 shadow relative">
+                    {/* Priority 與 🔼 上方移動按鈕同一列 */}
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="text-xs text-gray-500 font-bold">Priority: {w.personal_priority}</div>
+                      <button
+                        onClick={() => moveWaiver(date, idx, 'up')}
+                        className="text-gray-400 hover:text-black text-2xl"
+                        disabled={idx === 0}
+                      >▲</button>
+                    </div>
 
-                {/* Priority 與 🔼 上方移動按鈕同一列 */}
-                <div className="flex justify-between items-center mb-2">
-                  {/* <div className="text-xs text-gray-500 font-bold">id: {w.apply_no}</div> */}
-                  <div className="text-xs text-gray-500 font-bold">Priority: {w.personal_priority}</div>
-                  <button
-                    onClick={() => moveWaiver(date, idx, 'up')}
-                    className="text-gray-400 hover:text-black text-2xl"
-                    disabled={idx === 0}
-                  >
-                    ▲
-                  </button>
-                </div>
+                    {/* ➕ Add player */}
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-green-600 font-bold text-lg">+</span>
+                      <div className="text-sm text-gray-800">{w.add_player}</div>
+                      <div className="text-xs text-gray-500 font-bold">Waiver Claim</div>
+                    </div>
 
-                {/* ➕ Add player */}
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-green-600 font-bold text-lg">+</span>
-                  <div className="text-sm text-gray-800">{w.add_player}</div>
-                  <div className="text-xs text-gray-500 font-bold">Waiver Claim</div>
-                </div>
+                    {/* ➖ Drop player */}
+                    {w.drop_player && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-red-600 font-bold text-lg">-</span>
+                        <div className="text-sm text-gray-800">{w.drop_player}</div>
+                        <div className="text-xs text-gray-500 font-bold">To Waivers</div>
+                      </div>
+                    )}
 
-                {/* ➖ Drop player */}
-                {w.drop_player && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-red-600 font-bold text-lg">-</span>
-                    <div className="text-sm text-gray-800">{w.drop_player}</div>
-                    <div className="text-xs text-gray-500 font-bold">To Waivers</div>
+                    {/* 狀態顯示或 Cancel 按鈕 */}
+                    <div className="mt-4 flex items-center justify-between">
+                      {w.status === 'pending' ? (
+                        <button
+                          onClick={() => cancelWaiver(w.apply_no)}
+                          className="text-xs text-red-500 hover:text-red-700 border border-red-300 px-2 py-1 rounded"
+                        >
+                          Cancel
+                        </button>
+                      ) : (
+                        <span className={
+                          w.status === 'accepted'
+                            ? 'bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-semibold'
+                            : w.status === 'canceled' || w.status === 'rejected'
+                            ? 'bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-semibold'
+                            : 'bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-semibold'
+                        }>
+                          {w.status.charAt(0).toUpperCase() + w.status.slice(1)}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => moveWaiver(date, idx, 'down')}
+                        className="text-gray-400 hover:text-black text-2xl"
+                        disabled={idx === waivers.length - 1}
+                      >▼</button>
+                    </div>
                   </div>
-                )}
-
-                {/* 🔽 下方按鈕：Cancel 與 ↓ */}
-                <div className="mt-4 flex items-center justify-between">
-                  <button
-                    onClick={() => cancelWaiver(w.apply_no)}
-                    className="text-xs text-red-500 hover:text-red-700 border border-red-300 px-2 py-1 rounded"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => moveWaiver(date, idx, 'down')}
-                    className="text-gray-400 hover:text-black text-2xl"
-                    disabled={idx === waivers.length - 1}
-                  >
-                    ▼
-                  </button>
-                </div>
-
-
-
+                ))}
               </div>
-
-
-
-            ))}
-          </div>
-        </div>
-
-      ))
-    )}
-  </div>
-
-
-  <AlertDialogFooter>
-    <AlertDialogCancel>關閉</AlertDialogCancel>
-  </AlertDialogFooter>
-</AlertDialogContent>
-</AlertDialog>
-
+            </div>
+          ))
+        )}
+      </div>
+      <AlertDialogFooter>
+        <AlertDialogCancel>關閉</AlertDialogCancel>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 
 <AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
   <AlertDialogContent className="w-full max-w-[95vw] max-h-[80vh] overflow-y-auto px-4">

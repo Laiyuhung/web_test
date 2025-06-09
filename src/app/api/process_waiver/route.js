@@ -68,27 +68,7 @@ async function handleWaiver() {
       }
 
       if (!w.add_player) continue
-      assignedMap[w.add_player] = 'BN'
-      if (w.drop_player) delete assignedMap[w.drop_player]
-
-      const assignedEntries = Object.entries(assignedMap)
-      const active = ([, pos]) => !['NA', 'NA(備用)'].includes(pos)
-
-      const foreignPlayers = assignedEntries.filter(([n]) => isForeign(n))
-      const activeForeign = foreignPlayers.filter(([, pos]) => active([, pos])).length
-      const totalForeign = foreignPlayers.length
-      const activeTotal = assignedEntries.filter(([, pos]) => active([, pos])).length
-
-      console.log(`🔢 模擬後：洋將 OnTeam=${totalForeign}，Active=${activeForeign}，總 Active=${activeTotal}`)
-
-      if (activeForeign > 3 || totalForeign > 4 || activeTotal > 26) {
-        await supabase.from('waiver')
-          .update({ status: 'Fail (roster limit)' })
-          .eq('apply_no', w.apply_no)
-        console.log('❌ 限制不符，處理結束')
-        return NextResponse.json({ message: '❌ 限制不符，處理結束' })
-      }
-
+      
       // 在設為 Success 前，檢查 drop player 是否在隊上
       if (w.drop_player) {
         const { data: dropAssigned, error: dropAssignedError } = await supabase
@@ -111,6 +91,29 @@ async function handleWaiver() {
           return NextResponse.json({ message: '❌ Drop player 不在隊上，處理結束' })
         }
       }
+      
+      assignedMap[w.add_player] = 'BN'
+      if (w.drop_player) delete assignedMap[w.drop_player]
+
+      const assignedEntries = Object.entries(assignedMap)
+      const active = ([, pos]) => !['NA', 'NA(備用)'].includes(pos)
+
+      const foreignPlayers = assignedEntries.filter(([n]) => isForeign(n))
+      const activeForeign = foreignPlayers.filter(([, pos]) => active([, pos])).length
+      const totalForeign = foreignPlayers.length
+      const activeTotal = assignedEntries.filter(([, pos]) => active([, pos])).length
+
+      console.log(`🔢 模擬後：洋將 OnTeam=${totalForeign}，Active=${activeForeign}，總 Active=${activeTotal}`)
+
+      if (activeForeign > 3 || totalForeign > 4 || activeTotal > 26) {
+        await supabase.from('waiver')
+          .update({ status: 'Fail (roster limit)' })
+          .eq('apply_no', w.apply_no)
+        console.log('❌ 限制不符，處理結束')
+        return NextResponse.json({ message: '❌ 限制不符，處理結束' })
+      }
+
+      
 
       await supabase.from('waiver')
         .update({ status: 'Success' })

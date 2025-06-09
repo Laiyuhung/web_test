@@ -20,7 +20,7 @@ async function handleWaiver() {
 
     const [waiverRes, priorityRes, playerRes] = await Promise.all([
       supabase.from('waiver').select('*').eq('off_waiver', taiwanDate).eq('status', 'pending'),
-      supabase.from('waiver_priority').select('id, priority').order('priority', { ascending: false }),
+      supabase.from('waiver_priority').select('id, priority').order('priority', { ascending: true }),
       supabase.from('playerslist').select('Name, identity')
     ])
 

@@ -145,10 +145,10 @@ export default function HomePage() {
       {recentTransactions.map((t, i) => {
         let symbol = '⇄'
         let color = 'text-blue-600'
-        if (t.type === 'Add') {
+        if (t.type === 'Add' || t.type === 'Draft Add') {
           symbol = '＋'
           color = 'text-green-600'
-        } else if (t.type === 'Drop') {
+        } else if (t.type === 'Drop' || t.type === 'Waiver Drop') {
           symbol = '－'
           color = 'text-red-600'
         } else if (t.type === 'Waiver Add') {

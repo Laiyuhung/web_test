@@ -40,7 +40,10 @@ async function handleWaiver() {
 
     const priorityList = priorities.map(p => p.id)
 
-    for (const managerId of priorityList) {
+    for (let i = 0; i < priorityList.length; i++) {
+      const managerId = priorityList[i];
+      const managerPriority = priorities.find(p => p.id === managerId)?.priority;
+      console.log(`[順位檢查] 處理順位第${i + 1}位 managerId=${managerId}，priority=${managerPriority}`);
       const managerWaivers = waivers
         .filter(w => w.manager === managerId)
         .sort((a, b) => a.personal_priority - b.personal_priority)

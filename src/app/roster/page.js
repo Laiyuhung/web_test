@@ -2419,7 +2419,7 @@ export default function RosterPage() {
                     <tr>
                       <th className="border px-2">日期</th>
                       <th className="border px-2">對手</th>
-                      {(selectedPlayerDetail.type === 'batter'
+                      {(selectedPlayerDetail.type === 'Batter'
                         ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                         : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                       ).map(k => (
@@ -2432,7 +2432,7 @@ export default function RosterPage() {
                       <tr key={idx}>
                         <td className="border px-2 py-1">{game.game_date}</td>
                         <td className="border px-2 py-1">{game.opponent}</td>
-                        {(selectedPlayerDetail.type === 'batter'
+                        {(selectedPlayerDetail.type === 'Batter'
                           ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                           : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                         ).map(k => (
@@ -2446,17 +2446,17 @@ export default function RosterPage() {
             )}
           </TabsContent>
 
-          {/* 🔹 異動區間 區塊
+          🔹 異動區間 區塊
           <TabsContent value="txsummary">
             {selectedPlayerDetail?.transactionSummary && selectedPlayerDetail.transactionSummary.length > 0 && (
               <div className="overflow-x-auto">
                 <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="border px-2" colSpan={selectedPlayerDetail.type === 'batter' ? 13 : 13}>區間/持有狀態</th>
+                      <th className="border px-2" colSpan={selectedPlayerDetail.type === 'Batter' ? 13 : 13}>區間/持有狀態</th>
                     </tr>
                     <tr>
-                      {(selectedPlayerDetail.type === 'batter'
+                      {(selectedPlayerDetail.type === 'Batter'
                         ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                         : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                       ).map(k => (
@@ -2468,12 +2468,12 @@ export default function RosterPage() {
                     {selectedPlayerDetail.transactionSummary.map((seg, idx) => (
                       <>
                         <tr className="bg-gray-50 text-left text-sm">
-                          <td colSpan={selectedPlayerDetail.type === 'batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                          <td colSpan={selectedPlayerDetail.type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
                             {seg.from} ~ {seg.to}｜{seg.owner ? seg.owner : (seg.type === 'Drop' ? 'FA' : seg.type)}
                           </td>
                         </tr>
                         <tr>
-                          {(selectedPlayerDetail.type === 'batter'
+                          {(selectedPlayerDetail.type === 'Batter'
                             ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                             : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                           ).map(k => (
@@ -2486,7 +2486,7 @@ export default function RosterPage() {
                 </table>
               </div>
             )}
-          </TabsContent> */}
+          </TabsContent>
 
 
 

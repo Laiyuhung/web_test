@@ -2373,13 +2373,13 @@ export default function RosterPage() {
 
           {/* 🔹 summary 區塊 */}
           <TabsContent value="summary">
-            {console.log('🧪 summary tab 顯示中，type:', selectedPlayerDetail?.type)}
+            {/* {console.log('🧪 summary tab 顯示中，type:', selectedPlayerDetail?.type)} */}
             {selectedPlayerDetail?.statSummary && (
               <div className="overflow-x-auto">
                 <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
                   <thead className="bg-gray-100">
                     <tr>
-                      {(selectedPlayerDetail.type === 'batter'
+                      {(selectedPlayerDetail.type === 'Batter'
                         ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                         : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                       ).map(k => (
@@ -2391,12 +2391,12 @@ export default function RosterPage() {
                     {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
                       <>
                         <tr className="bg-gray-50 text-left text-sm">
-                          <td colSpan={selectedPlayerDetail.type === 'batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                          <td colSpan={selectedPlayerDetail.type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
                             {label}
                           </td>
                         </tr>
                         <tr>
-                          {(selectedPlayerDetail.type === 'batter'
+                          {(selectedPlayerDetail.type === 'Batter'
                             ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
                             : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
                           ).map(k => (

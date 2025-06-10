@@ -2426,7 +2426,7 @@ export default function RosterPage() {
             )}
           </TabsContent>
 
-          {/* 🔹 異動區間 區塊 */}
+          {/* 🔹 txsummary 區塊 */}
           <TabsContent value="txsummary">
             {selectedPlayerDetail?.transactionSummary && selectedPlayerDetail.transactionSummary.length > 0 && (
               <div className="overflow-x-auto">
@@ -2446,7 +2446,7 @@ export default function RosterPage() {
                   </thead>
                   <tbody>
                     {selectedPlayerDetail.transactionSummary.map((seg, idx) => (
-                      <>
+                      <React.Fragment key={idx}>
                         <tr className="bg-gray-50 text-left text-sm">
                           <td colSpan={selectedPlayerDetail.type === 'batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
                             {seg.from} ~ {seg.to}｜{seg.owner ? seg.owner : (seg.type === 'Drop' ? 'FA' : seg.type)}
@@ -2460,7 +2460,7 @@ export default function RosterPage() {
                             <td key={k} className="border px-2 py-1 text-center">{seg.stats?.[k] ?? '-'}</td>
                           ))}
                         </tr>
-                      </>
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>

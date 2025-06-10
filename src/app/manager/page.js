@@ -902,7 +902,7 @@ export default function RosterPage() {
     const result = {}
     for (const [label, [from, to]] of Object.entries(ranges)) {
       try {
-        const payload = { name: playerName, type, from, to }
+        const payload = { name: playerName, type: type.toLowerCase(), from, to }
         console.log('fetchPlayerStatSummary 傳給後端:', payload)
         const res = await fetch('/api/playerStats/summary', {
           method: 'POST',

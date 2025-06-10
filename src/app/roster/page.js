@@ -2083,6 +2083,8 @@ export default function RosterPage() {
   <AlertDialogFooter>
     <AlertDialogCancel>關閉</AlertDialogCancel>
   </AlertDialogFooter>
+</AlertDialogContent>
+
 </AlertDialog>
 
 <AlertDialog open={waiverDialogOpen} onOpenChange={setWaiverDialogOpen}>
@@ -2348,7 +2350,6 @@ export default function RosterPage() {
           <TabsList className="mb-2">
             <TabsTrigger value="summary">統計區間</TabsTrigger>
             <TabsTrigger value="last6">前六場</TabsTrigger>
-            <TabsTrigger value="txsummary">異動區間</TabsTrigger>
           </TabsList>
 
           {/* 🔹 summary 區塊 */}
@@ -2419,48 +2420,6 @@ export default function RosterPage() {
                           <td key={k} className="border px-2 py-1 text-center">{game?.[k] ?? '-'}</td>
                         ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* 🔹 txsummary 區塊 */}
-          <TabsContent value="txsummary">
-            {selectedPlayerDetail?.transactionSummary && selectedPlayerDetail.transactionSummary.length > 0 && (
-              <div className="overflow-x-auto">
-                <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="border px-2" colSpan={selectedPlayerDetail.type === 'batter' ? 13 : 13}>區間/持有狀態</th>
-                    </tr>
-                    <tr>
-                      {(selectedPlayerDetail.type === 'batter'
-                        ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                        : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                      ).map(k => (
-                        <th key={k} className="border px-2">{k}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedPlayerDetail.transactionSummary.map((seg, idx) => (
-                      <React.Fragment key={idx}>
-                        <tr className="bg-gray-50 text-left text-sm">
-                          <td colSpan={selectedPlayerDetail.type === 'batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
-                            {seg.from} ~ {seg.to}｜{seg.owner ? seg.owner : (seg.type === 'Drop' ? 'FA' : seg.type)}
-                          </td>
-                        </tr>
-                        <tr>
-                          {(selectedPlayerDetail.type === 'batter'
-                            ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
-                            : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
-                          ).map(k => (
-                            <td key={k} className="border px-2 py-1 text-center">{seg.stats?.[k] ?? '-'}</td>
-                          ))}
-                        </tr>
-                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>

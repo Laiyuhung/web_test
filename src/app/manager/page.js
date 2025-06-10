@@ -872,10 +872,13 @@ export default function RosterPage() {
   // 取得前六場
   const fetchPlayerLast6Games = async (playerName, type) => {
     try {
+      // 印出傳給後端資料
+      const payload = { name: playerName, team: players.find(p => p.Name === playerName)?.Team, type: type.toLowerCase() }
+      console.log('fetchPlayerLast6Games 傳給後端:', payload)
       const res = await fetch('/api/playerStats/last6games', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName, type: type.toLowerCase() })
+        body: JSON.stringify(payload)
       })
       if (!res.ok) return { recentGames: [] }
       return await res.json()
@@ -899,10 +902,12 @@ export default function RosterPage() {
     const result = {}
     for (const [label, [from, to]] of Object.entries(ranges)) {
       try {
+        const payload = { name: playerName, type, from, to }
+        console.log('fetchPlayerStatSummary 傳給後端:', payload)
         const res = await fetch('/api/playerStats/summary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: playerName, type })
+          body: JSON.stringify(payload)
         })
         const data = await res.json()
         result[label] = data[label] || null

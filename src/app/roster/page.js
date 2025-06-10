@@ -2446,7 +2446,7 @@ export default function RosterPage() {
             )}
           </TabsContent>
 
-          🔹 異動區間 區塊
+          {/* 🔹 異動區間 區塊 */}
           <TabsContent value="txsummary">
             {selectedPlayerDetail?.transactionSummary && selectedPlayerDetail.transactionSummary.length > 0 && (
               <div className="overflow-x-auto">

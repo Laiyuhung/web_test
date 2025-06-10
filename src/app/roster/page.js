@@ -1217,7 +1217,7 @@ export default function RosterPage() {
                   <div
                     className="flex items-center gap-2 font-bold text-[#0155A0] text-base cursor-pointer"
                     onClick={async () => {
-                      setSelectedPlayerDetail(p)
+                      setSelectedPlayerDetail({ ...p, type: p.B_or_P })
                       setDetailDialogOpen(true)
                       
                       const playerType = p.B_or_P

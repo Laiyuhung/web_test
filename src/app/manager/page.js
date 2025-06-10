@@ -13,6 +13,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 export default function RosterPage() {
   const [waiverPriority, setWaiverPriority] = useState(null)
@@ -60,6 +61,9 @@ export default function RosterPage() {
     const taiwanDate = new Date(nowUTC.getTime() + taiwanOffset)
     return taiwanDate.toISOString().slice(0, 10)
   })
+
+  const [selectedPlayerDetail, setSelectedPlayerDetail] = useState(null)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
 
   useEffect(() => {
     const fetchManagers = async () => {
@@ -733,24 +737,19 @@ export default function RosterPage() {
     return (
       <>
         <tr>
-          <td
-            colSpan={type === 'Batter' ? 13 : 13}
-            className={`p-2 border text-left ${
-              ['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]) ? 'bg-gray-100' : 'bg-white'
-            }`}
-          >
+          <td colSpan={type === 'Batter' ? 13 : 13} className={`p-2 border text-left ${['BN', 'NA', 'NA(備用)'].includes(assignedPositions[p.Name]) ? 'bg-gray-100' : 'bg-white'}`}>
             <div className="flex items-center gap-2 font-bold text-[#0155A0] text-base">
               {renderAssignedPositionSelect(p)}
               <img
                 src={`/photo/${p.Name}.png`}
                 alt={p.Name}
-                className="w-12 h-12 rounded-full"
-                onError={(e) => (e.target.src = '/photo/defaultPlayer.png')}
+                className="w-12 h-12 rounded-full cursor-pointer"
+                onClick={() => handleOpenPlayerDetail(p, type)}
+                onError={e => (e.target.src = '/photo/defaultPlayer.png')}
               />
               <div className="flex flex-col">
-                {/* 第一行：名字 + Team + Position */}
                 <div className="flex items-center gap-2">
-                  <span className="text-base font-bold text-[#0155A0]">{p.Name}</span>
+                  <span className="text-base font-bold text-[#0155A0] cursor-pointer" onClick={() => handleOpenPlayerDetail(p, type)}>{p.Name}</span>
                   <span className="text-sm text-gray-500">{p.Team}</span>
                   <span className="text-sm text-gray-500">- {(p.finalPosition || []).join(', ')}</span>
                 </div>
@@ -853,6 +852,83 @@ export default function RosterPage() {
         </tr>
       </>
     )
+  }
+
+  // 取得異動區間 summary
+  const fetchPlayerTransactionSummary = async (playerName, type) => {
+    try {
+      const res = await fetch('/api/playerStats/transactionSummary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: playerName, type: type.toLowerCase() })
+      })
+      if (!res.ok) return []
+      return await res.json()
+    } catch (e) {
+      return []
+    }
+  }
+
+  // 取得前六場
+  const fetchPlayerLast6Games = async (playerName, type) => {
+    try {
+      const res = await fetch('/api/playerStats/last6games', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: playerName, type: type.toLowerCase() })
+      })
+      if (!res.ok) return { recentGames: [] }
+      return await res.json()
+    } catch (e) {
+      return { recentGames: [] }
+    }
+  }
+
+  // 取得各區間 summary
+  const fetchPlayerStatSummary = async (playerName, type) => {
+    const today = new Date()
+    const formatDateInput = (date) => date.toISOString().slice(0, 10)
+    const ranges = {
+      Today: [selectedDate, selectedDate],
+      Yesterday: [formatDateInput(new Date(today.getTime() - 1 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      'Last 7 days': [formatDateInput(new Date(today.getTime() - 7 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      'Last 14 days': [formatDateInput(new Date(today.getTime() - 14 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      'Last 30 days': [formatDateInput(new Date(today.getTime() - 30 * 86400000)), formatDateInput(new Date(today.getTime() - 1 * 86400000))],
+      '2025 Season': ['2025-03-27', '2025-11-30'],
+    }
+    const result = {}
+    for (const [label, [from, to]] of Object.entries(ranges)) {
+      try {
+        const res = await fetch('/api/playerStats/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: playerName, type })
+        })
+        const data = await res.json()
+        result[label] = data[label] || null
+      } catch (e) {
+        result[label] = null
+      }
+    }
+    return result
+  }
+
+  // 點擊球員名稱或頭像時開啟詳細資料彈窗
+  const handleOpenPlayerDetail = async (p, type) => {
+    setDetailDialogOpen(true)
+    setSelectedPlayerDetail({ ...p, type })
+    // 並行撈 summary, last6, txsummary
+    const [statSummary, last6, txSummary] = await Promise.all([
+      fetchPlayerStatSummary(p.Name, type),
+      fetchPlayerLast6Games(p.Name, type),
+      fetchPlayerTransactionSummary(p.Name, type)
+    ])
+    setSelectedPlayerDetail(prev => ({
+      ...prev,
+      statSummary,
+      last6games: last6.recentGames || [],
+      transactionSummary: txSummary || []
+    }))
   }
 
   return (
@@ -1357,8 +1433,156 @@ export default function RosterPage() {
       </AlertDialogContent>
     </AlertDialog>
 
-    
-
+    {/* 球員詳細資料彈窗 */}
+    <AlertDialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+      <AlertDialogContent className="w-full max-w-[95vw] max-h-[80vh] overflow-y-auto px-4">
+        <AlertDialogHeader>
+          <AlertDialogTitle>{selectedPlayerDetail?.Name} 詳細資料</AlertDialogTitle>
+          <AlertDialogDescription className="relative px-1">
+            <div className="sticky top-0 z-20 bg-white border-b py-2 px-2 flex items-start gap-4 text-sm text-gray-700">
+              <div className="flex items-start gap-4">
+                <div className="space-y-1 text-left">
+                  <div>team：{selectedPlayerDetail?.Team}</div>
+                  <div>position：{(selectedPlayerDetail?.finalPosition || []).join(', ')}</div>
+                  <div>identity：{selectedPlayerDetail?.identity}</div>
+                  <div>status：{selectedPlayerDetail?.status}</div>
+                  <div>升降：{selectedPlayerDetail?.registerStatus}</div>
+                </div>
+                <img
+                  src={`/photo/${selectedPlayerDetail?.Name}.png`}
+                  alt={selectedPlayerDetail?.Name}
+                  className="w-24 h-30 object-cover border border-gray-300"
+                  onError={e => (e.target.src = '/photo/defaultPlayer.png')}
+                />
+              </div>
+            </div>
+            <Tabs defaultValue="summary" className="mt-4">
+              <TabsList className="mb-2">
+                <TabsTrigger value="summary">統計區間</TabsTrigger>
+                <TabsTrigger value="last6">前六場</TabsTrigger>
+                <TabsTrigger value="txsummary">異動區間</TabsTrigger>
+              </TabsList>
+              <TabsContent value="summary">
+                {selectedPlayerDetail?.statSummary && (
+                  <div className="overflow-x-auto">
+                    <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          {(selectedPlayerDetail.type === 'Batter'
+                            ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                            : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                          ).map(k => (
+                            <th key={k} className="border px-2">{k}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(selectedPlayerDetail.statSummary).map(([label, stats]) => (
+                          <>
+                            <tr className="bg-gray-50 text-left text-sm">
+                              <td colSpan={selectedPlayerDetail.type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                                {label}
+                              </td>
+                            </tr>
+                            <tr>
+                              {(selectedPlayerDetail.type === 'Batter'
+                                ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                                : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                              ).map(k => (
+                                <td key={k} className="border px-2 py-1 text-center">{stats?.[k] ?? '-'}</td>
+                              ))}
+                            </tr>
+                          </>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </TabsContent>
+              <TabsContent value="last6">
+                {selectedPlayerDetail?.last6games && (
+                  <div className="overflow-x-auto">
+                    <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="border px-2">日期</th>
+                          <th className="border px-2">對手</th>
+                          {(selectedPlayerDetail.type === 'Batter'
+                            ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                            : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                          ).map(k => (
+                            <th key={k} className="border px-2">{k}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedPlayerDetail.last6games.map((game, idx) => (
+                          <tr key={idx}>
+                            <td className="border px-2 py-1">{game.game_date}</td>
+                            <td className="border px-2 py-1">{game.opponent}</td>
+                            {(selectedPlayerDetail.type === 'Batter'
+                              ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                              : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                            ).map(k => (
+                              <td key={k} className="border px-2 py-1 text-center">{game?.[k] ?? '-'}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </TabsContent>
+              <TabsContent value="txsummary">
+                {selectedPlayerDetail?.transactionSummary && selectedPlayerDetail.transactionSummary.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="text-xs text-center border w-full min-w-[700px] table-fixed">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="border px-2" colSpan={selectedPlayerDetail.type === 'Batter' ? 13 : 13}>區間/持有狀態</th>
+                        </tr>
+                        <tr>
+                          {(selectedPlayerDetail.type === 'Batter'
+                            ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                            : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                          ).map(k => (
+                            <th key={k} className="border px-2">{k}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedPlayerDetail.transactionSummary.map((seg, idx) => (
+                          <>
+                            <tr className="bg-gray-50 text-left text-sm">
+                              <td colSpan={selectedPlayerDetail.type === 'Batter' ? 13 : 13} className="px-2 py-1 font-bold text-gray-700">
+                                {seg.from} ~ {seg.to}｜{seg.owner ? seg.owner : (seg.type === 'Drop' ? 'FA' : seg.type)}
+                              </td>
+                            </tr>
+                            <tr>
+                              {(selectedPlayerDetail.type === 'Batter'
+                                ? ['AB','R','H','HR','RBI','SB','K','BB','GIDP','XBH','TB','AVG','OPS']
+                                : ['IP','W','L','HLD','SV','H','ER','K','BB','QS','OUT','ERA','WHIP']
+                              ).map(k => (
+                                <td key={k} className="border px-2 py-1 text-center">{seg.stats?.[k] ?? '-'}</td>
+                              ))}
+                            </tr>
+                          </>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sticky bottom-0 bg-white border-t pt-2">
+            <AlertDialogAction onClick={() => setDetailDialogOpen(false)}>
+              關閉
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>  
 
   )

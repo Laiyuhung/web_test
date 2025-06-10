@@ -2373,6 +2373,7 @@ export default function RosterPage() {
 
           {/* 🔹 summary 區塊 */}
           <TabsContent value="summary">
+            {console.log('🧪 summary tab 顯示中，type:', selectedPlayerDetail?.type)}
             {selectedPlayerDetail?.statSummary && (
               <div className="overflow-x-auto">
                 <table className="text-xs text-center border w-full min-w-[700px] table-fixed">

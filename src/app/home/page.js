@@ -21,7 +21,9 @@ export default function HomePage() {
   const [rewardList, setRewardList] = useState([])
   const [recentTransactions, setRecentTransactions] = useState([])
   const [transactionMode, setTransactionMode] = useState('recent')
-
+  const [postseasonTab, setPostseasonTab] = useState('reason')
+  const [postseasonSpots, setPostseasonSpots] = useState([])
+  const [managerMap, setManagerMap] = useState({})
 
   useEffect(() => {
     async function fetchRecentTransactions() {
@@ -132,6 +134,24 @@ export default function HomePage() {
       }
     }
     fetchRewards()
+  }, [])
+
+  useEffect(() => {
+    async function fetchPostseasonSpots() {
+      const res = await fetch('/api/postseason_spot')
+      const data = await res.json()
+      setPostseasonSpots(data)
+      // 取得所有 manager_id 對應隊名
+      const ids = Array.from(new Set(data.map(d => d.manager_id).filter(Boolean)))
+      if (ids.length > 0) {
+        const { data: managers } = await supabase
+          .from('managers')
+          .select('id, team_name')
+          .in('id', ids)
+        setManagerMap(Object.fromEntries((managers||[]).map(m => [m.id, m.team_name])))
+      }
+    }
+    fetchPostseasonSpots()
   }, [])
 
   const handleFilter = week => {
@@ -248,6 +268,31 @@ export default function HomePage() {
     </table>
   )
 
+  const renderPostseasonReason = () => (
+    <table className="w-full text-sm text-center mt-4">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="p-2">序號</th>
+          <th className="p-2">晉級隊伍</th>
+          <th className="p-2">晉級緣由</th>
+        </tr>
+      </thead>
+      <tbody>
+        {postseasonSpots.map((s, i) => (
+          <tr key={s.id} className="border-t">
+            <td className="p-2">{s.sequence}</td>
+            <td className="p-2">{managerMap[s.manager_id] || s.manager_id || '-'}</td>
+            <td className="p-2">{s.spot}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+
+  const renderPostseasonOther = () => (
+    <div className="mt-4 text-gray-600 text-sm text-center">（可補充其他說明...）</div>
+  )
+
   return (
     <div className="p-6">
       <div className="mb-4 flex gap-2 flex-wrap">
@@ -346,6 +391,21 @@ export default function HomePage() {
             </TabsList>
             <TabsContent value="summary">{renderRewardSummary()}</TabsContent>
             <TabsContent value="list">{renderRewardList()}</TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* 新增：季後賽晉級區塊 */}
+      <h2 className="text-xl font-bold text-[#0155A0] mb-2">季後賽晉級</h2>
+      <Card className="mb-6">
+        <CardContent>
+          <Tabs defaultValue="reason" value={postseasonTab} onValueChange={setPostseasonTab}>
+            <TabsList>
+              <TabsTrigger value="reason">晉級緣由</TabsTrigger>
+              <TabsTrigger value="other">其他說明</TabsTrigger>
+            </TabsList>
+            <TabsContent value="reason">{renderPostseasonReason()}</TabsContent>
+            <TabsContent value="other">{renderPostseasonOther()}</TabsContent>
           </Tabs>
         </CardContent>
       </Card>

@@ -140,14 +140,17 @@ export default function HomePage() {
     async function fetchPostseasonSpots() {
       const res = await fetch('/api/postseason_spot')
       const data = await res.json()
+      console.log('postseason_spot data', data)
       setPostseasonSpots(data)
       // 取得所有 manager_id 對應隊名
       const ids = Array.from(new Set(data.map(d => d.manager_id).filter(Boolean)))
+      console.log('manager_ids', ids)
       if (ids.length > 0) {
-        const { data: managers } = await supabase
+        const { data: managers, error } = await supabase
           .from('managers')
           .select('id, team_name')
           .in('id', ids)
+        console.log('managers', managers, error)
         setManagerMap(Object.fromEntries((managers||[]).map(m => [m.id, m.team_name])))
       }
     }

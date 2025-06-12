@@ -275,7 +275,6 @@ export default function HomePage() {
     <table className="w-full text-sm text-center mt-4">
       <thead className="bg-gray-100">
         <tr>
-          <th className="p-2">序號</th>
           <th className="p-2">晉級隊伍</th>
           <th className="p-2">晉級緣由</th>
         </tr>
@@ -283,17 +282,12 @@ export default function HomePage() {
       <tbody>
         {postseasonSpots.map((s, i) => (
           <tr key={s.id} className="border-t">
-            <td className="p-2">{s.sequence}</td>
             <td className="p-2">{managerMap[s.manager_id] || s.manager_id || '-'}</td>
             <td className="p-2">{s.spot}</td>
           </tr>
         ))}
       </tbody>
     </table>
-  )
-
-  const renderPostseasonOther = () => (
-    <div className="mt-4 text-gray-600 text-sm text-center">（可補充其他說明...）</div>
   )
 
   return (
@@ -405,10 +399,8 @@ export default function HomePage() {
           <Tabs defaultValue="reason" value={postseasonTab} onValueChange={setPostseasonTab}>
             <TabsList>
               <TabsTrigger value="reason">晉級緣由</TabsTrigger>
-              <TabsTrigger value="other">其他說明</TabsTrigger>
             </TabsList>
             <TabsContent value="reason">{renderPostseasonReason()}</TabsContent>
-            <TabsContent value="other">{renderPostseasonOther()}</TabsContent>
           </Tabs>
         </CardContent>
       </Card>

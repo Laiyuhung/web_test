@@ -15,7 +15,7 @@ export default function HomePage() {
   const [selectedWeek, setSelectedWeek] = useState('')
   const [currentWeek, setCurrentWeek] = useState('')
   const [standings, setStandings] = useState([])
-  const [standingTab, setStandingTab] = useState('firstHalf')
+  const [standingTab, setStandingTab] = useState('secondHalf')
   const [rewardTab, setRewardTab] = useState('summary')
   const [rewardSummary, setRewardSummary] = useState([])
   const [rewardList, setRewardList] = useState([])

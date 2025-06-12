@@ -283,7 +283,7 @@ export default function HomePage() {
         {postseasonSpots.map((s, i) => (
           <tr key={s.id} className="border-t">
             <td className="p-2">{managerMap[s.manager_id] || s.manager_id || '-'}</td>
-            <td className="p-2">{s.spot}</td>
+            <td className="p-2">{s.type}</td>
           </tr>
         ))}
       </tbody>

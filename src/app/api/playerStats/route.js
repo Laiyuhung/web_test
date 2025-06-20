@@ -188,6 +188,7 @@ export async function POST(req) {
         result.push({
           name: rawName, W, L, HLD, SV, H, ER, K, BB, QS,
           IP: formatIP(OUT),
+          OUT, // 新增 OUT 欄位
           ERA: ERA,
           WHIP: WHIP
         })

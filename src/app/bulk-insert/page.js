@@ -809,6 +809,73 @@ export default function BulkInsertPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 新增球員表單 */}
+      <h2 className="text-lg font-bold mt-10 mb-2">新增球員</h2>
+      <form
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8"
+        onSubmit={async e => {
+          e.preventDefault();
+          const form = e.target;
+          const Name = form.Name.value.trim();
+          const Team = form.Team.value.trim();
+          const 原名 = form.原名.value.trim();
+          const pitch_side = form.pitch_side.value.trim();
+          const identity = form.identity.value.trim();
+          const B_or_P = form.B_or_P.value.trim();
+          if (!Name || !Team || !原名 || !pitch_side || !identity || !B_or_P) {
+            setDialogMessage('⚠️ 所有欄位皆為必填');
+            setDialogOpen(true);
+            return;
+          }
+          const res = await fetch('/api/playerslist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Name, Team, 原名, pitch_side, identity, B_or_P })
+          });
+          const result = await res.json();
+          if (res.ok) {
+            setDialogMessage('✅ 新增球員成功');
+            form.reset();
+          } else {
+            setDialogMessage(`❌ 新增球員失敗：${result.error || '請稍後再試'}`);
+          }
+          setDialogOpen(true);
+        }}
+      >
+        <div>
+          <label className="block text-sm mb-1">姓名</label>
+          <input name="Name" required className="border px-3 py-1 rounded w-full" placeholder="球員姓名" />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">所屬球隊</label>
+          <input name="Team" required className="border px-3 py-1 rounded w-full" placeholder="所屬球隊" />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">原名</label>
+          <input name="原名" required className="border px-3 py-1 rounded w-full" placeholder="原名" />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">投打</label>
+          <input name="pitch_side" required className="border px-3 py-1 rounded w-full" placeholder="投打（如：右投右打）" />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">身份</label>
+          <input name="identity" required className="border px-3 py-1 rounded w-full" placeholder="身份（如：本土/洋將）" />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">打/投手</label>
+          <select name="B_or_P" required className="border px-3 py-1 rounded w-full">
+            <option value="">請選擇</option>
+            <option value="batter">打者</option>
+            <option value="pitcher">投手</option>
+          </select>
+        </div>
+        <div className="sm:col-span-2 md:col-span-3">
+          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">送出新增球員</button>
+        </div>
+      </form>
+
     </>
   )
 }

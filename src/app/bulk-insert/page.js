@@ -856,19 +856,23 @@ export default function BulkInsertPage() {
           <input name="原名" required className="border px-3 py-1 rounded w-full" placeholder="原名" />
         </div>
         <div>
-          <label className="block text-sm mb-1">投打</label>
-          <input name="pitch_side" required className="border px-3 py-1 rounded w-full" placeholder="投打（如：右投右打）" />
+          <label className="block text-sm mb-1">左/右投</label>
+          <input name="pitch_side" className="border px-3 py-1 rounded w-full" placeholder="左/右投" />
         </div>
         <div>
           <label className="block text-sm mb-1">身份</label>
-          <input name="identity" required className="border px-3 py-1 rounded w-full" placeholder="身份（如：本土/洋將）" />
+          <select name="identity" required className="border px-3 py-1 rounded w-full">
+            <option value="">請選擇</option>
+            <option value="本土">本土</option>
+            <option value="洋將">洋將</option>
+          </select>
         </div>
         <div>
-          <label className="block text-sm mb-1">打/投手</label>
+          <label className="block text-sm mb-1">打/投</label>
           <select name="B_or_P" required className="border px-3 py-1 rounded w-full">
             <option value="">請選擇</option>
-            <option value="batter">打者</option>
-            <option value="pitcher">投手</option>
+            <option value="Batter">打者</option>
+            <option value="Pitcher">投手</option>
           </select>
         </div>
         <div className="sm:col-span-2 md:col-span-3">

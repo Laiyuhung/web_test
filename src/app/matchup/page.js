@@ -103,7 +103,7 @@ export default function MatchupTable() {
       // 顯示"正在載入"提示
       console.log(`正在載入 ${managerId} 的球員詳細數據...`)
       
-      const res = await fetch('/api/weekly_stats_by_manager/debug', {
+      const res = await fetch('/api/weekly_stats_by_manager/matchup_total', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ week })
@@ -251,7 +251,7 @@ export default function MatchupTable() {
         <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-gray-100 p-4 flex justify-between items-center border-b z-10">
             <h2 className="text-xl font-bold">
-              {playerDetailsData.team_name} 球員週統計
+              {playerDetailsData.team_name} 球員週累計數據
               {loadingDetails && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
             </h2>
             <button 
@@ -276,7 +276,8 @@ export default function MatchupTable() {
               <div className="space-y-8">
                 {/* 打者資料 */}
                 <div>
-                  <h3 className="text-lg font-bold text-[#0155A0] mb-2">打者資料</h3>
+                  <h3 className="text-lg font-bold text-[#0155A0] mb-2">打者週累計數據</h3>
+                  <p className="text-sm text-gray-600 mb-2">以下為每位球員本週累計數據（僅計算球員被排入先發陣容的數據）</p>
                   {playerDetailsData.batterRows && playerDetailsData.batterRows.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full border text-sm">
@@ -305,7 +306,8 @@ export default function MatchupTable() {
 
                 {/* 投手資料 */}
                 <div>
-                  <h3 className="text-lg font-bold text-[#0155A0] mb-2">投手資料</h3>
+                  <h3 className="text-lg font-bold text-[#0155A0] mb-2">投手週累計數據</h3>
+                  <p className="text-sm text-gray-600 mb-2">以下為每位投手本週累計數據（僅計算球員被排入先發陣容的數據）</p>
                   {playerDetailsData.pitcherRows && playerDetailsData.pitcherRows.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full border text-sm">
@@ -335,7 +337,8 @@ export default function MatchupTable() {
                 {/* 每日陣容 */}
                 {playerDetailsData.assignedRoster && Object.keys(playerDetailsData.assignedRoster).length > 0 && (
                   <div>
-                    <h3 className="text-lg font-bold text-[#0155A0] mb-2">每日陣容</h3>
+                    <h3 className="text-lg font-bold text-[#0155A0] mb-2">每日先發陣容</h3>
+                    <p className="text-sm text-gray-600 mb-2">本週經理每日設定的先發陣容</p>
                     {Object.entries(playerDetailsData.assignedRoster).map(([date, rows]) => (
                       <div key={date} className="mb-6">
                         <h4 className="font-semibold text-blue-700 mb-2">{date}</h4>

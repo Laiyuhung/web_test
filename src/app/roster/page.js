@@ -1667,7 +1667,7 @@ export default function RosterPage() {
                       const moveLocked = utcNow >= moveGameTime
                       const targetLocked = utcNow >= targetGameTime
                     
-                      console.log('🕒 台灣時間:', taiwanNow.toISOString())
+                      // console.log('🕒 台灣時間:', taiwanNow.toISOString())
                       console.log(`🔒 ${moveTarget.Team} 鎖定狀態:`, moveLocked, moveGameTime.toISOString())
                       console.log(`🔒 ${p.Team} 鎖定狀態:`, targetLocked, targetGameTime.toISOString())
                     

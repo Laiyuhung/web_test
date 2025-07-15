@@ -333,39 +333,6 @@ export default function MatchupTable() {
                     <p className="text-gray-500">無投手資料</p>
                   )}
                 </div>
-
-                {/* 每日陣容 */}
-                {playerDetailsData.assignedRoster && Object.keys(playerDetailsData.assignedRoster).length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-bold text-[#0155A0] mb-2">每日先發陣容</h3>
-                    <p className="text-sm text-gray-600 mb-2">本週經理每日設定的先發陣容</p>
-                    {Object.entries(playerDetailsData.assignedRoster).map(([date, rows]) => (
-                      <div key={date} className="mb-6">
-                        <h4 className="font-semibold text-blue-700 mb-2">{date}</h4>
-                        <div className="overflow-x-auto">
-                          <table className="w-full border text-sm mb-4">
-                            <thead className="bg-gray-100">
-                              <tr>
-                                {rows.length > 0 && Object.keys(rows[0]).map(key => (
-                                  <th key={key} className="border px-2 py-1 text-center">{key}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {rows.map((row, idx) => (
-                                <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                  {Object.values(row).map((val, j) => (
-                                    <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{val}</td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             )}
           </div>

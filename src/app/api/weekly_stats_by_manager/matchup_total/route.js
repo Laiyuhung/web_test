@@ -224,10 +224,10 @@ export async function POST(req) {
         outs = parseInt(whole, 10) * 3 + (fraction ? parseInt(fraction, 10) : 0);
         pitcherStatsMap[playerName].outs += outs;
       }
-      pitcherStatsMap[playerName].wins += stat.record?.W || 0
-      pitcherStatsMap[playerName].losses += stat.record?.L || 0
-      pitcherStatsMap[playerName].holds += stat.record?.H || 0
-      pitcherStatsMap[playerName].saves += stat.record?.S || 0
+    pitcherStatsMap[playerName].wins += stat.record === 'W' ? 1 : 0;
+    pitcherStatsMap[playerName].losses += stat.record === 'L' ? 1 : 0;
+    pitcherStatsMap[playerName].holds += stat.record === 'H' ? 1 : 0;
+    pitcherStatsMap[playerName].saves += stat.record === 'S' ? 1 : 0;
       pitcherStatsMap[playerName].hits += stat.hits_allowed || 0
       pitcherStatsMap[playerName].earned_runs += stat.earned_runs || 0
       pitcherStatsMap[playerName].strikeouts += stat.strikeouts || 0

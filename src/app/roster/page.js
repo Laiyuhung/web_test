@@ -318,10 +318,9 @@ export default function RosterPage() {
     const timeStr = timeMatch ? timeMatch[0] : '23:59'
     const gameDateTime = new Date(`${selectedDate}T${timeStr}:00+08:00`)
   
-    const now = new Date()
-    const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+    const utcNow = new Date() // 正確取得 UTC+0 時間
   
-    const isLocked = taiwanNow >= gameDateTime
+    const isLocked = utcNow >= gameDateTime
   
     if (isLocked) {
       console.log(`⛔ 禁止 Drop：${p.Team} 比賽已開始 (${gameDateTime.toISOString()}), 且 ${p.Name} 在先發位置`)
@@ -373,8 +372,9 @@ export default function RosterPage() {
       setPositionData(positionData)
   
       const isPast = (() => {
-        const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
-        const todayStr = now.toISOString().slice(0, 10)
+        const utcNow = new Date() // 正確取得 UTC+0 時間
+        const taiwanNow = new Date(utcNow.getTime() + 8 * 60 * 60 * 1000) // 轉換為台灣時間 UTC+8
+        const todayStr = taiwanNow.toISOString().slice(0, 10)
         return selectedDate < todayStr
       })()
       console.log(`📅 selectedDate: ${selectedDate}, isPast: ${isPast}`)
@@ -643,12 +643,12 @@ export default function RosterPage() {
       const [h, m] = timeStr.split(':')
     
       const gameDateTime = new Date(`${selectedDate}T${h}:${m}:00+08:00`)
-      const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+      const utcNow = new Date() // 正確取得 UTC+0 時間
     
       // console.log('🕓 gameDateTime:', gameDateTime.toISOString())
-      // console.log('🕒 taiwanNow:', taiwanNow.toISOString())
+      // console.log('🕒 utcNow:', utcNow.toISOString())
     
-      isLocked = taiwanNow >= gameDateTime
+      isLocked = utcNow >= gameDateTime
     }
     
   
@@ -942,8 +942,8 @@ export default function RosterPage() {
           const timeStr = gameInfo.slice(0, 5); // 18:35
           const [h, m] = timeStr.split(':');
           const gameDateTime = new Date(`${selectedDate}T${h}:${m}:00+08:00`);
-          const taiwanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
-          if (taiwanNow >= gameDateTime) {
+          const utcNow = new Date(); // 正確取得 UTC+0 時間
+          if (utcNow >= gameDateTime) {
             lockedPlayers.push(name);
           }
         }
@@ -1659,14 +1659,13 @@ export default function RosterPage() {
                         return new Date(`${selectedDate}T${timeStr}:00+08:00`)
                       }
                     
-                      const now = new Date()
-                      const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
+                      const utcNow = new Date() // 正確取得 UTC+0 時間
                     
                       const moveGameTime = getGameDateTime(moveTarget.Team)
                       const targetGameTime = getGameDateTime(p.Team)
                     
-                      const moveLocked = taiwanNow >= moveGameTime
-                      const targetLocked = taiwanNow >= targetGameTime
+                      const moveLocked = utcNow >= moveGameTime
+                      const targetLocked = utcNow >= targetGameTime
                     
                       console.log('🕒 台灣時間:', taiwanNow.toISOString())
                       console.log(`🔒 ${moveTarget.Team} 鎖定狀態:`, moveLocked, moveGameTime.toISOString())
@@ -1789,12 +1788,11 @@ export default function RosterPage() {
                       return dateObj
                     }
                   
-                    const now = new Date()
-                    const taiwanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }))
-                    console.log('🕒 現在台灣時間:', taiwanNow.toISOString())
+                    const utcNow = new Date() // 正確取得 UTC+0 時間
+                    console.log('🕒 現在 UTC 時間:', utcNow.toISOString())
                   
                     const gameDateTime = getGameDateTime(moveTarget.Team)
-                    const isLocked = taiwanNow >= gameDateTime
+                    const isLocked = utcNow >= gameDateTime
                     console.log('🔒 是否鎖定:', isLocked)
                   
                     if (isLocked) {

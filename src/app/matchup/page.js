@@ -8,6 +8,10 @@ export default function MatchupTable() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [violationList, setViolationList] = useState([])
+  const [selectedManagerId, setSelectedManagerId] = useState(null)
+  const [playerDetailsModalOpen, setPlayerDetailsModalOpen] = useState(false)
+  const [playerDetailsData, setPlayerDetailsData] = useState(null)
+  const [loadingDetails, setLoadingDetails] = useState(false)
   const weeks = Array.from({ length: 18 }, (_, i) => `W${i + 1}`)
 
   const batterKeys = ['R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
@@ -90,6 +94,38 @@ export default function MatchupTable() {
     }
   }
 
+  // 獲取玩家詳細數據
+  const fetchPlayerDetails = async (managerId) => {
+    if (!week) return
+    
+    setLoadingDetails(true)
+    try {
+      const res = await fetch('/api/weekly_stats_by_manager/debug', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ week })
+      })
+      
+      if (!res.ok) {
+        throw new Error('獲取詳細數據失敗')
+      }
+      
+      const result = await res.json()
+      const managerData = result.find(item => item.manager_id === managerId)
+      
+      if (managerData) {
+        setPlayerDetailsData(managerData)
+        setPlayerDetailsModalOpen(true)
+      } else {
+        console.error('找不到該玩家的詳細數據')
+      }
+    } catch (err) {
+      console.error('❌ 獲取詳細數據錯誤:', err)
+    } finally {
+      setLoadingDetails(false)
+    }
+  }
+
   useEffect(() => {
     if (!week) return
     fetchViolationList(week)
@@ -116,7 +152,16 @@ export default function MatchupTable() {
             {data.map((d) => (
                 <tr key={d.team_name} className="text-sm">
                 <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">{d.rank}</td>
-                <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
+                <td 
+                  onClick={() => {
+                    setSelectedManagerId(d.manager_id)
+                    fetchPlayerDetails(d.manager_id)
+                  }}
+                  className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap cursor-pointer hover:bg-blue-100 hover:text-blue-600"
+                  title="點擊查看球員詳細數據"
+                >
+                  {d.team_name}
+                </td>
                 {pointKeys.map((key) => {
                   const value = key.startsWith('b_')
                     ? d.batters?.fantasyPoints?.[key.slice(2)] ?? '0.0'
@@ -159,7 +204,16 @@ export default function MatchupTable() {
               return (
                 <tr key={d.team_name} className="text-sm">
                 <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">{d.rank}</td>
-                <td className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap">{d.team_name}</td>
+                <td 
+                  onClick={() => {
+                    setSelectedManagerId(d.manager_id)
+                    fetchPlayerDetails(d.manager_id)
+                  }}
+                  className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap cursor-pointer hover:bg-blue-100 hover:text-blue-600"
+                  title="點擊查看球員詳細數據"
+                >
+                  {d.team_name}
+                </td>
                 {keys.map((key) => {
                   // 投手IP欄位且違規才標紅
                   const highlight = type === 'pitchers' && key === 'IP' && isViolated
@@ -176,6 +230,136 @@ export default function MatchupTable() {
       </div>
     </div>
   )
+
+  // 渲染球員詳細數據模態框
+  const renderPlayerDetailsModal = () => {
+    if (!playerDetailsModalOpen || !playerDetailsData) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] overflow-y-auto">
+          <div className="sticky top-0 bg-gray-100 p-4 flex justify-between items-center border-b z-10">
+            <h2 className="text-xl font-bold">{playerDetailsData.team_name} 球員週統計</h2>
+            <button 
+              onClick={() => setPlayerDetailsModalOpen(false)}
+              className="text-gray-700 hover:text-gray-900 text-2xl"
+            >
+              &times;
+            </button>
+          </div>
+          
+          <div className="p-4">
+            {loadingDetails ? (
+              <div className="flex justify-center items-center p-8">
+                <p className="text-blue-600">載入中...</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* 打者資料 */}
+                <div>
+                  <h3 className="text-lg font-bold text-[#0155A0] mb-2">打者資料</h3>
+                  {playerDetailsData.batterRows && playerDetailsData.batterRows.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border text-sm">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            {Object.keys(playerDetailsData.batterRows[0]).map(key => (
+                              <th key={key} className="border px-2 py-2 text-center">{key}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {playerDetailsData.batterRows.map((row, i) => (
+                            <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              {Object.values(row).map((val, j) => (
+                                <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{val}</td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">無打者資料</p>
+                  )}
+                </div>
+
+                {/* 投手資料 */}
+                <div>
+                  <h3 className="text-lg font-bold text-[#0155A0] mb-2">投手資料</h3>
+                  {playerDetailsData.pitcherRows && playerDetailsData.pitcherRows.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border text-sm">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            {Object.keys(playerDetailsData.pitcherRows[0]).map(key => (
+                              <th key={key} className="border px-2 py-2 text-center">{key}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {playerDetailsData.pitcherRows.map((row, i) => (
+                            <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              {Object.values(row).map((val, j) => (
+                                <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{val}</td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">無投手資料</p>
+                  )}
+                </div>
+
+                {/* 每日陣容 */}
+                {playerDetailsData.assignedRoster && Object.keys(playerDetailsData.assignedRoster).length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-[#0155A0] mb-2">每日陣容</h3>
+                    {Object.entries(playerDetailsData.assignedRoster).map(([date, rows]) => (
+                      <div key={date} className="mb-6">
+                        <h4 className="font-semibold text-blue-700 mb-2">{date}</h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border text-sm mb-4">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                {rows.length > 0 && Object.keys(rows[0]).map(key => (
+                                  <th key={key} className="border px-2 py-1 text-center">{key}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {rows.map((row, idx) => (
+                                <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                  {Object.values(row).map((val, j) => (
+                                    <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{val}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <div className="bg-gray-100 p-4 border-t sticky bottom-0">
+            <button 
+              onClick={() => setPlayerDetailsModalOpen(false)}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              關閉
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="p-6">
@@ -205,9 +389,11 @@ export default function MatchupTable() {
           {renderScoreTable()}
           {renderStatTable('Batters', ['AB', ...batterKeys], 'batters')}
           {renderStatTable('Pitchers', ['IP', ...pitcherKeys], 'pitchers')}
-
         </div>
       )}
+
+      {/* 渲染球員詳細數據模態框 */}
+      {renderPlayerDetailsModal()}
     </div>
   )
 }

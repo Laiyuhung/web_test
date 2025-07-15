@@ -283,7 +283,7 @@ export default function MatchupTable() {
                       <table className="w-full border text-sm">
                         <thead className="bg-gray-100">
                           <tr>
-                            {Object.keys(playerDetailsData.batterRows[0]).map(key => (
+                            {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map(key => (
                               <th key={key} className="border px-2 py-2 text-center">{key}</th>
                             ))}
                           </tr>
@@ -291,8 +291,8 @@ export default function MatchupTable() {
                         <tbody>
                           {playerDetailsData.batterRows.map((row, i) => (
                             <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              {Object.values(row).map((val, j) => (
-                                <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{val}</td>
+                              {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, j) => (
+                                <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
                               ))}
                             </tr>
                           ))}
@@ -313,7 +313,7 @@ export default function MatchupTable() {
                       <table className="w-full border text-sm">
                         <thead className="bg-gray-100">
                           <tr>
-                            {Object.keys(playerDetailsData.pitcherRows[0]).map(key => (
+                            {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map(key => (
                               <th key={key} className="border px-2 py-2 text-center">{key}</th>
                             ))}
                           </tr>
@@ -321,8 +321,8 @@ export default function MatchupTable() {
                         <tbody>
                           {playerDetailsData.pitcherRows.map((row, i) => (
                             <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              {Object.values(row).map((val, j) => (
-                                <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{val}</td>
+                              {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, j) => (
+                                <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
                               ))}
                             </tr>
                           ))}

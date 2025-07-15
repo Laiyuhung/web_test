@@ -244,40 +244,67 @@ export async function POST(req) {
       const managerBatters = Object.values(batterStatsMap).filter(b => b.manager_id === managerId)
       const managerPitchers = Object.values(pitcherStatsMap).filter(p => p.manager_id === managerId)
 
-      // 格式化為前端需要的表格數據
-      const batterRows = managerBatters.map(b => ({
-        id: null,
-        name: b.name,
-        position: b.position,
-        at_bats: b.at_bats,
-        runs: b.runs,
-        hits: b.hits,
-        rbis: b.rbis,
-        home_runs: b.home_runs,
-        doubles: b.doubles,
-        triples: b.triples,
-        stolen_bases: b.stolen_bases,
-        strikeouts: b.strikeouts,
-        walks: b.walks,
-        double_plays: b.double_plays
-      }))
+      // 格式化為前端需要的表格數據，按照指定順序排列
+      const batterRows = managerBatters.map(b => {
+        // 計算進階數據
+        const avg = b.at_bats > 0 ? (b.hits / b.at_bats).toFixed(3).replace(/^0\./, '.') : '.000';
+        const obp = (b.at_bats + b.walks) > 0 ? 
+          ((b.hits + b.walks) / (b.at_bats + b.walks)).toFixed(3).replace(/^0\./, '.') : '.000';
+        
+        // 計算總壘打數 (TB)
+        const totalBases = (b.hits - b.doubles - b.triples - b.home_runs) * 1 + // 單壘打
+                           b.doubles * 2 + 
+                           b.triples * 3 + 
+                           b.home_runs * 4;
+        
+        const slg = b.at_bats > 0 ? (totalBases / b.at_bats).toFixed(3).replace(/^0\./, '.') : '.000';
+        const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3).replace(/^0\./, '.');
+        
+        // 計算額外長打 (XBH)
+        const xbh = b.doubles + b.triples + b.home_runs;
+        
+        return {
+          Name: b.name,
+          AB: b.at_bats,
+          R: b.runs,
+          H: b.hits,
+          HR: b.home_runs,
+          RBI: b.rbis,
+          SB: b.stolen_bases,
+          K: b.strikeouts,
+          BB: b.walks,
+          GIDP: b.double_plays,
+          XBH: xbh,
+          TB: totalBases,
+          AVG: avg,
+          OPS: ops
+        };
+      });
 
-      const pitcherRows = managerPitchers.map(p => ({
-        id: null,
-        name: p.name,
-        position: p.position,
-        outs: p.outs,
-        wins: p.wins,
-        losses: p.losses,
-        holds: p.holds,
-        saves: p.saves,
-        hits: p.hits,
-        earned_runs: p.earned_runs,
-        strikeouts: p.strikeouts,
-        walks: p.walks,
-        quality_starts: p.quality_starts,
-        ip: `${Math.floor(p.outs / 3)}.${p.outs % 3}`
-      }))
+      const pitcherRows = managerPitchers.map(p => {
+        // 計算進階數據
+        const ip = `${Math.floor(p.outs / 3)}.${p.outs % 3}`;
+        const ipFloat = parseFloat(Math.floor(p.outs / 3)) + parseFloat((p.outs % 3) / 3);
+        const era = ipFloat > 0 ? ((p.earned_runs * 9) / ipFloat).toFixed(2) : '0.00';
+        const whip = ipFloat > 0 ? ((p.hits + p.walks) / ipFloat).toFixed(2) : '0.00';
+        
+        return {
+          Name: p.name,
+          IP: ip,
+          W: p.wins,
+          L: p.losses,
+          HLD: p.holds,
+          SV: p.saves,
+          H: p.hits,
+          ER: p.earned_runs,
+          K: p.strikeouts,
+          BB: p.walks,
+          QS: p.quality_starts,
+          OUT: p.outs,
+          ERA: era,
+          WHIP: whip
+        };
+      });
 
       result.push({
         manager_id: managerId,

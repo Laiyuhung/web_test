@@ -9,6 +9,7 @@ export default function MatchupTable() {
   const [loading, setLoading] = useState(false)
   const [violationList, setViolationList] = useState([])
   const [selectedManagerId, setSelectedManagerId] = useState(null)
+  const [selectedTeamName, setSelectedTeamName] = useState(null)  // 新增：儲存點擊時的隊伍名稱
   const [playerDetailsModalOpen, setPlayerDetailsModalOpen] = useState(false)
   const [playerDetailsData, setPlayerDetailsData] = useState(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
@@ -162,6 +163,7 @@ export default function MatchupTable() {
                   onClick={() => {
                     if (!loadingDetails) {
                       setSelectedManagerId(d.manager_id)
+                      setSelectedTeamName(d.team_name) // 點擊時保存隊伍名稱
                       fetchPlayerDetails(d.manager_id)
                     }
                   }}
@@ -216,6 +218,7 @@ export default function MatchupTable() {
                   onClick={() => {
                     if (!loadingDetails) {
                       setSelectedManagerId(d.manager_id)
+                      setSelectedTeamName(d.team_name) // 點擊時保存隊伍名稱
                       fetchPlayerDetails(d.manager_id)
                     }
                   }}
@@ -250,7 +253,7 @@ export default function MatchupTable() {
         <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-gray-100 p-4 flex justify-between items-center border-b z-10">
             <h2 className="text-xl font-bold">
-              {playerDetailsData.team_name} 球員週累計數據
+              {selectedTeamName} 的單週球員數據
               {loadingDetails && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
             </h2>
             <button 

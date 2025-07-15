@@ -486,7 +486,7 @@ export default function PlayerPage() {
   
     if (!isPostponedOrNoGame && isStarter && gameTimeMatch) {
       const [_, hour, minute] = gameTimeMatch
-      const gameTime = new Date(`${selectedDate}T${hour}:${minute}:00+08:00`)
+      const gameTime = new Date(`${taiwanToday}T${hour}:${minute}:00+08:00`)
   
       console.log('🧪 判斷是否已開賽 (Drop Blocked)', {
         name: p.Name,

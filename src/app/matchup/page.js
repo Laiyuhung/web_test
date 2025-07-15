@@ -100,6 +100,9 @@ export default function MatchupTable() {
     
     setLoadingDetails(true)
     try {
+      // 顯示"正在載入"提示
+      console.log(`正在載入 ${managerId} 的球員詳細數據...`)
+      
       const res = await fetch('/api/weekly_stats_by_manager/debug', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,11 +121,15 @@ export default function MatchupTable() {
         setPlayerDetailsModalOpen(true)
       } else {
         console.error('找不到該玩家的詳細數據')
+        alert('找不到該玩家的詳細數據，請重試或聯絡管理員。')
       }
     } catch (err) {
       console.error('❌ 獲取詳細數據錯誤:', err)
+      alert('獲取數據時發生錯誤，請重試或聯絡管理員。')
     } finally {
-      setLoadingDetails(false)
+      setTimeout(() => {
+        setLoadingDetails(false)
+      }, 300) // 添加短暫延遲，確保UI反應更流暢
     }
   }
 
@@ -154,13 +161,15 @@ export default function MatchupTable() {
                 <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">{d.rank}</td>
                 <td 
                   onClick={() => {
-                    setSelectedManagerId(d.manager_id)
-                    fetchPlayerDetails(d.manager_id)
+                    if (!loadingDetails) {
+                      setSelectedManagerId(d.manager_id)
+                      fetchPlayerDetails(d.manager_id)
+                    }
                   }}
-                  className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap cursor-pointer hover:bg-blue-100 hover:text-blue-600"
-                  title="點擊查看球員詳細數據"
+                  className={`font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap ${!loadingDetails ? "cursor-pointer hover:bg-blue-100 hover:text-blue-600" : "opacity-70"}`}
+                  title={loadingDetails ? "資料載入中..." : "點擊查看球員詳細數據"}
                 >
-                  {d.team_name}
+                  {d.team_name} {loadingDetails && d.manager_id === selectedManagerId && <span className="inline-block ml-1 text-blue-600">載入中...</span>}
                 </td>
                 {pointKeys.map((key) => {
                   const value = key.startsWith('b_')
@@ -206,13 +215,15 @@ export default function MatchupTable() {
                 <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">{d.rank}</td>
                 <td 
                   onClick={() => {
-                    setSelectedManagerId(d.manager_id)
-                    fetchPlayerDetails(d.manager_id)
+                    if (!loadingDetails) {
+                      setSelectedManagerId(d.manager_id)
+                      fetchPlayerDetails(d.manager_id)
+                    }
                   }}
-                  className="font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap cursor-pointer hover:bg-blue-100 hover:text-blue-600"
-                  title="點擊查看球員詳細數據"
+                  className={`font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap ${!loadingDetails ? "cursor-pointer hover:bg-blue-100 hover:text-blue-600" : "opacity-70"}`}
+                  title={loadingDetails ? "資料載入中..." : "點擊查看球員詳細數據"}
                 >
-                  {d.team_name}
+                  {d.team_name} {loadingDetails && d.manager_id === selectedManagerId && <span className="inline-block ml-1 text-blue-600">載入中...</span>}
                 </td>
                 {keys.map((key) => {
                   // 投手IP欄位且違規才標紅
@@ -239,10 +250,18 @@ export default function MatchupTable() {
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-gray-100 p-4 flex justify-between items-center border-b z-10">
-            <h2 className="text-xl font-bold">{playerDetailsData.team_name} 球員週統計</h2>
+            <h2 className="text-xl font-bold">
+              {playerDetailsData.team_name} 球員週統計
+              {loadingDetails && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
+            </h2>
             <button 
-              onClick={() => setPlayerDetailsModalOpen(false)}
-              className="text-gray-700 hover:text-gray-900 text-2xl"
+              onClick={() => {
+                if (!loadingDetails) {
+                  setPlayerDetailsModalOpen(false)
+                }
+              }}
+              disabled={loadingDetails}
+              className={`text-gray-700 hover:text-gray-900 text-2xl ${loadingDetails ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               &times;
             </button>
@@ -350,8 +369,13 @@ export default function MatchupTable() {
           
           <div className="bg-gray-100 p-4 border-t sticky bottom-0">
             <button 
-              onClick={() => setPlayerDetailsModalOpen(false)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              onClick={() => {
+                if (!loadingDetails) {
+                  setPlayerDetailsModalOpen(false)
+                }
+              }}
+              disabled={loadingDetails}
+              className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${loadingDetails ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               關閉
             </button>

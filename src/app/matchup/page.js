@@ -106,15 +106,14 @@ export default function MatchupTable() {
       const res = await fetch('/api/weekly_stats_by_manager/matchup_total', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ week })
+        body: JSON.stringify({ week, managerId })
       })
       
       if (!res.ok) {
         throw new Error('獲取詳細數據失敗')
       }
       
-      const result = await res.json()
-      const managerData = result.find(item => item.manager_id === managerId)
+      const managerData = await res.json()
       
       if (managerData) {
         setPlayerDetailsData(managerData)

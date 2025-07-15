@@ -88,7 +88,7 @@ async function fetchAllPitchingStats(from, to) {
 
 export async function POST(req) {
   try {
-    const { week } = await req.json()
+    const { week, managerId } = await req.json()
     if (!week) return NextResponse.json({ error: '缺少 week 參數' }, { status: 400 })
 
     const { data: weekData } = await supabase
@@ -243,19 +243,21 @@ export async function POST(req) {
     })
 
     // 整理返回結果
-    const result = []
-    const allManagerIds = [1, 2, 3, 4]
+    let result = []
+    
+    // 如果有指定 managerId，只處理該經理的資料
+    const managerIds = managerId ? [parseInt(managerId)] : [1, 2, 3, 4]
 
-    for (const managerId of allManagerIds) {
+    for (const mgrId of managerIds) {
       const managerData = await supabase
         .from('managers')
         .select('team_name')
-        .eq('id', managerId)
+        .eq('id', mgrId)
         .single()
 
       // 獲取該經理的打者和投手
-      const managerBatters = Object.values(batterStatsMap).filter(b => b.manager_id === managerId)
-      const managerPitchers = Object.values(pitcherStatsMap).filter(p => p.manager_id === managerId)
+      const managerBatters = Object.values(batterStatsMap).filter(b => b.manager_id === mgrId)
+      const managerPitchers = Object.values(pitcherStatsMap).filter(p => p.manager_id === mgrId)
 
       // 格式化為前端需要的表格數據，按照指定順序排列
       const batterRows = managerBatters.map(b => {
@@ -320,12 +322,18 @@ export async function POST(req) {
       });
 
       result.push({
-        manager_id: managerId,
-        team_name: managerData?.team_name || `Manager #${managerId}`,
+        manager_id: mgrId,
+        team_name: managerData?.team_name || `Manager #${mgrId}`,
         batterRows,
         pitcherRows,
-        assignedRoster: assignedMap[managerId] || {}
+        // 如果有指定 managerId，不傳送每日陣容資料
+        ...(managerId ? {} : { assignedRoster: assignedMap[mgrId] || {} })
       })
+    }
+
+    // 如果有指定 managerId，只返回第一項（只有一個經理的資料）
+    if (managerId && result.length > 0) {
+      return NextResponse.json(result[0])
     }
 
     return NextResponse.json(result)

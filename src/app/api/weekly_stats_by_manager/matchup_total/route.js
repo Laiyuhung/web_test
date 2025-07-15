@@ -196,37 +196,50 @@ export async function POST(req) {
       if (!playerDateMap[playerName]) return // 非本週先發球員
 
       // 確認這是這個球員在該日的數據
-      if (playerDateMap[playerName].has(stat.game_date)) {
-        if (!pitcherStatsMap[playerName]) {
-          pitcherStatsMap[playerName] = {
-            name: playerName,
-            position: stat.position || 'P',
-            outs: 0,
-            wins: 0,
-            losses: 0,
-            holds: 0,
-            saves: 0,
-            hits: 0,
-            earned_runs: 0,
-            strikeouts: 0,
-            walks: 0,
-            quality_starts: 0,
-            manager_id: playerManagerMap[playerName]
-          }
+    if (playerDateMap[playerName].has(stat.game_date)) {
+      if (!pitcherStatsMap[playerName]) {
+        pitcherStatsMap[playerName] = {
+        name: playerName,
+        position: stat.position || 'P',
+        outs: 0,
+        wins: 0,
+        losses: 0,
+        holds: 0,
+        saves: 0,
+        hits: 0,
+        earned_runs: 0,
+        strikeouts: 0,
+        walks: 0,
+        quality_starts: 0,
+        manager_id: playerManagerMap[playerName]
         }
-        
-        // 累計數據
-        pitcherStatsMap[playerName].outs += stat.outs || 0
-        pitcherStatsMap[playerName].wins += stat.wins || 0
-        pitcherStatsMap[playerName].losses += stat.losses || 0
-        pitcherStatsMap[playerName].holds += stat.holds || 0
-        pitcherStatsMap[playerName].saves += stat.saves || 0
-        pitcherStatsMap[playerName].hits += stat.hits || 0
-        pitcherStatsMap[playerName].earned_runs += stat.earned_runs || 0
-        pitcherStatsMap[playerName].strikeouts += stat.strikeouts || 0
-        pitcherStatsMap[playerName].walks += stat.walks || 0
-        pitcherStatsMap[playerName].quality_starts += stat.quality_starts || 0
       }
+      
+      // 累計數據
+      // 以 innings_pitched 欄位計算 outs
+      let outs = 0;
+      if (stat.innings_pitched !== undefined && stat.innings_pitched !== null) {
+        const ipStr = stat.innings_pitched.toString();
+        const [whole, fraction] = ipStr.split('.');
+        outs = parseInt(whole, 10) * 3 + (fraction ? parseInt(fraction, 10) : 0);
+        pitcherStatsMap[playerName].outs += outs;
+      }
+      pitcherStatsMap[playerName].wins += stat.record?.W || 0
+      pitcherStatsMap[playerName].losses += stat.record?.L || 0
+      pitcherStatsMap[playerName].holds += stat.record?.H || 0
+      pitcherStatsMap[playerName].saves += stat.record?.S || 0
+      pitcherStatsMap[playerName].hits += stat.hits_allowed || 0
+      pitcherStatsMap[playerName].earned_runs += stat.earned_runs || 0
+      pitcherStatsMap[playerName].strikeouts += stat.strikeouts || 0
+      pitcherStatsMap[playerName].walks += stat.walks || 0
+
+      // 計算 quality_starts
+      if (outs >= 18 && stat.sequence === 1 && stat.earned_runs <= 3) {
+        pitcherStatsMap[playerName].quality_starts += 1;
+      } else {
+        pitcherStatsMap[playerName].quality_starts += 0;
+      }
+    }
     })
 
     // 整理返回結果

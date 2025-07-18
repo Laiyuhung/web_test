@@ -1466,29 +1466,38 @@ export default function RosterPage() {
         )}
       </div>
 
-      {/* 查看交易按鈕 */}
-      <button
-        onClick={async () => {
-          const res = await fetch('/api/trade/load', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ manager_id: userId })
-          })
-          const data = await res.json()
-          if (res.ok) {
-            setTradeList(data.trades)
-            setTradeDialogOpen(true)
-          } else {
-            console.error('❌ 取得交易失敗:', data)
-          }
-        }}
-        className="mt-2 px-4 py-1 rounded bg-[#004AAD] text-white text-sm hover:opacity-90"
-      >
-        Trades
-      </button>
+      {/* /* 查看交易按鈕 */}
+        <button
+          onClick={async () => {
+            // 交易截止判斷：台灣時間 7/28 00:00 之後禁止
+            const nowUTC = new Date()
+            const taiwanOffset = 8 * 60 * 60 * 1000
+            const taiwanNow = new Date(nowUTC.getTime() + taiwanOffset)
+            const deadline = new Date('2025-07-28T00:00:00+08:00')
+            if (taiwanNow >= deadline) {
+          showMessage('交易大限已到', 'error')
+          return
+            }
+            const res = await fetch('/api/trade/load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ manager_id: userId })
+            })
+            const data = await res.json()
+            if (res.ok) {
+          setTradeList(data.trades)
+          setTradeDialogOpen(true)
+            } else {
+          console.error('❌ 取得交易失敗:', data)
+            }
+          }}
+          className="mt-2 px-4 py-1 rounded bg-[#004AAD] text-white text-sm hover:opacity-90"
+        >
+          Trades
+        </button>
 
-      <button
-        onClick={async () => {
+        <button
+          onClick={async () => {
           const res = await fetch('/api/waiver/load_personal', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

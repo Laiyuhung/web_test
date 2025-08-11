@@ -21,8 +21,8 @@ export async function GET() {
     // 收集所有需要的 manager IDs，確保轉換為整數
     const managerIds = new Set()
     data.forEach(match => {
-      if (match.team1_id) managerIds.add(parseInt(match.team1_id))
-      if (match.team2_id) managerIds.add(parseInt(match.team2_id))
+      if (match.team1) managerIds.add(parseInt(match.team1))
+      if (match.team2) managerIds.add(parseInt(match.team2))
     })
 
     // 過濾掉無效的 ID
@@ -51,8 +51,8 @@ export async function GET() {
     // 轉換資料，加入 team names
     const enrichedData = data.map(match => ({
       ...match,
-      team1_name: managerMap[match.team1_id] || null,
-      team2_name: managerMap[match.team2_id] || null
+      team1_name: managerMap[match.team1] || null,
+      team2_name: managerMap[match.team2] || null
     }))
 
     return NextResponse.json(enrichedData)

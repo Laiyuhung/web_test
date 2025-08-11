@@ -21,9 +21,7 @@ export default function HomePage() {
   const [rewardList, setRewardList] = useState([])
   const [recentTransactions, setRecentTransactions] = useState([])
   const [transactionMode, setTransactionMode] = useState('recent')
-  const [postseasonTab, setPostseasonTab] = useState('reason')
-  const [postseasonSpots, setPostseasonSpots] = useState([])
-  const [managerMap, setManagerMap] = useState({})
+  const [postseasonSchedule, setPostseasonSchedule] = useState([])
 
   useEffect(() => {
     async function fetchRecentTransactions() {
@@ -137,24 +135,13 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    async function fetchPostseasonSpots() {
-      const res = await fetch('/api/postseason_spot')
+    async function fetchPostseasonSchedule() {
+      const res = await fetch('/api/postseason_schedule')
       const data = await res.json()
-      console.log('postseason_spot data', data)
-      setPostseasonSpots(data)
-      // 取得所有 manager_id 對應隊名
-      const ids = Array.from(new Set(data.map(d => d.manager_id).filter(Boolean)))
-      console.log('manager_ids', ids)
-      if (ids.length > 0) {
-        const { data: managers, error } = await supabase
-          .from('managers')
-          .select('id, team_name')
-          .in('id', ids)
-        console.log('managers', managers, error)
-        setManagerMap(Object.fromEntries((managers||[]).map(m => [m.id, m.team_name])))
-      }
+      console.log('postseason_schedule data', data)
+      setPostseasonSchedule(data)
     }
-    fetchPostseasonSpots()
+    fetchPostseasonSchedule()
   }, [])
 
   const handleFilter = week => {
@@ -271,19 +258,37 @@ export default function HomePage() {
     </table>
   )
 
-  const renderPostseasonReason = () => (
+  const renderPostseasonSchedule = () => (
     <table className="w-full text-sm text-center mt-4">
       <thead className="bg-gray-100">
         <tr>
-          <th className="p-2">晉級隊伍</th>
-          <th className="p-2">晉級緣由</th>
+          <th className="p-2">輪次</th>
+          <th className="p-2">場次</th>
+          <th className="p-2">隊伍1</th>
+          <th className="p-2">比分1</th>
+          <th className="p-2">隊伍2</th>
+          <th className="p-2">比分2</th>
+          <th className="p-2">獲勝隊伍</th>
+          <th className="p-2">日期</th>
         </tr>
       </thead>
       <tbody>
-        {postseasonSpots.map((s, i) => (
-          <tr key={s.id} className="border-t">
-            <td className="p-2">{managerMap[s.manager_id] || s.manager_id || '-'}</td>
-            <td className="p-2">{s.type}</td>
+        {postseasonSchedule.map((match, i) => (
+          <tr key={match.id || i} className="border-t">
+            <td className="p-2 font-bold">
+              {match.round === 1 ? '外卡賽' : 
+               match.round === 2 ? '半決賽' : 
+               match.round === 3 ? '決賽' : `第${match.round}輪`}
+            </td>
+            <td className="p-2">{match.match_number}</td>
+            <td className="p-2">{match.team1_name || match.team1_id || '-'}</td>
+            <td className="p-2">{match.team1_score || '-'}</td>
+            <td className="p-2">{match.team2_name || match.team2_id || '-'}</td>
+            <td className="p-2">{match.team2_score || '-'}</td>
+            <td className="p-2 font-semibold text-green-600">
+              {match.winner_name || match.winner_id || '-'}
+            </td>
+            <td className="p-2">{match.match_date || '-'}</td>
           </tr>
         ))}
       </tbody>
@@ -304,6 +309,16 @@ export default function HomePage() {
           All schedule
         </Button>
       </div>
+
+      {/* 季後賽賽程區塊 */}
+      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">【季後賽賽程】</h2>
+      <Card className="mb-6">
+        <CardContent className="overflow-auto">
+          {postseasonSchedule.length > 0 ? renderPostseasonSchedule() : (
+            <div className="p-4 text-center text-gray-500">目前沒有季後賽賽程資料</div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="overflow-auto">
@@ -388,19 +403,6 @@ export default function HomePage() {
             </TabsList>
             <TabsContent value="summary">{renderRewardSummary()}</TabsContent>
             <TabsContent value="list">{renderRewardList()}</TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* 新增：季後賽晉級區塊 */}
-      <h2 className="text-xl font-bold text-[#0155A0] mb-2">季後賽晉級</h2>
-      <Card className="mb-6">
-        <CardContent>
-          <Tabs defaultValue="reason" value={postseasonTab} onValueChange={setPostseasonTab}>
-            <TabsList>
-              <TabsTrigger value="reason">晉級緣由</TabsTrigger>
-            </TabsList>
-            <TabsContent value="reason">{renderPostseasonReason()}</TabsContent>
           </Tabs>
         </CardContent>
       </Card>

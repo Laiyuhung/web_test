@@ -6,7 +6,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from('fantasy_postseason_schedule')
     .select('*')
-    .order('round', { ascending: true })
+    .order('start_date', { ascending: true })
     .order('match_number', { ascending: true })
 
   console.log('postseason_schedule data', data)

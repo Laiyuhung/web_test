@@ -7,7 +7,7 @@ export async function GET() {
     .from('fantasy_postseason_schedule')
     .select('*')
     .order('start_date', { ascending: true })
-    .order('match_number', { ascending: true })
+    // .order('match_number', { ascending: true })
 
   console.log('postseason_schedule data', data)
   console.log('postseason_schedule error', error)

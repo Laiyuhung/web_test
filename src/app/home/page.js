@@ -278,9 +278,17 @@ export default function HomePage() {
         const scoreDisplay = (score1 === 0 && score2 === 0) ? 'vs' : `${score1} : ${score2}`;
 
         return (
-          <div key={match.id || i} className="p-3 bg-gray-50 rounded-lg">
-            <div className="text-sm font-medium">
-              {match.stage} {match.stage_game} {formatDate(match.start_date)} ~ {formatDate(match.end_date)} {team1Display} {scoreDisplay} {team2Display}
+          <div key={match.id || i} className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between text-base font-bold">
+              <span className="text-blue-600 flex-1">
+                {match.stage} {match.stage_game}
+              </span>
+              <span className="flex-1 text-center">
+                {formatDate(match.start_date)} ~ {formatDate(match.end_date)}
+              </span>
+              <span className="flex-1 text-center">
+                {team1Display} {scoreDisplay} {team2Display}
+              </span>
             </div>
           </div>
         );

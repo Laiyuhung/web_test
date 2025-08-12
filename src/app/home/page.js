@@ -259,40 +259,33 @@ export default function HomePage() {
   )
 
   const renderPostseasonSchedule = () => (
-    <table className="w-full text-sm text-center mt-4">
-      <thead className="bg-gray-100">
-        <tr>
-          <th className="p-2">輪次</th>
-          <th className="p-2">場次</th>
-          <th className="p-2">隊伍1</th>
-          <th className="p-2">比分1</th>
-          <th className="p-2">隊伍2</th>
-          <th className="p-2">比分2</th>
-          <th className="p-2">獲勝隊伍</th>
-          <th className="p-2">日期</th>
-        </tr>
-      </thead>
-      <tbody>
-        {postseasonSchedule.map((match, i) => (
-          <tr key={match.id || i} className="border-t">
-            <td className="p-2 font-bold">
-              {match.round === 1 ? '外卡賽' : 
-               match.round === 2 ? '半決賽' : 
-               match.round === 3 ? '決賽' : `第${match.round}輪`}
-            </td>
-            <td className="p-2">{match.match_number}</td>
-            <td className="p-2">{match.team1_name || match.team1_id || '-'}</td>
-            <td className="p-2">{match.team1_score || '-'}</td>
-            <td className="p-2">{match.team2_name || match.team2_id || '-'}</td>
-            <td className="p-2">{match.team2_score || '-'}</td>
-            <td className="p-2 font-semibold text-green-600">
-              {match.winner_name || match.winner_id || '-'}
-            </td>
-            <td className="p-2">{match.match_date || '-'}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="space-y-3 mt-4">
+      {postseasonSchedule.map((match, i) => {
+        // 格式化日期為 M/D
+        const formatDate = (dateStr) => {
+          if (!dateStr) return '';
+          const date = new Date(dateStr);
+          return `${date.getMonth() + 1}/${date.getDate()}`;
+        };
+
+        // 處理隊伍名稱
+        const team1Display = match.team1 || 'TBD';
+        const team2Display = match.team2 || 'TBD';
+
+        // 處理比分顯示
+        const score1 = match.score1 || 0;
+        const score2 = match.score2 || 0;
+        const scoreDisplay = (score1 === 0 && score2 === 0) ? 'vs' : `${score1} : ${score2}`;
+
+        return (
+          <div key={match.id || i} className="p-3 bg-gray-50 rounded-lg">
+            <div className="text-sm font-medium">
+              {match.stage} {match.stage_game} {formatDate(match.start_date)} ~ {formatDate(match.end_date)} {team1Display} {scoreDisplay} {team2Display}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   )
 
   return (

@@ -9,7 +9,11 @@ export async function GET() {
       .select('*')
       .order('start_date', { ascending: true })
 
+    console.log('Query result:', { data, error })
+    console.log('Data length:', data?.length)
+
     if (error) {
+      console.error('Supabase error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 

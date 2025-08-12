@@ -279,8 +279,9 @@ export default function HomePage() {
 
         return (
           <div key={match.id || i} className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center text-base font-bold">
-              <span className="text-blue-600 w-1/4">
+            {/* 桌面版佈局 */}
+            <div className="hidden md:flex items-center text-base font-bold">
+              <span className="text-[#0155A0] w-1/4">
                 {match.stage} {match.stage_game}
               </span>
               <span className="w-1/4 text-center">
@@ -290,6 +291,19 @@ export default function HomePage() {
                 {team1Display} {scoreDisplay} {team2Display}
               </span>
             </div>
+            
+            {/* 手機版佈局 */}
+            <div className="md:hidden space-y-2 text-base font-bold">
+              <div className="text-[#0155A0]">
+                {match.stage} {match.stage_game}
+              </div>
+              <div className="text-center">
+                {formatDate(match.start_date)} ~ {formatDate(match.end_date)}
+              </div>
+              <div className="text-center">
+                {team1Display} {scoreDisplay} {team2Display}
+              </div>
+            </div>
           </div>
         );
       })}
@@ -298,6 +312,16 @@ export default function HomePage() {
 
   return (
     <div className="p-6">
+      {/* 季後賽賽程區塊 */}
+      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">【季後賽賽程】</h2>
+      <Card className="mb-6">
+        <CardContent className="overflow-auto">
+          {postseasonSchedule.length > 0 ? renderPostseasonSchedule() : (
+            <div className="p-4 text-center text-gray-500">目前沒有季後賽賽程資料</div>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="mb-4 flex gap-2 flex-wrap">
         <Button
           onClick={() => currentWeek && handleFilter(currentWeek)}
@@ -310,16 +334,6 @@ export default function HomePage() {
           All schedule
         </Button>
       </div>
-
-      {/* 季後賽賽程區塊 */}
-      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">【季後賽賽程】</h2>
-      <Card className="mb-6">
-        <CardContent className="overflow-auto">
-          {postseasonSchedule.length > 0 ? renderPostseasonSchedule() : (
-            <div className="p-4 text-center text-gray-500">目前沒有季後賽賽程資料</div>
-          )}
-        </CardContent>
-      </Card>
 
       <Card>
         <CardContent className="overflow-auto">

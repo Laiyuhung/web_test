@@ -279,14 +279,14 @@ export default function HomePage() {
 
         return (
           <div key={match.id || i} className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center justify-between text-base font-bold">
-              <span className="text-blue-600 flex-1">
+            <div className="flex items-center text-base font-bold">
+              <span className="text-blue-600 w-1/4">
                 {match.stage} {match.stage_game}
               </span>
-              <span className="flex-1 text-center">
+              <span className="w-1/4 text-center">
                 {formatDate(match.start_date)} ~ {formatDate(match.end_date)}
               </span>
-              <span className="flex-1 text-center">
+              <span className="w-1/2 text-center">
                 {team1Display} {scoreDisplay} {team2Display}
               </span>
             </div>

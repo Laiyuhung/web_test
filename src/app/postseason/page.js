@@ -114,82 +114,8 @@ export default function PostseasonTable() {
   }
 
   const renderScoreTable = () => {
-    if (data.length !== 2) return null;
-    
-    const team1 = data[0];
-    const team2 = data[1];
-    
-    return (
-      <div className="mb-6">
-        <h2 className="text-base font-bold text-[#0155A0] mb-2">Fantasy Points</h2>
-        <div className="overflow-x-auto">
-          <table className="table-auto border w-full text-sm">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border px-3 py-2 text-left">項目</th>
-                <th className="border px-3 py-2 text-center">{team1.team_name || 'TBD'}</th>
-                <th className="border px-3 py-2 text-center">{team2.team_name || 'TBD'}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pointKeys.map((key) => {
-                const statName = key.slice(2);
-                const team1Value = key.startsWith('b_')
-                  ? team1.batters?.fantasyPoints?.[statName] ?? 0
-                  : team1.pitchers?.fantasyPoints?.[statName] ?? 0;
-                const team2Value = key.startsWith('b_')
-                  ? team2.batters?.fantasyPoints?.[statName] ?? 0
-                  : team2.pitchers?.fantasyPoints?.[statName] ?? 0;
-                
-                const team1Wins = team1Value > team2Value;
-                const team2Wins = team2Value > team1Value;
-                
-                return (
-                  <tr key={key}>
-                    <td className="border px-3 py-2 text-left font-semibold">{statName}</td>
-                    <td 
-                      onClick={() => {
-                        if (!loadingDetails && team1.manager_id) {
-                          setSelectedManagerId(team1.manager_id)
-                          setSelectedTeamName(team1.team_name)
-                          fetchPlayerDetails(team1.manager_id)
-                        }
-                      }}
-                      className={`border px-3 py-2 text-center ${team1Wins ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id ? "cursor-pointer hover:bg-blue-200" : ""}`}
-                      title={!loadingDetails && team1.manager_id ? "點擊查看球員詳細數據" : ""}
-                    >
-                      {team1Value}
-                    </td>
-                    <td 
-                      onClick={() => {
-                        if (!loadingDetails && team2.manager_id) {
-                          setSelectedManagerId(team2.manager_id)
-                          setSelectedTeamName(team2.team_name)
-                          fetchPlayerDetails(team2.manager_id)
-                        }
-                      }}
-                      className={`border px-3 py-2 text-center ${team2Wins ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id ? "cursor-pointer hover:bg-blue-200" : ""}`}
-                      title={!loadingDetails && team2.manager_id ? "點擊查看球員詳細數據" : ""}
-                    >
-                      {team2Value}
-                    </td>
-                  </tr>
-                );
-              })}
-              <tr className="bg-gray-100">
-                <td className="border px-3 py-2 text-left font-bold">Total</td>
-                <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">
-                  {team1.fantasyPoints?.Total || '0'}
-                </td>
-                <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">
-                  {team2.fantasyPoints?.Total || '0'}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
+    // 移除 Fantasy Points 表格，改為在上方顯示大比數
+    return null;
   }
 
   const renderStatTable = (title, keys, type) => {
@@ -199,19 +125,23 @@ export default function PostseasonTable() {
     const team2 = data[1];
     
     return (
-      <div>
-        <h2 className="text-base font-bold text-[#0155A0] mb-2">{title} Total</h2>
+      <div className="mb-8">
+        <h2 className="text-lg font-bold text-center mb-4">{title}</h2>
         <div className="overflow-x-auto">
-          <table className="table-auto border w-full text-sm">
+          <table className="w-full text-center">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border px-3 py-2 text-left">項目</th>
-                <th className="border px-3 py-2 text-center">{team1.team_name || 'TBD'}</th>
-                <th className="border px-3 py-2 text-center">{team2.team_name || 'TBD'}</th>
+              <tr>
+                <th className="text-xl font-bold text-[#0155A0] pb-4 w-1/3">
+                  {team1.team_name || 'TBD'}
+                </th>
+                <th className="pb-4 w-1/3"></th>
+                <th className="text-xl font-bold text-[#0155A0] pb-4 w-1/3">
+                  {team2.team_name || 'TBD'}
+                </th>
               </tr>
             </thead>
             <tbody>
-              {keys.map((key) => {
+              {keys.map((key, index) => {
                 const team1Value = parseFloat(team1[type][key]) || 0;
                 const team2Value = parseFloat(team2[type][key]) || 0;
                 
@@ -229,8 +159,7 @@ export default function PostseasonTable() {
                 }
                 
                 return (
-                  <tr key={key}>
-                    <td className="border px-3 py-2 text-left font-semibold">{key}</td>
+                  <tr key={key} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                     <td 
                       onClick={() => {
                         if (!loadingDetails && team1.manager_id) {
@@ -239,10 +168,13 @@ export default function PostseasonTable() {
                           fetchPlayerDetails(team1.manager_id)
                         }
                       }}
-                      className={`border px-3 py-2 text-center ${team1Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id ? "cursor-pointer hover:bg-blue-200" : ""}`}
+                      className={`py-3 px-4 text-lg font-semibold ${team1Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
                       title={!loadingDetails && team1.manager_id ? "點擊查看球員詳細數據" : ""}
                     >
                       {team1[type][key]}
+                    </td>
+                    <td className="py-3 px-4 text-sm font-bold text-gray-600 bg-gray-100">
+                      {key}
                     </td>
                     <td 
                       onClick={() => {
@@ -252,7 +184,7 @@ export default function PostseasonTable() {
                           fetchPlayerDetails(team2.manager_id)
                         }
                       }}
-                      className={`border px-3 py-2 text-center ${team2Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id ? "cursor-pointer hover:bg-blue-200" : ""}`}
+                      className={`py-3 px-4 text-lg font-semibold ${team2Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
                       title={!loadingDetails && team2.manager_id ? "點擊查看球員詳細數據" : ""}
                     >
                       {team2[type][key]}
@@ -397,36 +329,24 @@ export default function PostseasonTable() {
           <option value="" disabled>請選擇賽程</option>
           {matchups.map(m => (
             <option key={m.id} value={m.id}>
-              {m.stage} {m.stage_game} - {m.team1_name} vs {m.team2_name} ({m.start_date} ~ {m.end_date})
+              {m.stage} {m.stage_game} - {m.team1_name} vs {m.team2_name}
             </option>
           ))}
         </select>
+        
+        {selectedMatchup && (
+          <span className="text-sm text-gray-600">
+            ({new Date(selectedMatchup.start_date).toLocaleDateString('en-US', {month: 'numeric', day: 'numeric'})} ~ {new Date(selectedMatchup.end_date).toLocaleDateString('en-US', {month: 'numeric', day: 'numeric'})})
+          </span>
+        )}
       </div>
-
-      {selectedMatchup && (
-        <div className="mb-4 p-4 bg-blue-50 rounded">
-          <h3 className="font-semibold text-lg">{selectedMatchup.stage} {selectedMatchup.stage_game}</h3>
-          <p className="text-sm text-gray-600">
-            {selectedMatchup.team1_name} vs {selectedMatchup.team2_name}
-          </p>
-          <p className="text-sm text-gray-600">
-            賽程期間：{selectedMatchup.start_date} ~ {selectedMatchup.end_date}
-          </p>
-          {(selectedMatchup.score1 !== null && selectedMatchup.score2 !== null) && (
-            <p className="text-sm font-semibold mt-2">
-              最終比分：{selectedMatchup.team1_name} {selectedMatchup.score1} - {selectedMatchup.score2} {selectedMatchup.team2_name}
-            </p>
-          )}
-        </div>
-      )}
 
       {loading && <div className="text-blue-600 font-semibold">Loading...</div>}
 
       {!loading && data.length > 0 && (
-        <div className="overflow-x-auto space-y-12">
-          {renderScoreTable()}
-          {renderStatTable('Batters', ['AB', ...batterKeys], 'batters')}
-          {renderStatTable('Pitchers', ['IP', ...pitcherKeys], 'pitchers')}
+        <div className="space-y-8">
+          {renderStatTable('Batters Total', ['AB', ...batterKeys], 'batters')}
+          {renderStatTable('Pitchers Total', ['IP', ...pitcherKeys], 'pitchers')}
         </div>
       )}
 

@@ -118,6 +118,84 @@ export default function PostseasonTable() {
     return null;
   }
 
+  const renderCombinedStatTable = () => {
+    if (data.length !== 2) return null;
+    
+    const team1 = data[0];
+    const team2 = data[1];
+    
+    // 合併打者和投手統計項目
+    const batterKeys = ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'];
+    const pitcherKeys = ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'];
+    
+    const allKeys = [
+      ...batterKeys.map(key => ({ key, type: 'batters' })),
+      ...pitcherKeys.map(key => ({ key, type: 'pitchers' }))
+    ];
+    
+    return (
+      <div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-center">
+            <tbody>
+              {allKeys.map(({ key, type }, index) => {
+                const team1Value = parseFloat(team1[type][key]) || 0;
+                const team2Value = parseFloat(team2[type][key]) || 0;
+                
+                let team1Better, team2Better;
+                if ((key === 'K' && type === 'batters') || 
+                    (key === 'GIDP' && type === 'batters') ||
+                    (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key) && type === 'pitchers')) {
+                  // 數值越低越好
+                  team1Better = team1Value < team2Value && team1Value !== team2Value;
+                  team2Better = team2Value < team1Value && team1Value !== team2Value;
+                } else {
+                  // 數值越高越好
+                  team1Better = team1Value > team2Value && team1Value !== team2Value;
+                  team2Better = team2Value > team1Value && team1Value !== team2Value;
+                }
+                
+                return (
+                  <tr key={`${type}-${key}`} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                    <td 
+                      onClick={() => {
+                        if (!loadingDetails && team1.manager_id) {
+                          setSelectedManagerId(team1.manager_id)
+                          setSelectedTeamName(team1.team_name)
+                          fetchPlayerDetails(team1.manager_id)
+                        }
+                      }}
+                      className={`py-3 px-4 text-lg font-semibold w-1/3 ${team1Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
+                      title={!loadingDetails && team1.manager_id ? "點擊查看球員詳細數據" : ""}
+                    >
+                      {team1[type][key]}
+                    </td>
+                    <td className="py-3 px-4 text-sm font-bold text-gray-600 bg-gray-100 w-1/3">
+                      {key}
+                    </td>
+                    <td 
+                      onClick={() => {
+                        if (!loadingDetails && team2.manager_id) {
+                          setSelectedManagerId(team2.manager_id)
+                          setSelectedTeamName(team2.team_name)
+                          fetchPlayerDetails(team2.manager_id)
+                        }
+                      }}
+                      className={`py-3 px-4 text-lg font-semibold w-1/3 ${team2Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
+                      title={!loadingDetails && team2.manager_id ? "點擊查看球員詳細數據" : ""}
+                    >
+                      {team2[type][key]}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
   const renderStatTable = (title, keys, type) => {
     if (data.length !== 2) return null;
     
@@ -345,8 +423,33 @@ export default function PostseasonTable() {
 
       {!loading && data.length > 0 && (
         <div className="space-y-8">
-          {renderStatTable('Batters Total', ['AB', ...batterKeys], 'batters')}
-          {renderStatTable('Pitchers Total', ['IP', ...pitcherKeys], 'pitchers')}
+          {/* 球隊名稱和總分在最上面 */}
+          <div className="text-center">
+            <div className="flex justify-center items-center mb-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-[#0155A0]">
+                  {data[0].team_name || 'TBD'}
+                </div>
+              </div>
+              <div className="mx-8 flex items-center">
+                <div className="text-4xl font-bold mr-2">
+                  {data[0].fantasyPoints?.Total || '0'}
+                </div>
+                <div className="text-2xl font-bold text-gray-400 mx-2">/</div>
+                <div className="text-4xl font-bold ml-2">
+                  {data[1].fantasyPoints?.Total || '0'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-[#0155A0]">
+                  {data[1].team_name || 'TBD'}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* 統合的數據表格 */}
+          {renderCombinedStatTable()}
         </div>
       )}
 

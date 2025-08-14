@@ -22,6 +22,8 @@ export default function HomePage() {
   const [recentTransactions, setRecentTransactions] = useState([])
   const [transactionMode, setTransactionMode] = useState('recent')
   const [postseasonSchedule, setPostseasonSchedule] = useState([])
+  const [postseasonSeries, setPostseasonSeries] = useState([])
+  const [postseasonTab, setPostseasonTab] = useState('schedule')
 
   useEffect(() => {
     async function fetchRecentTransactions() {
@@ -142,6 +144,16 @@ export default function HomePage() {
       setPostseasonSchedule(data)
     }
     fetchPostseasonSchedule()
+  }, [])
+
+  useEffect(() => {
+    async function fetchPostseasonSeries() {
+      const res = await fetch('/api/postseason_series')
+      const data = await res.json()
+      console.log('postseason_series data', data)
+      setPostseasonSeries(data)
+    }
+    fetchPostseasonSeries()
   }, [])
 
   const handleFilter = week => {
@@ -278,9 +290,9 @@ export default function HomePage() {
         const scoreDisplay = (score1 === 0 && score2 === 0) ? 'vs' : `${score1} : ${score2}`;
 
         return (
-          <div key={match.id || i} className="p-4 bg-gray-50 rounded-lg">
+          <div key={match.id || i} className="p-3 bg-gray-50 rounded-lg">
             {/* 桌面版佈局 */}
-            <div className="hidden md:flex items-center text-base font-bold">
+            <div className="hidden md:flex items-center text-sm font-bold">
               <span className="text-[#0155A0] w-1/4">
                 {match.stage} {match.stage_game}
               </span>
@@ -293,7 +305,7 @@ export default function HomePage() {
             </div>
             
             {/* 手機版佈局 */}
-            <div className="md:hidden space-y-2 text-base font-bold">
+            <div className="md:hidden space-y-2 text-sm font-bold">
               <div className="text-[#0155A0]">
                 {match.stage} {match.stage_game}
               </div>
@@ -310,15 +322,90 @@ export default function HomePage() {
     </div>
   )
 
+  const renderPostseasonBracket = () => {
+    // 根據 stage_no 分組系列賽
+    const groupedSeries = postseasonSeries.reduce((acc, series) => {
+      const stage = series.stage_no || 1;
+      if (!acc[stage]) acc[stage] = [];
+      acc[stage].push(series);
+      return acc;
+    }, {});
+
+    // 取得所有輪次並排序
+    const stages = Object.keys(groupedSeries).sort((a, b) => parseInt(a) - parseInt(b));
+
+    return (
+      <div className="mt-4 overflow-x-auto">
+        <div className="flex gap-6 min-w-max p-4">
+          {stages.map(stage => (
+            <div key={stage} className="flex flex-col items-center">
+              <h3 className="text-sm font-bold text-[#0155A0] mb-4">
+                {stage === '1' ? '第一輪' : 
+                 stage === '2' ? '第二輪' : 
+                 stage === '3' ? '第三輪' : 
+                 stage === '4' ? '決賽' : `第${stage}輪`}
+              </h3>
+              <div className="space-y-4">
+                {groupedSeries[stage].map((series, i) => {
+                  const higherTeam = series.higher_seed_team_name || 'TBD';
+                  const lowerTeam = series.lower_seed_team_name || 'TBD';
+                  const higherScore = series.higher_seed_score || 0;
+                  const lowerScore = series.lower_seed_score || 0;
+                  
+                  // 判斷獲勝者
+                  const higherWon = higherScore > lowerScore && (higherScore > 0 || lowerScore > 0);
+                  const lowerWon = lowerScore > higherScore && (higherScore > 0 || lowerScore > 0);
+                  
+                  return (
+                    <div key={series.id || i} className="bg-white border rounded-lg p-3 min-w-48">
+                      <div className="space-y-2 text-sm">
+                        <div className={`flex justify-between items-center p-2 rounded ${higherWon ? 'bg-green-100' : 'bg-gray-50'}`}>
+                          <span className={`${higherWon ? 'font-bold' : ''}`}>{higherTeam}</span>
+                          <span className={`${higherWon ? 'font-bold' : ''}`}>{higherScore}</span>
+                        </div>
+                        <div className={`flex justify-between items-center p-2 rounded ${lowerWon ? 'bg-green-100' : 'bg-gray-50'}`}>
+                          <span className={`${lowerWon ? 'font-bold' : ''}`}>{lowerTeam}</span>
+                          <span className={`${lowerWon ? 'font-bold' : ''}`}>{lowerScore}</span>
+                        </div>
+                      </div>
+                      {series.stage && (
+                        <div className="text-xs text-gray-500 mt-2 text-center">
+                          {series.stage}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       {/* 季後賽賽程區塊 */}
-      <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">【季後賽賽程】</h2>
+      <h2 className="text-lg font-bold text-[#0155A0] mt-8 mb-2">【季後賽賽程】</h2>
       <Card className="mb-6">
-        <CardContent className="overflow-auto">
-          {postseasonSchedule.length > 0 ? renderPostseasonSchedule() : (
-            <div className="p-4 text-center text-gray-500">目前沒有季後賽賽程資料</div>
-          )}
+        <CardContent className="p-4">
+          <Tabs value={postseasonTab} onValueChange={setPostseasonTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="schedule" className="text-sm">Schedule</TabsTrigger>
+              <TabsTrigger value="bracket" className="text-sm">Bracket</TabsTrigger>
+            </TabsList>
+            <TabsContent value="schedule" className="mt-4">
+              {postseasonSchedule.length > 0 ? renderPostseasonSchedule() : (
+                <div className="p-4 text-center text-gray-500 text-sm">目前沒有季後賽賽程資料</div>
+              )}
+            </TabsContent>
+            <TabsContent value="bracket" className="mt-4">
+              {postseasonSeries.length > 0 ? renderPostseasonBracket() : (
+                <div className="p-4 text-center text-gray-500 text-sm">目前沒有晉級圖資料</div>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

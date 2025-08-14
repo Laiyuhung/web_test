@@ -99,8 +99,8 @@ export async function POST(req) {
   try {
     const { matchupId, team1, team2, startDate, endDate } = await req.json()
     
-    if (!team1 || !team2 || !startDate || !endDate) {
-      return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
+    if (!startDate || !endDate) {
+      return NextResponse.json({ error: '缺少必要參數: startDate 或 endDate' }, { status: 400 })
     }
 
     console.log('🔍 季後賽查找參數:', { matchupId, team1, team2, startDate, endDate });

@@ -113,111 +113,159 @@ export default function PostseasonTable() {
     }
   }
 
-  const renderScoreTable = () => (
-    <div className="mb-6">
-      <h2 className="text-base font-bold text-[#0155A0] mb-2">Fantasy Points</h2>
-      <div className="overflow-x-auto">
-        <table className="table-auto border w-full text-sm">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border px-3 py-2 text-center">Result</th>
-              <th className="border px-3 py-2 text-left">Team</th>
-              {pointKeys.map((key) => (
-                <th key={key} className="border px-3 py-2 text-center whitespace-nowrap">
-                  {key.slice(2)}
-                </th>
-              ))}
-              <th className="border px-3 py-2 text-center">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((d) => (
-              <tr key={d.team_name} className="text-sm">
-                <td className="border px-3 py-2 text-center font-bold">
-                  <span className={`px-2 py-1 rounded text-white ${d.isWinner ? 'bg-green-600' : 'bg-red-600'}`}>
-                    {d.isWinner ? 'WIN' : 'LOSE'}
-                  </span>
-                </td>
-                <td 
-                  onClick={() => {
-                    if (!loadingDetails) {
-                      setSelectedManagerId(d.manager_id)
-                      setSelectedTeamName(d.team_name)
-                      fetchPlayerDetails(d.manager_id)
-                    }
-                  }}
-                  className={`font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap ${!loadingDetails ? "cursor-pointer hover:bg-blue-100 hover:text-blue-600" : "opacity-70"}`}
-                  title={loadingDetails ? "資料載入中..." : "點擊查看球員詳細數據"}
-                >
-                  {d.team_name} {loadingDetails && d.manager_id === selectedManagerId && <span className="inline-block ml-1 text-blue-600">載入中...</span>}
-                </td>
-                {pointKeys.map((key) => {
-                  const value = key.startsWith('b_')
-                    ? d.batters?.fantasyPoints?.[key.slice(2)] ?? '0'
-                    : d.pitchers?.fantasyPoints?.[key.slice(2)] ?? '0'
-
-                  return (
-                    <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                      {value}
+  const renderScoreTable = () => {
+    if (data.length !== 2) return null;
+    
+    const team1 = data[0];
+    const team2 = data[1];
+    
+    return (
+      <div className="mb-6">
+        <h2 className="text-base font-bold text-[#0155A0] mb-2">Fantasy Points</h2>
+        <div className="overflow-x-auto">
+          <table className="table-auto border w-full text-sm">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border px-3 py-2 text-left">項目</th>
+                <th className="border px-3 py-2 text-center">{team1.team_name || 'TBD'}</th>
+                <th className="border px-3 py-2 text-center">{team2.team_name || 'TBD'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pointKeys.map((key) => {
+                const statName = key.slice(2);
+                const team1Value = key.startsWith('b_')
+                  ? team1.batters?.fantasyPoints?.[statName] ?? 0
+                  : team1.pitchers?.fantasyPoints?.[statName] ?? 0;
+                const team2Value = key.startsWith('b_')
+                  ? team2.batters?.fantasyPoints?.[statName] ?? 0
+                  : team2.pitchers?.fantasyPoints?.[statName] ?? 0;
+                
+                const team1Wins = team1Value > team2Value;
+                const team2Wins = team2Value > team1Value;
+                
+                return (
+                  <tr key={key}>
+                    <td className="border px-3 py-2 text-left font-semibold">{statName}</td>
+                    <td 
+                      onClick={() => {
+                        if (!loadingDetails && team1.manager_id) {
+                          setSelectedManagerId(team1.manager_id)
+                          setSelectedTeamName(team1.team_name)
+                          fetchPlayerDetails(team1.manager_id)
+                        }
+                      }}
+                      className={`border px-3 py-2 text-center ${team1Wins ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id ? "cursor-pointer hover:bg-blue-200" : ""}`}
+                      title={!loadingDetails && team1.manager_id ? "點擊查看球員詳細數據" : ""}
+                    >
+                      {team1Value}
                     </td>
-                  )
-                })}
-                <td className="border px-3 py-2 text-center font-bold">{d.fantasyPoints?.Total || '0'}</td>
+                    <td 
+                      onClick={() => {
+                        if (!loadingDetails && team2.manager_id) {
+                          setSelectedManagerId(team2.manager_id)
+                          setSelectedTeamName(team2.team_name)
+                          fetchPlayerDetails(team2.manager_id)
+                        }
+                      }}
+                      className={`border px-3 py-2 text-center ${team2Wins ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id ? "cursor-pointer hover:bg-blue-200" : ""}`}
+                      title={!loadingDetails && team2.manager_id ? "點擊查看球員詳細數據" : ""}
+                    >
+                      {team2Value}
+                    </td>
+                  </tr>
+                );
+              })}
+              <tr className="bg-gray-100">
+                <td className="border px-3 py-2 text-left font-bold">Total</td>
+                <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">
+                  {team1.fantasyPoints?.Total || '0'}
+                </td>
+                <td className="border px-3 py-2 text-center font-bold text-[#0155A0]">
+                  {team2.fantasyPoints?.Total || '0'}
+                </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  )
+    );
+  }
 
-  const renderStatTable = (title, keys, type) => (
-    <div>
-      <h2 className="text-base font-bold text-[#0155A0] mb-2">{title} Total</h2>
-      <div className="overflow-x-auto">
-        <table className="table-auto border w-full text-sm">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border px-3 py-2 text-center">Result</th>
-              <th className="border px-3 py-2 text-left">Team</th>
-              {keys.map((key) => (
-                <th key={key} className="border px-3 py-2 text-center whitespace-nowrap">{key}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((d) => (
-              <tr key={d.team_name} className="text-sm">
-                <td className="border px-3 py-2 text-center font-bold">
-                  <span className={`px-2 py-1 rounded text-white ${d.isWinner ? 'bg-green-600' : 'bg-red-600'}`}>
-                    {d.isWinner ? 'WIN' : 'LOSE'}
-                  </span>
-                </td>
-                <td 
-                  onClick={() => {
-                    if (!loadingDetails) {
-                      setSelectedManagerId(d.manager_id)
-                      setSelectedTeamName(d.team_name)
-                      fetchPlayerDetails(d.manager_id)
-                    }
-                  }}
-                  className={`font-bold border px-3 py-2 text-left bg-gray-100 whitespace-nowrap ${!loadingDetails ? "cursor-pointer hover:bg-blue-100 hover:text-blue-600" : "opacity-70"}`}
-                  title={loadingDetails ? "資料載入中..." : "點擊查看球員詳細數據"}
-                >
-                  {d.team_name} {loadingDetails && d.manager_id === selectedManagerId && <span className="inline-block ml-1 text-blue-600">載入中...</span>}
-                </td>
-                {keys.map((key) => (
-                  <td key={key} className="border px-3 py-2 text-center text-[#0155A0] font-semibold whitespace-nowrap">
-                    {d[type][key]}
-                  </td>
-                ))}
+  const renderStatTable = (title, keys, type) => {
+    if (data.length !== 2) return null;
+    
+    const team1 = data[0];
+    const team2 = data[1];
+    
+    return (
+      <div>
+        <h2 className="text-base font-bold text-[#0155A0] mb-2">{title} Total</h2>
+        <div className="overflow-x-auto">
+          <table className="table-auto border w-full text-sm">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border px-3 py-2 text-left">項目</th>
+                <th className="border px-3 py-2 text-center">{team1.team_name || 'TBD'}</th>
+                <th className="border px-3 py-2 text-center">{team2.team_name || 'TBD'}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {keys.map((key) => {
+                const team1Value = parseFloat(team1[type][key]) || 0;
+                const team2Value = parseFloat(team2[type][key]) || 0;
+                
+                let team1Better, team2Better;
+                if ((key === 'K' && type === 'batters') || 
+                    (key === 'GIDP' && type === 'batters') ||
+                    (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key) && type === 'pitchers')) {
+                  // 數值越低越好
+                  team1Better = team1Value < team2Value && team1Value !== team2Value;
+                  team2Better = team2Value < team1Value && team1Value !== team2Value;
+                } else {
+                  // 數值越高越好
+                  team1Better = team1Value > team2Value && team1Value !== team2Value;
+                  team2Better = team2Value > team1Value && team1Value !== team2Value;
+                }
+                
+                return (
+                  <tr key={key}>
+                    <td className="border px-3 py-2 text-left font-semibold">{key}</td>
+                    <td 
+                      onClick={() => {
+                        if (!loadingDetails && team1.manager_id) {
+                          setSelectedManagerId(team1.manager_id)
+                          setSelectedTeamName(team1.team_name)
+                          fetchPlayerDetails(team1.manager_id)
+                        }
+                      }}
+                      className={`border px-3 py-2 text-center ${team1Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id ? "cursor-pointer hover:bg-blue-200" : ""}`}
+                      title={!loadingDetails && team1.manager_id ? "點擊查看球員詳細數據" : ""}
+                    >
+                      {team1[type][key]}
+                    </td>
+                    <td 
+                      onClick={() => {
+                        if (!loadingDetails && team2.manager_id) {
+                          setSelectedManagerId(team2.manager_id)
+                          setSelectedTeamName(team2.team_name)
+                          fetchPlayerDetails(team2.manager_id)
+                        }
+                      }}
+                      className={`border px-3 py-2 text-center ${team2Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id ? "cursor-pointer hover:bg-blue-200" : ""}`}
+                      title={!loadingDetails && team2.manager_id ? "點擊查看球員詳細數據" : ""}
+                    >
+                      {team2[type][key]}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  )
+    );
+  }
 
   // 渲染球員詳細數據模態框
   const renderPlayerDetailsModal = () => {

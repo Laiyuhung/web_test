@@ -141,6 +141,23 @@ export async function POST(req) {
     const targetTeams = [team1, team2]
 
     for (const managerId of targetTeams) {
+      if (!managerId) {
+        // 如果 managerId 是 null，建立 TBD 資料
+        result.push({
+          manager_id: null,
+          team_name: null,
+          batters: { 
+            AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0, K: 0, BB: 0, GIDP: 0, XBH: 0, TB: 0,
+            AVG: '.000', OPS: '.000', fantasyPoints: {} 
+          },
+          pitchers: { 
+            OUT: 0, W: 0, L: 0, HLD: 0, SV: 0, H: 0, ER: 0, K: 0, BB: 0, QS: 0,
+            ERA: '0.00', WHIP: '0.00', IP: '0.0', fantasyPoints: {} 
+          }
+        })
+        continue
+      }
+
       const players = playerMap[managerId] || {}
       const batterSum = { AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0, K: 0, BB: 0, GIDP: 0, XBH: 0, TB: 0 }
       const pitcherSum = { OUT: 0, W: 0, L: 0, HLD: 0, SV: 0, H: 0, ER: 0, K: 0, BB: 0, QS: 0 }
@@ -223,59 +240,69 @@ export async function POST(req) {
     const team1Data = result.find(r => r.manager_id === team1)
     const team2Data = result.find(r => r.manager_id === team2)
 
-    if (!team1Data || !team2Data) {
-      return NextResponse.json({ error: '找不到隊伍數據' }, { status: 404 })
-    }
-
-    // 打者項目比較
-    for (const stat of batterStats) {
-      const isLowerBetter = ['K', 'GIDP'].includes(stat)
-      const team1Value = parseFloat(team1Data.batters[stat]) || 0
-      const team2Value = parseFloat(team2Data.batters[stat]) || 0
-      
-      let team1Score, team2Score
-      
-      if (team1Value === team2Value) {
-        // 平手各得0.5分
-        team1Score = team2Score = 0.5
-      } else if (isLowerBetter) {
-        // 數值越低越好
-        team1Score = team1Value < team2Value ? 1 : 0
-        team2Score = team2Value < team1Value ? 1 : 0
-      } else {
-        // 數值越高越好
-        team1Score = team1Value > team2Value ? 1 : 0
-        team2Score = team2Value > team1Value ? 1 : 0
+    if (team1Data && team2Data) {
+      // 打者項目比較
+      for (const stat of batterStats) {
+        const isLowerBetter = ['K', 'GIDP'].includes(stat)
+        const team1Value = parseFloat(team1Data.batters[stat]) || 0
+        const team2Value = parseFloat(team2Data.batters[stat]) || 0
+        
+        let team1Score = 0, team2Score = 0
+        
+        if (team1Value !== team2Value) {
+          if (isLowerBetter) {
+            // 數值越低越好
+            team1Score = team1Value < team2Value ? 1 : 0
+            team2Score = team2Value < team1Value ? 1 : 0
+          } else {
+            // 數值越高越好
+            team1Score = team1Value > team2Value ? 1 : 0
+            team2Score = team2Value > team1Value ? 1 : 0
+          }
+        }
+        
+        team1Data.batters.fantasyPoints[stat] = team1Score
+        team2Data.batters.fantasyPoints[stat] = team2Score
       }
-      
-      team1Data.batters.fantasyPoints[stat] = team1Score
-      team2Data.batters.fantasyPoints[stat] = team2Score
-    }
 
-    // 投手項目比較
-    const pitcherLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
-    for (const stat of pitcherStats) {
-      const isLowerBetter = pitcherLowerBetter.includes(stat)
-      const team1Value = parseFloat(team1Data.pitchers[stat]) || 0
-      const team2Value = parseFloat(team2Data.pitchers[stat]) || 0
-      
-      let team1Score, team2Score
-      
-      if (team1Value === team2Value) {
-        // 平手各得0.5分
-        team1Score = team2Score = 0.5
-      } else if (isLowerBetter) {
-        // 數值越低越好
-        team1Score = team1Value < team2Value ? 1 : 0
-        team2Score = team2Value < team1Value ? 1 : 0
-      } else {
-        // 數值越高越好
-        team1Score = team1Value > team2Value ? 1 : 0
-        team2Score = team2Value > team1Value ? 1 : 0
+      // 投手項目比較
+      const pitcherLowerBetter = ['L', 'H', 'ER', 'BB', 'ERA', 'WHIP']
+      for (const stat of pitcherStats) {
+        const isLowerBetter = pitcherLowerBetter.includes(stat)
+        const team1Value = parseFloat(team1Data.pitchers[stat]) || 0
+        const team2Value = parseFloat(team2Data.pitchers[stat]) || 0
+        
+        let team1Score = 0, team2Score = 0
+        
+        if (team1Value !== team2Value) {
+          if (isLowerBetter) {
+            // 數值越低越好
+            team1Score = team1Value < team2Value ? 1 : 0
+            team2Score = team2Value < team1Value ? 1 : 0
+          } else {
+            // 數值越高越好
+            team1Score = team1Value > team2Value ? 1 : 0
+            team2Score = team2Value > team1Value ? 1 : 0
+          }
+        }
+        
+        team1Data.pitchers.fantasyPoints[stat] = team1Score
+        team2Data.pitchers.fantasyPoints[stat] = team2Score
       }
-      
-      team1Data.pitchers.fantasyPoints[stat] = team1Score
-      team2Data.pitchers.fantasyPoints[stat] = team2Score
+    } else {
+      // 如果有一隊是 null，則初始化所有項目為 0 分
+      result.forEach(r => {
+        if (r.manager_id) {
+          batterStats.forEach(stat => {
+            if (!r.batters.fantasyPoints) r.batters.fantasyPoints = {}
+            r.batters.fantasyPoints[stat] = 0
+          })
+          pitcherStats.forEach(stat => {
+            if (!r.pitchers.fantasyPoints) r.pitchers.fantasyPoints = {}
+            r.pitchers.fantasyPoints[stat] = 0
+          })
+        }
+      })
     }
 
     // 計算總分
@@ -285,25 +312,9 @@ export async function POST(req) {
       const total = batterTotal + pitcherTotal
       
       r.fantasyPoints = {
-        Total: total.toFixed(1)
+        Total: total.toString()
       }
-      
-      // 判斷是否獲勝
-      r.isWinner = parseFloat(r.fantasyPoints.Total) > (24 / 2) // 總共24個項目，超過12分就是獲勝
     })
-
-    // 確保有一個明確的勝負（如果平手，可以根據總得分數決定）
-    const team1Total = parseFloat(team1Data.fantasyPoints.Total)
-    const team2Total = parseFloat(team2Data.fantasyPoints.Total)
-    
-    if (team1Total === team2Total) {
-      // 如果完全平手，可以根據其他邏輯決定勝負，這裡暫時都標記為平手
-      team1Data.isWinner = false
-      team2Data.isWinner = false
-    } else {
-      team1Data.isWinner = team1Total > team2Total
-      team2Data.isWinner = team2Total > team1Total
-    }
 
     return NextResponse.json(result)
   } catch (err) {

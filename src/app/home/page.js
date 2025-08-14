@@ -23,7 +23,7 @@ export default function HomePage() {
   const [transactionMode, setTransactionMode] = useState('recent')
   const [postseasonSchedule, setPostseasonSchedule] = useState([])
   const [postseasonSeries, setPostseasonSeries] = useState([])
-  const [postseasonTab, setPostseasonTab] = useState('schedule')
+  const [postseasonTab, setPostseasonTab] = useState('bracket')
 
   useEffect(() => {
     async function fetchRecentTransactions() {
@@ -339,9 +339,11 @@ export default function HomePage() {
       <div className="md:hidden space-y-6">
         {stages.map((stage, stageIndex) => (
           <div key={stage} className="bg-white rounded-lg p-4 shadow-sm">
-            <h3 className="text-sm font-bold text-[#0155A0] mb-4 text-center bg-blue-50 py-2 rounded">
-              {groupedSeries[stage][0]?.stage || `第${stage}輪`}
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-[#0155A0] bg-blue-50 py-2 px-3 rounded flex-1 text-center">
+                {groupedSeries[stage][0]?.stage || `第${stage}輪`}
+              </h3>
+            </div>
             <div className="space-y-3">
               {groupedSeries[stage].map((series, i) => {
                 const higherTeam = series.higher_seed_team_name || 'TBD';
@@ -349,34 +351,54 @@ export default function HomePage() {
                 const higherScore = series.higher_seed_score || 0;
                 const lowerScore = series.lower_seed_score || 0;
                 
-                // 判斷獲勝者 - 兩勝獲勝制
+                // 判斷系列賽狀態
+                const now = new Date();
+                const startDate = series.start_date ? new Date(series.start_date) : null;
+                const hasStarted = startDate ? now >= startDate : true; // 如果沒有 start_date，預設已開始
+                
                 const higherWon = higherScore >= 2;
                 const lowerWon = lowerScore >= 2;
                 const seriesCompleted = higherWon || lowerWon;
+                const hasScore = higherScore > 0 || lowerScore > 0;
+                
+                // 狀態判定
+                let status = '';
+                let statusColor = '';
+                if (!hasStarted) {
+                  status = '未開始';
+                  statusColor = 'bg-gray-500';
+                } else if (seriesCompleted) {
+                  status = '完賽';
+                  statusColor = 'bg-green-500';
+                } else if (hasScore) {
+                  status = '進行中';
+                  statusColor = 'bg-orange-500';
+                }
 
                 return (
                   <div key={series.id || i} className="border rounded-lg overflow-hidden relative">
-                    {/* 狀態標籤 */}
-                    {seriesCompleted && (
-                      <div className="absolute top-1 right-1 bg-green-500 text-white text-xs px-2 py-1 rounded z-10">
-                        完賽
-                      </div>
-                    )}
-                    {!seriesCompleted && (higherScore > 0 || lowerScore > 0) && (
-                      <div className="absolute top-1 right-1 bg-orange-500 text-white text-xs px-2 py-1 rounded z-10">
-                        進行中
+                    {/* 狀態標籤與 Stage 同排 */}
+                    {status && (
+                      <div className="flex justify-end p-2 bg-gray-50">
+                        <div className={`${statusColor} text-white text-xs px-2 py-1 rounded`}>
+                          {status}
+                        </div>
                       </div>
                     )}
                     
                     {/* 隊伍對戰 */}
                     <div className={`flex justify-between items-center p-3 border-b ${
-                      higherWon ? 'bg-green-100 font-bold' : seriesCompleted ? 'bg-red-50' : 'bg-gray-50'
+                      higherWon ? 'bg-green-100 font-bold' : 
+                      seriesCompleted ? 'bg-gray-200 text-gray-500' : 
+                      !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-gray-50'
                     }`}>
                       <span className="text-sm truncate flex-1">{higherTeam}</span>
                       <span className="text-lg font-bold ml-3 w-8 text-center">{higherScore}</span>
                     </div>
                     <div className={`flex justify-between items-center p-3 ${
-                      lowerWon ? 'bg-green-100 font-bold' : seriesCompleted ? 'bg-red-50' : 'bg-gray-50'
+                      lowerWon ? 'bg-green-100 font-bold' : 
+                      seriesCompleted ? 'bg-gray-200 text-gray-500' : 
+                      !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-gray-50'
                     }`}>
                       <span className="text-sm truncate flex-1">{lowerTeam}</span>
                       <span className="text-lg font-bold ml-3 w-8 text-center">{lowerScore}</span>
@@ -398,13 +420,41 @@ export default function HomePage() {
         ))}
         
         {/* 手機版冠軍區域 */}
-        {stages.length > 0 && (
-          <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg p-4 text-center border-2 border-yellow-400">
-            <h3 className="text-sm font-bold text-red-600 mb-2">🏆 CHAMPION</h3>
-            <div className="text-lg">👑</div>
-            <div className="text-xs text-gray-600 mt-1">總冠軍</div>
-          </div>
-        )}
+        {stages.length > 0 && (() => {
+          // 找到最後一輪的獲勝者
+          const finalStage = Math.max(...stages.map(s => parseInt(s)));
+          const finalSeries = groupedSeries[finalStage.toString()];
+          let champion = null;
+          
+          if (finalSeries && finalSeries.length > 0) {
+            const finalMatch = finalSeries[0]; // 假設最後一輪只有一場比賽
+            const higherScore = finalMatch.higher_seed_score || 0;
+            const lowerScore = finalMatch.lower_seed_score || 0;
+            
+            if (higherScore >= 2) {
+              champion = finalMatch.higher_seed_team_name;
+            } else if (lowerScore >= 2) {
+              champion = finalMatch.lower_seed_team_name;
+            }
+          }
+          
+          return (
+            <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg p-4 text-center border-2 border-yellow-400">
+              <h3 className="text-sm font-bold text-red-600 mb-2">🏆 CHAMPION</h3>
+              {champion ? (
+                <div>
+                  <div className="text-lg font-bold text-gray-800">{champion}</div>
+                  <div className="text-xs text-gray-600 mt-1">總冠軍</div>
+                </div>
+              ) : (
+                <div>
+                  <div className="text-lg">👑</div>
+                  <div className="text-xs text-gray-600 mt-1">待定</div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     );
 
@@ -427,10 +477,29 @@ export default function HomePage() {
                   const higherScore = series.higher_seed_score || 0;
                   const lowerScore = series.lower_seed_score || 0;
                   
-                  // 判斷獲勝者 - 兩勝獲勝制
+                  // 判斷系列賽狀態
+                  const now = new Date();
+                  const startDate = series.start_date ? new Date(series.start_date) : null;
+                  const hasStarted = startDate ? now >= startDate : true; // 如果沒有 start_date，預設已開始
+                  
                   const higherWon = higherScore >= 2;
                   const lowerWon = lowerScore >= 2;
                   const seriesCompleted = higherWon || lowerWon;
+                  const hasScore = higherScore > 0 || lowerScore > 0;
+                  
+                  // 狀態判定
+                  let status = '';
+                  let statusColor = '';
+                  if (!hasStarted) {
+                    status = '未開始';
+                    statusColor = 'bg-gray-500';
+                  } else if (seriesCompleted) {
+                    status = '完賽';
+                    statusColor = 'bg-green-500';
+                  } else if (hasScore) {
+                    status = '進行中';
+                    statusColor = 'bg-orange-500';
+                  }
                   
                   return (
                     <div key={series.id || i} className="relative">
@@ -441,33 +510,32 @@ export default function HomePage() {
                       
                       {/* 比賽方框 */}
                       <div className="bg-white border-2 border-gray-300 rounded-lg shadow-md w-48 relative z-20">
+                        {/* 狀態標籤與 Stage 同一高度 */}
+                        {status && (
+                          <div className="absolute -top-8 right-0 flex justify-end">
+                            <div className={`${statusColor} text-white text-xs px-2 py-1 rounded`}>
+                              {status}
+                            </div>
+                          </div>
+                        )}
                         <div className="space-y-0">
                           <div className={`flex justify-between items-center p-3 border-b ${
                             higherWon ? 'bg-green-100 font-bold border-green-300' : 
-                            seriesCompleted ? 'bg-red-50' : 'bg-white'
+                            seriesCompleted ? 'bg-gray-200 text-gray-500' : 
+                            !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-white'
                           }`}>
                             <span className="text-sm truncate">{higherTeam}</span>
                             <span className="text-sm font-mono ml-2">{higherScore}</span>
                           </div>
                           <div className={`flex justify-between items-center p-3 ${
                             lowerWon ? 'bg-green-100 font-bold border-green-300' : 
-                            seriesCompleted ? 'bg-red-50' : 'bg-white'
+                            seriesCompleted ? 'bg-gray-200 text-gray-500' : 
+                            !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-white'
                           }`}>
                             <span className="text-sm truncate">{lowerTeam}</span>
                             <span className="text-sm font-mono ml-2">{lowerScore}</span>
                           </div>
                         </div>
-                        {/* 系列賽狀態指示 */}
-                        {seriesCompleted && (
-                          <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                            完賽
-                          </div>
-                        )}
-                        {!seriesCompleted && (higherScore > 0 || lowerScore > 0) && (
-                          <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-                            進行中
-                          </div>
-                        )}
                       </div>
                     </div>
                   );
@@ -495,19 +563,48 @@ export default function HomePage() {
           ))}
           
           {/* 冠軍區域 */}
-          {stages.length > 0 && (
-            <div className="flex flex-col items-center ml-8">
-              <h3 className="text-sm font-bold text-red-600 mb-6 bg-yellow-100 px-3 py-1 rounded-full border-2 border-yellow-400">
-                CHAMPION
-              </h3>
-              <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 border-2 border-yellow-400 rounded-lg shadow-lg w-48 p-4">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-gray-600">🏆</div>
-                  <div className="text-sm text-gray-500 mt-2">Winner</div>
+          {stages.length > 0 && (() => {
+            // 找到最後一輪的獲勝者
+            const finalStage = Math.max(...stages.map(s => parseInt(s)));
+            const finalSeries = groupedSeries[finalStage.toString()];
+            let champion = null;
+            
+            if (finalSeries && finalSeries.length > 0) {
+              const finalMatch = finalSeries[0]; // 假設最後一輪只有一場比賽
+              const higherScore = finalMatch.higher_seed_score || 0;
+              const lowerScore = finalMatch.lower_seed_score || 0;
+              
+              if (higherScore >= 2) {
+                champion = finalMatch.higher_seed_team_name;
+              } else if (lowerScore >= 2) {
+                champion = finalMatch.lower_seed_team_name;
+              }
+            }
+            
+            return (
+              <div className="flex flex-col items-center ml-8">
+                <h3 className="text-sm font-bold text-red-600 mb-6 bg-yellow-100 px-3 py-1 rounded-full border-2 border-yellow-400">
+                  CHAMPION
+                </h3>
+                <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 border-2 border-yellow-400 rounded-lg shadow-lg w-48 p-4">
+                  <div className="text-center">
+                    {champion ? (
+                      <div>
+                        <div className="text-lg font-bold text-gray-800 mb-2">🏆</div>
+                        <div className="text-sm font-bold text-gray-800">{champion}</div>
+                        <div className="text-xs text-gray-600 mt-1">總冠軍</div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="text-lg font-bold text-gray-600">👑</div>
+                        <div className="text-sm text-gray-500 mt-2">待定</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
     );
@@ -528,17 +625,17 @@ export default function HomePage() {
         <CardContent className="p-4">
           <Tabs value={postseasonTab} onValueChange={setPostseasonTab}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="schedule" className="text-sm">Schedule</TabsTrigger>
               <TabsTrigger value="bracket" className="text-sm">Bracket</TabsTrigger>
+              <TabsTrigger value="schedule" className="text-sm">Schedule</TabsTrigger>
             </TabsList>
-            <TabsContent value="schedule" className="mt-4">
-              {postseasonSchedule.length > 0 ? renderPostseasonSchedule() : (
-                <div className="p-4 text-center text-gray-500 text-sm">目前沒有季後賽賽程資料</div>
-              )}
-            </TabsContent>
             <TabsContent value="bracket" className="mt-4">
               {postseasonSeries.length > 0 ? renderPostseasonBracket() : (
                 <div className="p-4 text-center text-gray-500 text-sm">目前沒有晉級圖資料</div>
+              )}
+            </TabsContent>
+            <TabsContent value="schedule" className="mt-4">
+              {postseasonSchedule.length > 0 ? renderPostseasonSchedule() : (
+                <div className="p-4 text-center text-gray-500 text-sm">目前沒有季後賽賽程資料</div>
               )}
             </TabsContent>
           </Tabs>

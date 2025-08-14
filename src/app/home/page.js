@@ -335,17 +335,17 @@ export default function HomePage() {
     const stages = Object.keys(groupedSeries).sort((a, b) => parseInt(a) - parseInt(b));
 
     return (
-      <div className="mt-4 overflow-x-auto">
-        <div className="flex gap-6 min-w-max p-4">
-          {stages.map(stage => (
-            <div key={stage} className="flex flex-col items-center">
-              <h3 className="text-sm font-bold text-[#0155A0] mb-4">
-                {stage === '1' ? '第一輪' : 
-                 stage === '2' ? '第二輪' : 
-                 stage === '3' ? '第三輪' : 
-                 stage === '4' ? '決賽' : `第${stage}輪`}
+      <div className="mt-4 overflow-x-auto bg-gray-50 p-6 rounded-lg">
+        <div className="flex justify-center items-center min-w-max">
+          {stages.map((stage, stageIndex) => (
+            <div key={stage} className="flex flex-col items-center relative">
+              {/* Stage 標題 */}
+              <h3 className="text-sm font-bold text-[#0155A0] mb-6 bg-white px-3 py-1 rounded-full border">
+                {groupedSeries[stage][0]?.stage || `第${stage}輪`}
               </h3>
-              <div className="space-y-4">
+              
+              {/* 系列賽方框 */}
+              <div className="flex flex-col justify-center space-y-8 relative">
                 {groupedSeries[stage].map((series, i) => {
                   const higherTeam = series.higher_seed_team_name || 'TBD';
                   const lowerTeam = series.lower_seed_team_name || 'TBD';
@@ -357,28 +357,64 @@ export default function HomePage() {
                   const lowerWon = lowerScore > higherScore && (higherScore > 0 || lowerScore > 0);
                   
                   return (
-                    <div key={series.id || i} className="bg-white border rounded-lg p-3 min-w-48">
-                      <div className="space-y-2 text-sm">
-                        <div className={`flex justify-between items-center p-2 rounded ${higherWon ? 'bg-green-100' : 'bg-gray-50'}`}>
-                          <span className={`${higherWon ? 'font-bold' : ''}`}>{higherTeam}</span>
-                          <span className={`${higherWon ? 'font-bold' : ''}`}>{higherScore}</span>
-                        </div>
-                        <div className={`flex justify-between items-center p-2 rounded ${lowerWon ? 'bg-green-100' : 'bg-gray-50'}`}>
-                          <span className={`${lowerWon ? 'font-bold' : ''}`}>{lowerTeam}</span>
-                          <span className={`${lowerWon ? 'font-bold' : ''}`}>{lowerScore}</span>
+                    <div key={series.id || i} className="relative">
+                      {/* 連接線 - 右側輸出 */}
+                      {stageIndex < stages.length - 1 && (
+                        <div className="absolute top-1/2 -right-8 w-8 h-px bg-gray-400 z-10"></div>
+                      )}
+                      
+                      {/* 比賽方框 */}
+                      <div className="bg-white border-2 border-gray-300 rounded-lg shadow-md w-48 relative z-20">
+                        <div className="space-y-0">
+                          <div className={`flex justify-between items-center p-3 border-b ${higherWon ? 'bg-green-100 font-bold' : 'bg-white'}`}>
+                            <span className="text-sm truncate">{higherTeam}</span>
+                            <span className="text-sm font-mono ml-2">{higherScore}</span>
+                          </div>
+                          <div className={`flex justify-between items-center p-3 ${lowerWon ? 'bg-green-100 font-bold' : 'bg-white'}`}>
+                            <span className="text-sm truncate">{lowerTeam}</span>
+                            <span className="text-sm font-mono ml-2">{lowerScore}</span>
+                          </div>
                         </div>
                       </div>
-                      {series.stage && (
-                        <div className="text-xs text-gray-500 mt-2 text-center">
-                          {series.stage}
-                        </div>
-                      )}
                     </div>
                   );
                 })}
               </div>
+              
+              {/* 垂直連接線組合 - 連接到下一輪 */}
+              {stageIndex < stages.length - 1 && groupedSeries[stage].length > 1 && (
+                <div className="absolute top-1/2 -right-4 flex flex-col items-center">
+                  {Array.from({ length: Math.ceil(groupedSeries[stage].length / 2) }).map((_, i) => (
+                    <div key={i} className="relative">
+                      <div className="w-px h-16 bg-gray-400 relative">
+                        <div className="absolute top-0 -left-4 w-8 h-px bg-gray-400"></div>
+                        <div className="absolute bottom-0 -left-4 w-8 h-px bg-gray-400"></div>
+                        <div className="absolute top-1/2 left-0 w-8 h-px bg-gray-400"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* 右側間距 */}
+              {stageIndex < stages.length - 1 && <div className="w-16"></div>}
             </div>
           ))}
+          
+          {/* 冠軍區域 */}
+          {stages.length > 0 && (
+            <div className="flex flex-col items-center ml-8">
+              <h3 className="text-sm font-bold text-red-600 mb-6 bg-yellow-100 px-3 py-1 rounded-full border-2 border-yellow-400">
+                CHAMPION
+              </h3>
+              <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 border-2 border-yellow-400 rounded-lg shadow-lg w-48 p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-gray-600">🏆</div>
+                  <div className="text-sm text-gray-500 mt-2">Winner</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

@@ -334,8 +334,83 @@ export default function HomePage() {
     // 取得所有輪次並排序
     const stages = Object.keys(groupedSeries).sort((a, b) => parseInt(a) - parseInt(b));
 
-    return (
-      <div className="mt-4 overflow-x-auto bg-gray-50 p-6 rounded-lg">
+    // 手機版渲染
+    const renderMobileBracket = () => (
+      <div className="md:hidden space-y-6">
+        {stages.map((stage, stageIndex) => (
+          <div key={stage} className="bg-white rounded-lg p-4 shadow-sm">
+            <h3 className="text-sm font-bold text-[#0155A0] mb-4 text-center bg-blue-50 py-2 rounded">
+              {groupedSeries[stage][0]?.stage || `第${stage}輪`}
+            </h3>
+            <div className="space-y-3">
+              {groupedSeries[stage].map((series, i) => {
+                const higherTeam = series.higher_seed_team_name || 'TBD';
+                const lowerTeam = series.lower_seed_team_name || 'TBD';
+                const higherScore = series.higher_seed_score || 0;
+                const lowerScore = series.lower_seed_score || 0;
+                
+                // 判斷獲勝者 - 兩勝獲勝制
+                const higherWon = higherScore >= 2;
+                const lowerWon = lowerScore >= 2;
+                const seriesCompleted = higherWon || lowerWon;
+
+                return (
+                  <div key={series.id || i} className="border rounded-lg overflow-hidden relative">
+                    {/* 狀態標籤 */}
+                    {seriesCompleted && (
+                      <div className="absolute top-1 right-1 bg-green-500 text-white text-xs px-2 py-1 rounded z-10">
+                        完賽
+                      </div>
+                    )}
+                    {!seriesCompleted && (higherScore > 0 || lowerScore > 0) && (
+                      <div className="absolute top-1 right-1 bg-orange-500 text-white text-xs px-2 py-1 rounded z-10">
+                        進行中
+                      </div>
+                    )}
+                    
+                    {/* 隊伍對戰 */}
+                    <div className={`flex justify-between items-center p-3 border-b ${
+                      higherWon ? 'bg-green-100 font-bold' : seriesCompleted ? 'bg-red-50' : 'bg-gray-50'
+                    }`}>
+                      <span className="text-sm truncate flex-1">{higherTeam}</span>
+                      <span className="text-lg font-bold ml-3 w-8 text-center">{higherScore}</span>
+                    </div>
+                    <div className={`flex justify-between items-center p-3 ${
+                      lowerWon ? 'bg-green-100 font-bold' : seriesCompleted ? 'bg-red-50' : 'bg-gray-50'
+                    }`}>
+                      <span className="text-sm truncate flex-1">{lowerTeam}</span>
+                      <span className="text-lg font-bold ml-3 w-8 text-center">{lowerScore}</span>
+                    </div>
+                    
+                    {/* 晉級箭頭 */}
+                    {stageIndex < stages.length - 1 && seriesCompleted && (
+                      <div className="text-center py-2 bg-blue-50">
+                        <span className="text-xs text-blue-600">
+                          {higherWon ? higherTeam : lowerTeam} 晉級 ↓
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        
+        {/* 手機版冠軍區域 */}
+        {stages.length > 0 && (
+          <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg p-4 text-center border-2 border-yellow-400">
+            <h3 className="text-sm font-bold text-red-600 mb-2">🏆 CHAMPION</h3>
+            <div className="text-lg">👑</div>
+            <div className="text-xs text-gray-600 mt-1">總冠軍</div>
+          </div>
+        )}
+      </div>
+    );
+
+    // 桌面版渲染（原有設計）
+    const renderDesktopBracket = () => (
+      <div className="hidden md:block overflow-x-auto bg-gray-50 p-6 rounded-lg">
         <div className="flex justify-center items-center min-w-max">
           {stages.map((stage, stageIndex) => (
             <div key={stage} className="flex flex-col items-center relative">
@@ -352,9 +427,10 @@ export default function HomePage() {
                   const higherScore = series.higher_seed_score || 0;
                   const lowerScore = series.lower_seed_score || 0;
                   
-                  // 判斷獲勝者
-                  const higherWon = higherScore > lowerScore && (higherScore > 0 || lowerScore > 0);
-                  const lowerWon = lowerScore > higherScore && (higherScore > 0 || lowerScore > 0);
+                  // 判斷獲勝者 - 兩勝獲勝制
+                  const higherWon = higherScore >= 2;
+                  const lowerWon = lowerScore >= 2;
+                  const seriesCompleted = higherWon || lowerWon;
                   
                   return (
                     <div key={series.id || i} className="relative">
@@ -366,15 +442,32 @@ export default function HomePage() {
                       {/* 比賽方框 */}
                       <div className="bg-white border-2 border-gray-300 rounded-lg shadow-md w-48 relative z-20">
                         <div className="space-y-0">
-                          <div className={`flex justify-between items-center p-3 border-b ${higherWon ? 'bg-green-100 font-bold' : 'bg-white'}`}>
+                          <div className={`flex justify-between items-center p-3 border-b ${
+                            higherWon ? 'bg-green-100 font-bold border-green-300' : 
+                            seriesCompleted ? 'bg-red-50' : 'bg-white'
+                          }`}>
                             <span className="text-sm truncate">{higherTeam}</span>
                             <span className="text-sm font-mono ml-2">{higherScore}</span>
                           </div>
-                          <div className={`flex justify-between items-center p-3 ${lowerWon ? 'bg-green-100 font-bold' : 'bg-white'}`}>
+                          <div className={`flex justify-between items-center p-3 ${
+                            lowerWon ? 'bg-green-100 font-bold border-green-300' : 
+                            seriesCompleted ? 'bg-red-50' : 'bg-white'
+                          }`}>
                             <span className="text-sm truncate">{lowerTeam}</span>
                             <span className="text-sm font-mono ml-2">{lowerScore}</span>
                           </div>
                         </div>
+                        {/* 系列賽狀態指示 */}
+                        {seriesCompleted && (
+                          <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                            完賽
+                          </div>
+                        )}
+                        {!seriesCompleted && (higherScore > 0 || lowerScore > 0) && (
+                          <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                            進行中
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -416,6 +509,13 @@ export default function HomePage() {
             </div>
           )}
         </div>
+      </div>
+    );
+
+    return (
+      <div className="mt-4">
+        {renderMobileBracket()}
+        {renderDesktopBracket()}
       </div>
     );
   }

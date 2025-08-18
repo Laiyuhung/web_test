@@ -135,11 +135,9 @@ export default function PostseasonTable() {
             <tbody>
               {/* Batters Total 標題行 */}
               <tr className="bg-gray-200">
-                <td className="py-2 px-4 text-sm font-bold text-gray-700 w-1/3"></td>
-                <td className="py-2 px-4 text-sm font-bold text-gray-700 bg-gray-300 w-1/3">
+                <td colSpan="3" className="py-2 px-4 text-sm font-bold text-gray-700 bg-gray-300">
                   Batters Total
                 </td>
-                <td className="py-2 px-4 text-sm font-bold text-gray-700 w-1/3"></td>
               </tr>
               
               {/* 打者統計 */}
@@ -195,11 +193,9 @@ export default function PostseasonTable() {
               
               {/* Pitchers Total 標題行 */}
               <tr className="bg-gray-200">
-                <td className="py-2 px-4 text-sm font-bold text-gray-700 w-1/3"></td>
-                <td className="py-2 px-4 text-sm font-bold text-gray-700 bg-gray-300 w-1/3">
+                <td colSpan="3" className="py-2 px-4 text-sm font-bold text-gray-700 bg-gray-300">
                   Pitchers Total
                 </td>
-                <td className="py-2 px-4 text-sm font-bold text-gray-700 w-1/3"></td>
               </tr>
               
               {/* 投手統計 */}
@@ -470,7 +466,7 @@ export default function PostseasonTable() {
           <option value="" disabled>請選擇賽程</option>
           {matchups.map(m => (
             <option key={m.id} value={m.id}>
-              {m.stage} {m.stage_game} - {m.team1_name} vs {m.team2_name}
+              {m.stage} {m.stage_game}
             </option>
           ))}
         </select>

@@ -281,8 +281,8 @@ export default function HomePage() {
         };
 
         // 處理隊伍名稱
-        const team1Display = match.team1 || 'TBD';
-        const team2Display = match.team2 || 'TBD';
+        const team1Display = match.team1_name || 'TBD';
+        const team2Display = match.team2_name || 'TBD';
 
         // 處理比分顯示
         const score1 = match.score1 || 0;

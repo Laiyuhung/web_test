@@ -388,20 +388,20 @@ export default function HomePage() {
                     
                     {/* 隊伍對戰 */}
                     <div className={`flex justify-between items-center p-3 border-b ${
-                      higherWon ? 'bg-green-100 font-bold' : 
-                      seriesCompleted ? 'bg-gray-200 text-gray-500' : 
-                      !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-gray-50'
-                    }`}>
-                      <span className="text-sm truncate flex-1">{higherTeam}</span>
-                      <span className="text-lg font-bold ml-3 w-8 text-center">{higherScore}</span>
-                    </div>
-                    <div className={`flex justify-between items-center p-3 ${
                       lowerWon ? 'bg-green-100 font-bold' : 
                       seriesCompleted ? 'bg-gray-200 text-gray-500' : 
                       !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-gray-50'
                     }`}>
                       <span className="text-sm truncate flex-1">{lowerTeam}</span>
                       <span className="text-lg font-bold ml-3 w-8 text-center">{lowerScore}</span>
+                    </div>
+                    <div className={`flex justify-between items-center p-3 ${
+                      higherWon ? 'bg-green-100 font-bold' : 
+                      seriesCompleted ? 'bg-gray-200 text-gray-500' : 
+                      !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-gray-50'
+                    }`}>
+                      <span className="text-sm truncate flex-1">{higherTeam}</span>
+                      <span className="text-lg font-bold ml-3 w-8 text-center">{higherScore}</span>
                     </div>
                     
                     {/* 晉級箭頭 */}
@@ -520,20 +520,20 @@ export default function HomePage() {
                         )}
                         <div className="space-y-0">
                           <div className={`flex justify-between items-center p-3 border-b ${
-                            higherWon ? 'bg-green-100 font-bold border-green-300' : 
-                            seriesCompleted ? 'bg-gray-200 text-gray-500' : 
-                            !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-white'
-                          }`}>
-                            <span className="text-sm truncate">{higherTeam}</span>
-                            <span className="text-sm font-mono ml-2">{higherScore}</span>
-                          </div>
-                          <div className={`flex justify-between items-center p-3 ${
                             lowerWon ? 'bg-green-100 font-bold border-green-300' : 
                             seriesCompleted ? 'bg-gray-200 text-gray-500' : 
                             !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-white'
                           }`}>
                             <span className="text-sm truncate">{lowerTeam}</span>
                             <span className="text-sm font-mono ml-2">{lowerScore}</span>
+                          </div>
+                          <div className={`flex justify-between items-center p-3 ${
+                            higherWon ? 'bg-green-100 font-bold border-green-300' : 
+                            seriesCompleted ? 'bg-gray-200 text-gray-500' : 
+                            !hasStarted ? 'bg-gray-100 text-gray-600' : 'bg-white'
+                          }`}>
+                            <span className="text-sm truncate">{higherTeam}</span>
+                            <span className="text-sm font-mono ml-2">{higherScore}</span>
                           </div>
                         </div>
                       </div>

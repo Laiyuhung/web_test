@@ -128,24 +128,27 @@ export default function PostseasonTable() {
     const batterKeys = ['AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'];
     const pitcherKeys = ['IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'];
     
-    const allKeys = [
-      ...batterKeys.map(key => ({ key, type: 'batters' })),
-      ...pitcherKeys.map(key => ({ key, type: 'pitchers' }))
-    ];
-    
     return (
       <div>
         <div className="overflow-x-auto">
           <table className="w-full text-center">
             <tbody>
-              {allKeys.map(({ key, type }, index) => {
-                const team1Value = parseFloat(team1[type][key]) || 0;
-                const team2Value = parseFloat(team2[type][key]) || 0;
+              {/* Batters Total 標題行 */}
+              <tr className="bg-gray-200">
+                <td className="py-2 px-4 text-sm font-bold text-gray-700 w-1/3"></td>
+                <td className="py-2 px-4 text-sm font-bold text-gray-700 bg-gray-300 w-1/3">
+                  Batters Total
+                </td>
+                <td className="py-2 px-4 text-sm font-bold text-gray-700 w-1/3"></td>
+              </tr>
+              
+              {/* 打者統計 */}
+              {batterKeys.map((key, index) => {
+                const team1Value = parseFloat(team1.batters[key]) || 0;
+                const team2Value = parseFloat(team2.batters[key]) || 0;
                 
                 let team1Better, team2Better;
-                if ((key === 'K' && type === 'batters') || 
-                    (key === 'GIDP' && type === 'batters') ||
-                    (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key) && type === 'pitchers')) {
+                if (key === 'K' || key === 'GIDP') {
                   // 數值越低越好
                   team1Better = team1Value < team2Value && team1Value !== team2Value;
                   team2Better = team2Value < team1Value && team1Value !== team2Value;
@@ -156,7 +159,7 @@ export default function PostseasonTable() {
                 }
                 
                 return (
-                  <tr key={`${type}-${key}`} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                  <tr key={`batters-${key}`} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                     <td 
                       onClick={() => {
                         if (!loadingDetails && team1.manager_id) {
@@ -168,7 +171,7 @@ export default function PostseasonTable() {
                       className={`py-3 px-4 text-lg font-semibold w-1/3 ${team1Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
                       title={!loadingDetails && team1.manager_id ? "點擊查看球員詳細數據" : ""}
                     >
-                      {team1[type][key]}
+                      {team1.batters[key]}
                     </td>
                     <td className="py-3 px-4 text-sm font-bold text-gray-600 bg-gray-100 w-1/3">
                       {key}
@@ -184,7 +187,67 @@ export default function PostseasonTable() {
                       className={`py-3 px-4 text-lg font-semibold w-1/3 ${team2Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
                       title={!loadingDetails && team2.manager_id ? "點擊查看球員詳細數據" : ""}
                     >
-                      {team2[type][key]}
+                      {team2.batters[key]}
+                    </td>
+                  </tr>
+                );
+              })}
+              
+              {/* Pitchers Total 標題行 */}
+              <tr className="bg-gray-200">
+                <td className="py-2 px-4 text-sm font-bold text-gray-700 w-1/3"></td>
+                <td className="py-2 px-4 text-sm font-bold text-gray-700 bg-gray-300 w-1/3">
+                  Pitchers Total
+                </td>
+                <td className="py-2 px-4 text-sm font-bold text-gray-700 w-1/3"></td>
+              </tr>
+              
+              {/* 投手統計 */}
+              {pitcherKeys.map((key, index) => {
+                const team1Value = parseFloat(team1.pitchers[key]) || 0;
+                const team2Value = parseFloat(team2.pitchers[key]) || 0;
+                
+                let team1Better, team2Better;
+                if (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key)) {
+                  // 數值越低越好
+                  team1Better = team1Value < team2Value && team1Value !== team2Value;
+                  team2Better = team2Value < team1Value && team1Value !== team2Value;
+                } else {
+                  // 數值越高越好
+                  team1Better = team1Value > team2Value && team1Value !== team2Value;
+                  team2Better = team2Value > team1Value && team1Value !== team2Value;
+                }
+                
+                return (
+                  <tr key={`pitchers-${key}`} className={(index + batterKeys.length + 1) % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                    <td 
+                      onClick={() => {
+                        if (!loadingDetails && team1.manager_id) {
+                          setSelectedManagerId(team1.manager_id)
+                          setSelectedTeamName(team1.team_name)
+                          fetchPlayerDetails(team1.manager_id)
+                        }
+                      }}
+                      className={`py-3 px-4 text-lg font-semibold w-1/3 ${team1Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
+                      title={!loadingDetails && team1.manager_id ? "點擊查看球員詳細數據" : ""}
+                    >
+                      {team1.pitchers[key]}
+                    </td>
+                    <td className="py-3 px-4 text-sm font-bold text-gray-600 bg-gray-100 w-1/3">
+                      {key}
+                    </td>
+                    <td 
+                      onClick={() => {
+                        if (!loadingDetails && team2.manager_id) {
+                          setSelectedManagerId(team2.manager_id)
+                          setSelectedTeamName(team2.team_name)
+                          fetchPlayerDetails(team2.manager_id)
+                        }
+                      }}
+                      className={`py-3 px-4 text-lg font-semibold w-1/3 ${team2Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
+                      title={!loadingDetails && team2.manager_id ? "點擊查看球員詳細數據" : ""}
+                    >
+                      {team2.pitchers[key]}
                     </td>
                   </tr>
                 );

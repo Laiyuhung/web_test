@@ -98,7 +98,6 @@ export default function PostseasonTable() {
       
       if (managerData) {
         setPlayerDetailsData(managerData)
-        setPlayerDetailsModalOpen(true)
       } else {
         console.error('找不到該玩家的詳細數據')
         alert('找不到該玩家的詳細數據，請重試或聯絡管理員。')
@@ -112,6 +111,18 @@ export default function PostseasonTable() {
       }, 300)
     }
   }
+
+  // 當數據載入完成後自動選擇第一個有效的玩家
+  useEffect(() => {
+    if (data && data.length > 0 && !selectedManagerId) {
+      const defaultPlayer = data[0].team_name ? data[0] : (data[1]?.team_name ? data[1] : data[0]);
+      setSelectedManagerId(defaultPlayer.manager_id)
+      setSelectedTeamName(defaultPlayer.team_name || 'TBD')
+      if (defaultPlayer.manager_id) {
+        fetchPlayerDetails(defaultPlayer.manager_id)
+      }
+    }
+  }, [data, selectedManagerId])
 
   const renderScoreTable = () => {
     // 移除 Fantasy Points 表格，改為在上方顯示大比數
@@ -508,26 +519,123 @@ export default function PostseasonTable() {
           {/* 統合的數據表格 */}
           {renderCombinedStatTable()}
           
-          {/* 球員詳細數據按鈕 */}
-          <div className="mt-6 flex justify-center gap-4">
-            <button
-              onClick={() => {
-                if (!loadingDetails) {
-                  // 預設選擇第一個有效的玩家
-                  const defaultPlayer = data[0].team_name ? data[0] : (data[1].team_name ? data[1] : data[0]);
-                  setSelectedManagerId(defaultPlayer.manager_id)
-                  setSelectedTeamName(defaultPlayer.team_name || 'TBD')
-                  setPlayerDetailsModalOpen(true)
-                  if (defaultPlayer.manager_id) {
-                    fetchPlayerDetails(defaultPlayer.manager_id)
-                  }
-                }
-              }}
-              disabled={loadingDetails}
-              className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {loadingDetails ? '載入中...' : 'Matchup Totals'}
-            </button>
+          {/* 球員詳細數據區域 */}
+          <div className="mt-8">
+            <div className="bg-gray-100 p-4 rounded-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">
+                  Matchup Totals - 球員詳細數據
+                  {loadingDetails && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
+                </h2>
+              </div>
+              
+              {/* Tab 選擇器 */}
+              <div className="flex space-x-4 mb-6">
+                {data.map((team, index) => {
+                  const teamName = team.team_name || 'TBD';
+                  const isDisabled = !team.team_name || !team.manager_id;
+                  const isActive = selectedManagerId === team.manager_id;
+                  
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        if (!isDisabled && !loadingDetails) {
+                          setSelectedManagerId(team.manager_id)
+                          setSelectedTeamName(teamName)
+                          fetchPlayerDetails(team.manager_id)
+                        }
+                      }}
+                      disabled={isDisabled || loadingDetails}
+                      className={`px-4 py-2 rounded-t-lg transition-colors ${
+                        isActive 
+                          ? 'bg-blue-500 text-white' 
+                          : isDisabled 
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                      }`}
+                    >
+                      {teamName}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {/* 球員詳細數據內容 */}
+              <div className="bg-white rounded-lg p-4">
+                {loadingDetails ? (
+                  <div className="flex justify-center items-center p-8">
+                    <p className="text-blue-600">載入中...</p>
+                  </div>
+                ) : playerDetailsData ? (
+                  <div className="space-y-8">
+                    {/* 打者資料 */}
+                    <div>
+                      <h3 className="text-lg font-bold text-[#0155A0] mb-2">打者累計數據</h3>
+                      <p className="text-sm text-gray-600 mb-2">以下為每位球員在此賽程期間的累計數據（僅計算球員被排入先發陣容的數據）</p>
+                      {playerDetailsData.batterRows && playerDetailsData.batterRows.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full border text-sm">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map(key => (
+                                  <th key={key} className="border px-2 py-2 text-center">{key}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {playerDetailsData.batterRows.map((row, i) => (
+                                <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                  {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, j) => (
+                                    <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">無打者資料</p>
+                      )}
+                    </div>
+
+                    {/* 投手資料 */}
+                    <div>
+                      <h3 className="text-lg font-bold text-[#0155A0] mb-2">投手累計數據</h3>
+                      <p className="text-sm text-gray-600 mb-2">以下為每位投手在此賽程期間的累計數據（僅計算球員被排入先發陣容的數據）</p>
+                      {playerDetailsData.pitcherRows && playerDetailsData.pitcherRows.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full border text-sm">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map(key => (
+                                  <th key={key} className="border px-2 py-2 text-center">{key}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {playerDetailsData.pitcherRows.map((row, i) => (
+                                <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                  {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, j) => (
+                                    <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">無投手資料</p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-center items-center p-8">
+                    <p className="text-gray-500">請選擇一個有效的隊伍查看球員數據</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

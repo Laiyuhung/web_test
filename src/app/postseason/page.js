@@ -298,27 +298,61 @@ export default function PostseasonTable() {
 
   // 渲染球員詳細數據模態框
   const renderPlayerDetailsModal = () => {
-    if (!playerDetailsModalOpen || !playerDetailsData) return null;
+    if (!playerDetailsModalOpen) return null;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] overflow-y-auto">
-          <div className="sticky top-0 bg-gray-100 p-4 flex justify-between items-center border-b z-10">
-            <h2 className="text-xl font-bold">
-              {selectedTeamName} 的季後賽球員數據
-              {loadingDetails && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
-            </h2>
-            <button 
-              onClick={() => {
-                if (!loadingDetails) {
-                  setPlayerDetailsModalOpen(false)
-                }
-              }}
-              disabled={loadingDetails}
-              className={`text-gray-700 hover:text-gray-900 text-2xl ${loadingDetails ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              &times;
-            </button>
+          <div className="sticky top-0 bg-gray-100 p-4 border-b z-10">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">
+                Matchup Total - 球員詳細數據
+                {loadingDetails && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
+              </h2>
+              <button 
+                onClick={() => {
+                  if (!loadingDetails) {
+                    setPlayerDetailsModalOpen(false)
+                  }
+                }}
+                disabled={loadingDetails}
+                className={`text-gray-700 hover:text-gray-900 text-2xl ${loadingDetails ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                &times;
+              </button>
+            </div>
+            
+            {/* Tab 選擇器 */}
+            <div className="flex space-x-4">
+              {data.map((team, index) => {
+                const teamName = team.team_name || 'TBD';
+                const isDisabled = !team.team_name || !team.manager_id;
+                const isActive = selectedManagerId === team.manager_id;
+                
+                return (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      if (!isDisabled && !loadingDetails) {
+                        setSelectedManagerId(team.manager_id)
+                        setSelectedTeamName(teamName)
+                        fetchPlayerDetails(team.manager_id)
+                      }
+                    }}
+                    disabled={isDisabled || loadingDetails}
+                    className={`px-4 py-2 rounded-t-lg transition-colors ${
+                      isActive 
+                        ? 'bg-blue-500 text-white' 
+                        : isDisabled 
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                          : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    }`}
+                  >
+                    {teamName}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           
           <div className="p-4">
@@ -326,7 +360,7 @@ export default function PostseasonTable() {
               <div className="flex justify-center items-center p-8">
                 <p className="text-blue-600">載入中...</p>
               </div>
-            ) : (
+            ) : playerDetailsData ? (
               <div className="space-y-8">
                 {/* 打者資料 */}
                 <div>
@@ -387,6 +421,10 @@ export default function PostseasonTable() {
                     <p className="text-gray-500">無投手資料</p>
                   )}
                 </div>
+              </div>
+            ) : (
+              <div className="flex justify-center items-center p-8">
+                <p className="text-gray-500">請選擇一個有效的隊伍查看球員數據</p>
               </div>
             )}
           </div>
@@ -474,29 +512,21 @@ export default function PostseasonTable() {
           <div className="mt-6 flex justify-center gap-4">
             <button
               onClick={() => {
-                if (!loadingDetails && data[0].manager_id) {
-                  setSelectedManagerId(data[0].manager_id)
-                  setSelectedTeamName(data[0].team_name)
-                  fetchPlayerDetails(data[0].manager_id)
+                if (!loadingDetails) {
+                  // 預設選擇第一個有效的玩家
+                  const defaultPlayer = data[0].team_name ? data[0] : (data[1].team_name ? data[1] : data[0]);
+                  setSelectedManagerId(defaultPlayer.manager_id)
+                  setSelectedTeamName(defaultPlayer.team_name || 'TBD')
+                  setPlayerDetailsModalOpen(true)
+                  if (defaultPlayer.manager_id) {
+                    fetchPlayerDetails(defaultPlayer.manager_id)
+                  }
                 }
               }}
-              disabled={loadingDetails || !data[0].manager_id}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled={loadingDetails}
+              className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
-              {loadingDetails ? '載入中...' : `查看 ${data[0].team_name} 球員詳細數據`}
-            </button>
-            <button
-              onClick={() => {
-                if (!loadingDetails && data[1].manager_id) {
-                  setSelectedManagerId(data[1].manager_id)
-                  setSelectedTeamName(data[1].team_name)
-                  fetchPlayerDetails(data[1].manager_id)
-                }
-              }}
-              disabled={loadingDetails || !data[1].manager_id}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {loadingDetails ? '載入中...' : `查看 ${data[1].team_name} 球員詳細數據`}
+              {loadingDetails ? '載入中...' : 'Matchup Totals'}
             </button>
           </div>
         </div>

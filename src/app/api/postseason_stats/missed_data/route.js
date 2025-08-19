@@ -164,13 +164,14 @@ export async function POST(request) {
         missedBatterData[playerName].SB += record.stolen_bases || 0
         missedBatterData[playerName].K += record.strikeouts || 0
         missedBatterData[playerName].BB += record.walks || 0
-        missedBatterData[playerName].GIDP += record.gidp || 0
+        missedBatterData[playerName].GIDP += record.double_plays || 0
         
         const doubles = record.doubles || 0
         const triples = record.triples || 0
         const hr = record.home_runs || 0
+        const singles = (record.hits || 0) - ((record.doubles || 0) + (record.triples || 0) + (record.home_runs || 0))
         missedBatterData[playerName].XBH += (doubles + triples + hr)
-        missedBatterData[playerName].TB += record.total_bases || 0
+        missedBatterData[playerName].TB += singles + (doubles || 0) * 2 + (triples || 0) * 3 + (hr || 0) * 4
       }
     })
 
@@ -189,9 +190,9 @@ export async function POST(request) {
             IP: 0, W: 0, L: 0, HLD: 0, SV: 0, H: 0, ER: 0, K: 0, BB: 0, QS: 0, OUT: 0
           }
         }
+        const ip = record.innings_pitched || 0
+        const outs = Math.floor(ip) * 3 + Math.round((ip % 1) * 10)
         
-        const outs = record.outs_pitched || 0
-        const ip = outs / 3
         
         missedPitcherData[playerName].OUT += outs
         missedPitcherData[playerName].H += record.hits_allowed || 0

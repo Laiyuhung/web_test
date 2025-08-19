@@ -891,7 +891,15 @@ export default function PostseasonTable() {
                       <div className="flex justify-center items-center p-8">
                         <p className="text-blue-600 animate-pulse">載入錯失數據中...</p>
                       </div>
-                    ) : missedData ? (
+                    ) : !selectedManagerId ? (
+                      <div className="text-center p-8">
+                        <p className="text-gray-500">請點選上方隊伍標籤查看錯失數據</p>
+                      </div>
+                    ) : !missedData ? (
+                      <div className="text-center p-8">
+                        <p className="text-gray-500">載入錯失數據中...</p>
+                      </div>
+                    ) : (
                       <div className="space-y-6">
                         {/* 錯失打者數據 */}
                         {missedData.missedBatterRows && missedData.missedBatterRows.length > 0 && (
@@ -965,14 +973,6 @@ export default function PostseasonTable() {
                             <p className="text-sm text-gray-600 mt-2">所有有表現的球員都已被正確安排在先發陣容中。</p>
                           </div>
                         )}
-                      </div>
-                    ) : selectedManagerId ? (
-                      <div className="text-center p-8">
-                        <p className="text-gray-500">該隊伍暫無錯失數據</p>
-                      </div>
-                    ) : (
-                      <div className="text-center p-8">
-                        <p className="text-gray-500">請點選上方隊伍標籤查看錯失數據</p>
                       </div>
                     )}
                   </div>

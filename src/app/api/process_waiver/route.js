@@ -44,6 +44,19 @@ async function handleWaiver() {
       const managerId = priorityList[i];
       const managerPriority = priorities.find(p => p.id === managerId)?.priority;
       console.log(`[順位檢查] 處理順位第${i + 1}位 managerId=${managerId}，priority=${managerPriority}`);
+      
+      // 📌 檢查經理人是否已被淘汰
+      const { data: eliminatedData, error: eliminatedError } = await supabase
+        .from('eliminated')
+        .select('id')
+        .eq('manager', managerId)
+        .single()
+
+      if (eliminatedData) {
+        console.log(`⚠️ Manager ${managerId} 已被淘汰，跳過處理`);
+        continue;
+      }
+
       const managerWaivers = waivers
         .filter(w => w.manager === managerId)
         .sort((a, b) => a.personal_priority - b.personal_priority)

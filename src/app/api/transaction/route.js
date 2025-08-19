@@ -48,6 +48,21 @@ export async function POST(req) {
     const user_id = req.cookies.get('user_id')?.value
     const manager_id = parseInt(user_id, 10)
 
+    if (!playerName || !user_id || isNaN(manager_id)) {
+      return NextResponse.json({ error: '參數錯誤或未登入' }, { status: 400 })
+    }
+
+    // 📌 檢查經理人是否已被淘汰
+    const { data: eliminatedData, error: eliminatedError } = await supabase
+      .from('eliminated')
+      .select('id')
+      .eq('manager', manager_id)
+      .single()
+
+    if (eliminatedData) {
+      return NextResponse.json({ error: '交易失敗: 已淘汰' }, { status: 403 })
+    }
+
     const { data: managerData, error: managerError } = await supabase
       .from('managers')
       .select('team_name')
@@ -55,10 +70,6 @@ export async function POST(req) {
       .single()
 
     const managerName = managerData?.team_name || `玩家 #${manager_id}`
-
-    if (!playerName || !user_id || isNaN(manager_id)) {
-      return NextResponse.json({ error: '參數錯誤或未登入' }, { status: 400 })
-    }
 
     const todayStr = getTaiwanTodayStr()
     const endStr = '2025-11-30'

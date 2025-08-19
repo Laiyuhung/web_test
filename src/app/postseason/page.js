@@ -12,6 +12,9 @@ export default function PostseasonTable() {
   const [playerDetailsModalOpen, setPlayerDetailsModalOpen] = useState(false)
   const [playerDetailsData, setPlayerDetailsData] = useState(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
+  const [activeTab, setActiveTab] = useState('matchup') // 'matchup' 或 'today'
+  const [todayData, setTodayData] = useState(null)
+  const [loadingTodayData, setLoadingTodayData] = useState(false)
 
   const batterKeys = ['R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS']
   const pitcherKeys = ['W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP']
@@ -166,6 +169,48 @@ export default function PostseasonTable() {
     }
   }
 
+  // 獲取今日球員數據
+  const fetchTodayPlayerDetails = async (managerId) => {
+    if (!selectedMatchup) return
+    
+    setLoadingTodayData(true)
+    try {
+      console.log(`正在載入 ${managerId} 的今日球員數據...`)
+      
+      // 使用今天的日期
+      const today = new Date().toISOString().split('T')[0]
+      
+      const res = await fetch('/api/postseason_stats/today', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          managerId,
+          date: today
+        })
+      })
+      
+      if (!res.ok) {
+        throw new Error('獲取今日數據失敗')
+      }
+      
+      const todayPlayerData = await res.json()
+      
+      if (todayPlayerData) {
+        setTodayData(todayPlayerData)
+      } else {
+        console.error('找不到該玩家的今日數據')
+        alert('找不到該玩家的今日數據，請重試或聯絡管理員。')
+      }
+    } catch (err) {
+      console.error('❌ 獲取今日數據錯誤:', err)
+      alert('獲取今日數據時發生錯誤，請重試或聯絡管理員。')
+    } finally {
+      setTimeout(() => {
+        setLoadingTodayData(false)
+      }, 300)
+    }
+  }
+
   // 當數據載入完成後自動選擇第一個有效的玩家
   useEffect(() => {
     if (data && data.length > 0 && !selectedManagerId) {
@@ -174,6 +219,7 @@ export default function PostseasonTable() {
       setSelectedTeamName(defaultPlayer.team_name || 'TBD')
       if (defaultPlayer.manager_id) {
         fetchPlayerDetails(defaultPlayer.manager_id)
+        fetchTodayPlayerDetails(defaultPlayer.manager_id)
       }
     }
   }, [data, selectedManagerId])
@@ -371,23 +417,47 @@ export default function PostseasonTable() {
           <div className="sticky top-0 bg-gray-100 p-4 border-b z-10">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">
-                Matchup Total - 球員詳細數據
-                {loadingDetails && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
+                球員詳細數據
+                {(loadingDetails || loadingTodayData) && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
               </h2>
               <button 
                 onClick={() => {
-                  if (!loadingDetails) {
+                  if (!loadingDetails && !loadingTodayData) {
                     setPlayerDetailsModalOpen(false)
                   }
                 }}
-                disabled={loadingDetails}
-                className={`text-gray-700 hover:text-gray-900 text-2xl ${loadingDetails ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={loadingDetails || loadingTodayData}
+                className={`text-gray-700 hover:text-gray-900 text-2xl ${(loadingDetails || loadingTodayData) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 &times;
               </button>
             </div>
             
-            {/* Tab 選擇器 */}
+            {/* Data Type Tab 選擇器 (Matchup Total vs Today's Stats) */}
+            <div className="flex space-x-2 mb-4">
+              <button
+                onClick={() => setActiveTab('matchup')}
+                className={`px-4 py-2 rounded-t-lg transition-colors ${
+                  activeTab === 'matchup' 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                }`}
+              >
+                Matchup Total
+              </button>
+              <button
+                onClick={() => setActiveTab('today')}
+                className={`px-4 py-2 rounded-t-lg transition-colors ${
+                  activeTab === 'today' 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                }`}
+              >
+                Today's Stats
+              </button>
+            </div>
+            
+            {/* Team Tab 選擇器 */}
             <div className="flex space-x-4">
               {data.map((team, index) => {
                 const teamName = team.team_name || 'TBD';
@@ -398,13 +468,14 @@ export default function PostseasonTable() {
                   <button
                     key={index}
                     onClick={() => {
-                      if (!isDisabled && !loadingDetails) {
+                      if (!isDisabled && !loadingDetails && !loadingTodayData) {
                         setSelectedManagerId(team.manager_id)
                         setSelectedTeamName(teamName)
                         fetchPlayerDetails(team.manager_id)
+                        fetchTodayPlayerDetails(team.manager_id)
                       }
                     }}
-                    disabled={isDisabled || loadingDetails}
+                    disabled={isDisabled || loadingDetails || loadingTodayData}
                     className={`px-4 py-2 rounded-t-lg transition-colors ${
                       isActive 
                         ? 'bg-blue-500 text-white' 
@@ -421,88 +492,164 @@ export default function PostseasonTable() {
           </div>
           
           <div className="p-4">
-            {loadingDetails ? (
-              <div className="flex justify-center items-center p-8">
-                <p className="text-blue-600">載入中...</p>
-              </div>
-            ) : playerDetailsData ? (
-              <div className="space-y-8">
-                {/* 打者資料 */}
-                <div>
-                  <h3 className="text-lg font-bold text-[#0155A0] mb-2">打者累計數據</h3>
-                  <p className="text-sm text-gray-600 mb-2">以下為每位球員在此賽程期間的累計數據（僅計算球員被排入先發陣容的數據）</p>
-                  {playerDetailsData.batterRows && playerDetailsData.batterRows.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border text-sm">
-                        <thead className="bg-gray-100">
-                          <tr>
-                            {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map(key => (
-                              <th key={key} className="border px-2 py-2 text-center">{key}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {playerDetailsData.batterRows.map((row, i) => (
-                            <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, j) => (
-                                <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
+            {activeTab === 'matchup' ? (
+              // Matchup Total 內容
+              loadingDetails ? (
+                <div className="flex justify-center items-center p-8">
+                  <p className="text-blue-600">載入中...</p>
+                </div>
+              ) : playerDetailsData ? (
+                <div className="space-y-8">
+                  {/* 打者資料 */}
+                  <div>
+                    <h3 className="text-lg font-bold text-[#0155A0] mb-2">打者累計數據</h3>
+                    <p className="text-sm text-gray-600 mb-2">以下為每位球員在此賽程期間的累計數據（僅計算球員被排入先發陣容的數據）</p>
+                    {playerDetailsData.batterRows && playerDetailsData.batterRows.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full border text-sm">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map(key => (
+                                <th key={key} className="border px-2 py-2 text-center">{key}</th>
                               ))}
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500">無打者資料</p>
-                  )}
-                </div>
+                          </thead>
+                          <tbody>
+                            {playerDetailsData.batterRows.map((row, i) => (
+                              <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, j) => (
+                                  <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">無打者資料</p>
+                    )}
+                  </div>
 
-                {/* 投手資料 */}
-                <div>
-                  <h3 className="text-lg font-bold text-[#0155A0] mb-2">投手累計數據</h3>
-                  <p className="text-sm text-gray-600 mb-2">以下為每位投手在此賽程期間的累計數據（僅計算球員被排入先發陣容的數據）</p>
-                  {playerDetailsData.pitcherRows && playerDetailsData.pitcherRows.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border text-sm">
-                        <thead className="bg-gray-100">
-                          <tr>
-                            {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map(key => (
-                              <th key={key} className="border px-2 py-2 text-center">{key}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {playerDetailsData.pitcherRows.map((row, i) => (
-                            <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, j) => (
-                                <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
+                  {/* 投手資料 */}
+                  <div>
+                    <h3 className="text-lg font-bold text-[#0155A0] mb-2">投手累計數據</h3>
+                    <p className="text-sm text-gray-600 mb-2">以下為每位投手在此賽程期間的累計數據（僅計算球員被排入先發陣容的數據）</p>
+                    {playerDetailsData.pitcherRows && playerDetailsData.pitcherRows.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full border text-sm">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map(key => (
+                                <th key={key} className="border px-2 py-2 text-center">{key}</th>
                               ))}
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500">無投手資料</p>
-                  )}
+                          </thead>
+                          <tbody>
+                            {playerDetailsData.pitcherRows.map((row, i) => (
+                              <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, j) => (
+                                  <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">無投手資料</p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex justify-center items-center p-8">
+                  <p className="text-gray-500">請選擇一個有效的隊伍查看球員數據</p>
+                </div>
+              )
             ) : (
-              <div className="flex justify-center items-center p-8">
-                <p className="text-gray-500">請選擇一個有效的隊伍查看球員數據</p>
-              </div>
+              // Today's Stats 內容
+              loadingTodayData ? (
+                <div className="flex justify-center items-center p-8">
+                  <p className="text-blue-600">載入今日數據中...</p>
+                </div>
+              ) : todayData ? (
+                <div className="space-y-8">
+                  {/* 今日打者資料 */}
+                  <div>
+                    <h3 className="text-lg font-bold text-[#0155A0] mb-2">今日打者數據</h3>
+                    <p className="text-sm text-gray-600 mb-2">以下為每位球員今日的數據（僅計算球員被排入先發陣容的數據）</p>
+                    {todayData.batterRows && todayData.batterRows.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full border text-sm">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map(key => (
+                                <th key={key} className="border px-2 py-2 text-center">{key}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {todayData.batterRows.map((row, i) => (
+                              <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, j) => (
+                                  <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">今日無打者資料</p>
+                    )}
+                  </div>
+
+                  {/* 今日投手資料 */}
+                  <div>
+                    <h3 className="text-lg font-bold text-[#0155A0] mb-2">今日投手數據</h3>
+                    <p className="text-sm text-gray-600 mb-2">以下為每位投手今日的數據（僅計算球員被排入先發陣容的數據）</p>
+                    {todayData.pitcherRows && todayData.pitcherRows.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full border text-sm">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map(key => (
+                                <th key={key} className="border px-2 py-2 text-center">{key}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {todayData.pitcherRows.map((row, i) => (
+                              <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, j) => (
+                                  <td key={j} className="border px-2 py-1 text-center whitespace-nowrap">{row[key]}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">今日無投手資料</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-center items-center p-8">
+                  <p className="text-gray-500">今日無可用數據</p>
+                </div>
+              )
             )}
           </div>
           
           <div className="bg-gray-100 p-4 border-t sticky bottom-0">
             <button 
               onClick={() => {
-                if (!loadingDetails) {
+                if (!loadingDetails && !loadingTodayData) {
                   setPlayerDetailsModalOpen(false)
                 }
               }}
-              disabled={loadingDetails}
-              className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${loadingDetails ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loadingDetails || loadingTodayData}
+              className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${(loadingDetails || loadingTodayData) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               關閉
             </button>

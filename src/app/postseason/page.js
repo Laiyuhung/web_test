@@ -195,6 +195,8 @@ export default function PostseasonTable() {
   const fetchMissedData = async (managerId) => {
     if (!selectedMatchup) return
     
+    // 清空之前的錯失數據
+    setMissedData(null)
     setLoadingMissedData(true)
     try {
       console.log(`正在載入 ${managerId} 的錯失數據...`)
@@ -217,6 +219,7 @@ export default function PostseasonTable() {
       
       if (missedDataResult) {
         setMissedData(missedDataResult)
+        console.log(`✅ 成功載入錯失數據: ${missedDataResult.summary?.totalMissedBatters || 0} 位打者, ${missedDataResult.summary?.totalMissedPitchers || 0} 位投手`)
       } else {
         console.error('找不到該玩家的錯失數據')
         alert('找不到該玩家的錯失數據，請重試或聯絡管理員。')
@@ -1248,8 +1251,12 @@ export default function PostseasonTable() {
 
                       {/* 錯失數據區塊 */}
                       <div className="border-t-2 border-gray-300 pt-8 mt-8">
-                        <h3 className="text-lg font-bold text-red-600 mb-4">🔍 錯失數據分析</h3>
-                        <p className="text-sm text-gray-600 mb-4">以下為非先發球員的數據統計，顯示未被納入先發陣容的球員表現</p>
+                        <h3 className="text-lg font-bold text-red-600 mb-4">
+                          🔍 錯失數據分析 {selectedTeamName && `- ${selectedTeamName}`}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          以下為{selectedTeamName || '該隊伍'}非先發球員的數據統計，顯示未被納入先發陣容的球員表現
+                        </p>
                         
                         {loadingMissedData ? (
                           <div className="flex justify-center items-center p-8">
@@ -1329,9 +1336,13 @@ export default function PostseasonTable() {
                               )}
                             </div>
                           </div>
+                        ) : selectedManagerId ? (
+                          <div className="flex justify-center items-center p-8">
+                            <p className="text-gray-500">該隊伍暫無錯失數據</p>
+                          </div>
                         ) : (
                           <div className="flex justify-center items-center p-8">
-                            <p className="text-gray-500">請選擇一個有效的隊伍查看錯失數據</p>
+                            <p className="text-gray-500">請點選上方隊伍標籤查看錯失數據</p>
                           </div>
                         )}
                       </div>

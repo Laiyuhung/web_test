@@ -730,12 +730,12 @@ export default function PostseasonTable() {
                 </h2>
                 
                 {/* 添加一個按鈕來打開模態框查看更詳細的數據 */}
-                <button
+                {/* <button
                   onClick={() => setPlayerDetailsModalOpen(true)}
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                 >
                   查看詳細模態框
-                </button>
+                </button> */}
               </div>
               
               {/* Data Type Tab 選擇器 (Matchup Total vs Today's Stats) */}
@@ -748,7 +748,7 @@ export default function PostseasonTable() {
                       : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
                   }`}
                 >
-                  Matchup Total
+                  Matchup Totals
                 </button>
                 <button
                   onClick={() => setActiveTab('today')}

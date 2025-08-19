@@ -2270,8 +2270,6 @@ export default function RosterPage() {
                   });
 
                   const data = await res.json()
-                  if (!res.ok) throw new Error(data.error || 'Drop 失敗')
-
                   
                   if (res.ok) {
                     showMessage(`✅ 已成功 Drop ${p.Name}`, 'success')
@@ -2312,6 +2310,8 @@ export default function RosterPage() {
                     }
 
                     await reloadRoster()
+                  } else {
+                    showMessage(`❌ ${data.error || 'Drop 失敗'}`, 'error')
                   }
                 } catch (err) {
                   console.error('❌ Drop 錯誤:', err)

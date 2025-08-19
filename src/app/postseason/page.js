@@ -280,7 +280,11 @@ export default function PostseasonTable() {
                   const team2Value = parseFloat(team2.batters[key]) || 0;
                   
                   let team1Better, team2Better;
-                  if (key === 'K' || key === 'GIDP') {
+                  // AB 不屬於比較項目，不亮燈
+                  if (key === 'AB') {
+                    team1Better = false;
+                    team2Better = false;
+                  } else if (key === 'K' || key === 'GIDP') {
                     // 數值越低越好
                     team1Better = team1Value < team2Value && team1Value !== team2Value;
                     team2Better = team2Value < team1Value && team1Value !== team2Value;
@@ -318,7 +322,11 @@ export default function PostseasonTable() {
                   const team2Value = parseFloat(team2.pitchers[key]) || 0;
                   
                   let team1Better, team2Better;
-                  if (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key)) {
+                  // IP 不屬於比較項目，不亮燈
+                  if (key === 'IP') {
+                    team1Better = false;
+                    team2Better = false;
+                  } else if (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key)) {
                     // 數值越低越好
                     team1Better = team1Value < team2Value && team1Value !== team2Value;
                     team2Better = team2Value < team1Value && team1Value !== team2Value;
@@ -380,7 +388,10 @@ export default function PostseasonTable() {
                       const team2Value = parseFloat(team2.batters[key]) || 0;
                       
                       let team1Better;
-                      if (key === 'K' || key === 'GIDP') {
+                      // AB 不屬於比較項目，不亮燈
+                      if (key === 'AB') {
+                        team1Better = false;
+                      } else if (key === 'K' || key === 'GIDP') {
                         // 數值越低越好
                         team1Better = team1Value < team2Value && team1Value !== team2Value;
                       } else {
@@ -406,7 +417,10 @@ export default function PostseasonTable() {
                       const team2Value = parseFloat(team2.batters[key]) || 0;
                       
                       let team2Better;
-                      if (key === 'K' || key === 'GIDP') {
+                      // AB 不屬於比較項目，不亮燈
+                      if (key === 'AB') {
+                        team2Better = false;
+                      } else if (key === 'K' || key === 'GIDP') {
                         // 數值越低越好
                         team2Better = team2Value < team1Value && team1Value !== team2Value;
                       } else {
@@ -452,7 +466,10 @@ export default function PostseasonTable() {
                       const team2Value = parseFloat(team2.pitchers[key]) || 0;
                       
                       let team1Better;
-                      if (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key)) {
+                      // IP 不屬於比較項目，不亮燈
+                      if (key === 'IP') {
+                        team1Better = false;
+                      } else if (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key)) {
                         // 數值越低越好
                         team1Better = team1Value < team2Value && team1Value !== team2Value;
                       } else {
@@ -478,7 +495,10 @@ export default function PostseasonTable() {
                       const team2Value = parseFloat(team2.pitchers[key]) || 0;
                       
                       let team2Better;
-                      if (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key)) {
+                      // IP 不屬於比較項目，不亮燈
+                      if (key === 'IP') {
+                        team2Better = false;
+                      } else if (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key)) {
                         // 數值越低越好
                         team2Better = team2Value < team1Value && team1Value !== team2Value;
                       } else {
@@ -539,7 +559,11 @@ export default function PostseasonTable() {
                 const team2Value = parseFloat(team2[type][key]) || 0;
                 
                 let team1Better, team2Better;
-                if ((key === 'K' && type === 'batters') || 
+                // AB、IP 不屬於比較項目，不亮燈
+                if ((key === 'AB' && type === 'batters') || (key === 'IP' && type === 'pitchers')) {
+                  team1Better = false;
+                  team2Better = false;
+                } else if ((key === 'K' && type === 'batters') || 
                     (key === 'GIDP' && type === 'batters') ||
                     (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key) && type === 'pitchers')) {
                   // 數值越低越好

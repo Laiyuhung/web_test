@@ -257,8 +257,17 @@ export default function BulkInsertPage() {
 
     if (res.ok) {
       setText('')
-      setDialogMessage('✅ 成績匯入成功，並已自動更新週得分。')
-      await fetch('/api/updateWeeklyScores', { method: 'POST' })
+      
+      // 調用更新分數 API 並根據回應顯示適當訊息
+      const updateRes = await fetch('/api/updateWeeklyScores', { method: 'POST' })
+      const updateResult = await updateRes.json()
+      
+      if (updateRes.ok) {
+        const scoreType = updateResult.isPostseason ? '季後賽得分' : '週得分'
+        setDialogMessage(`✅ 成績匯入成功，並已自動更新${scoreType}。`)
+      } else {
+        setDialogMessage('✅ 成績匯入成功，但分數更新失敗。')
+      }
     } else {
       setDialogMessage(`❌ 成績匯入失敗：${result.error || '請稍後再試。'}`)
     }

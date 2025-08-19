@@ -11,7 +11,62 @@ export async function POST(req) {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // 查 schedule 中今天屬於哪一週
+  // 先檢查是否有季後賽進行中
+  const { data: postseasonSchedule } = await supabase
+    .from('fantasy_postseason_schedule')
+    .select('*')
+    .lte('start_date', today)
+    .gte('end_date', today)
+    .single()
+
+  if (postseasonSchedule) {
+    // 季後賽期間，更新季後賽分數
+    const { team1, team2, start_date, end_date } = postseasonSchedule
+
+    if (!team1 || !team2) {
+      return NextResponse.json({ error: '季後賽查無有效的隊伍 ID' }, { status: 400 })
+    }
+
+    // 調用季後賽統計 API
+    const postseasonRes = await fetch(`${req.nextUrl.origin}/api/postseason_stats`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        team1,
+        team2,
+        startDate: start_date,
+        endDate: end_date
+      })
+    })
+
+    if (!postseasonRes.ok) {
+      return NextResponse.json({ error: '季後賽統計 API 調用失敗' }, { status: 500 })
+    }
+
+    const postseasonResult = await postseasonRes.json()
+    
+    const team1Score = parseInt(postseasonResult.find(r => r.manager_id === team1)?.fantasyPoints?.Total || 0)
+    const team2Score = parseInt(postseasonResult.find(r => r.manager_id === team2)?.fantasyPoints?.Total || 0)
+
+    await supabase
+      .from('fantasy_postseason_schedule')
+      .update({
+        score1: team1Score,
+        score2: team2Score
+      })
+      .eq('id', postseasonSchedule.id)
+
+    return NextResponse.json({
+      message: `✅ 已更新季後賽 ${postseasonSchedule.stage} ${postseasonSchedule.stage_game} 的比分`,
+      scores: {
+        team1: team1Score,
+        team2: team2Score
+      },
+      isPostseason: true
+    })
+  }
+
+  // 常規賽期間，使用原有邏輯
   const { data: current } = await supabase
     .from('schedule')
     .select('week, team1, team2, team3, team4')
@@ -59,5 +114,6 @@ export async function POST(req) {
   return NextResponse.json({
     message: `✅ 已更新 ${current.week} 的比分（使用 ${cleanWeek} 的統計）`,
     scores: updatedScores,
+    isPostseason: false
   })
 }

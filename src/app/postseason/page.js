@@ -360,19 +360,19 @@ export default function PostseasonTable() {
               Batters Total
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-center border text-xs">
+              <table className="w-full text-center border text-sm">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="py-2 px-2 text-sm font-bold text-gray-600 border">Team</th>
+                    <th className="py-2 px-2 text-base font-bold text-gray-600 border">Team</th>
                     {batterKeys.map(key => (
-                      <th key={key} className="py-2 px-2 text-xs font-bold text-gray-600 border">{key}</th>
+                      <th key={key} className="py-2 px-2 text-sm font-bold text-gray-600 border">{key}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {/* 第一隊打者數據 */}
                   <tr className="bg-white">
-                    <td className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
+                    <td className="py-2 px-2 text-base font-bold text-[#0155A0] border">
                       {team1.team_name || 'TBD'}
                     </td>
                     {batterKeys.map(key => {
@@ -389,7 +389,7 @@ export default function PostseasonTable() {
                       }
                       
                       return (
-                        <td key={key} className={`py-2 px-2 text-xs font-semibold border ${team1Better ? 'bg-blue-100 font-bold' : ''}`}>
+                        <td key={key} className={`py-2 px-2 text-sm font-semibold border ${team1Better ? 'bg-blue-100 font-bold' : ''}`}>
                           {team1.batters[key]}
                         </td>
                       );
@@ -398,7 +398,7 @@ export default function PostseasonTable() {
                   
                   {/* 第二隊打者數據 */}
                   <tr className="bg-gray-50">
-                    <td className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
+                    <td className="py-2 px-2 text-base font-bold text-[#0155A0] border">
                       {team2.team_name || 'TBD'}
                     </td>
                     {batterKeys.map(key => {
@@ -415,7 +415,7 @@ export default function PostseasonTable() {
                       }
                       
                       return (
-                        <td key={key} className={`py-2 px-2 text-xs font-semibold border ${team2Better ? 'bg-blue-100 font-bold' : ''}`}>
+                        <td key={key} className={`py-2 px-2 text-sm font-semibold border ${team2Better ? 'bg-blue-100 font-bold' : ''}`}>
                           {team2.batters[key]}
                         </td>
                       );
@@ -432,19 +432,19 @@ export default function PostseasonTable() {
               Pitchers Total
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-center border text-xs">
+              <table className="w-full text-center border text-sm">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="py-2 px-2 text-sm font-bold text-gray-600 border">Team</th>
+                    <th className="py-2 px-2 text-base font-bold text-gray-600 border">Team</th>
                     {pitcherKeys.map(key => (
-                      <th key={key} className="py-2 px-2 text-xs font-bold text-gray-600 border">{key}</th>
+                      <th key={key} className="py-2 px-2 text-sm font-bold text-gray-600 border">{key}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {/* 第一隊投手數據 */}
                   <tr className="bg-white">
-                    <td className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
+                    <td className="py-2 px-2 text-base font-bold text-[#0155A0] border">
                       {team1.team_name || 'TBD'}
                     </td>
                     {pitcherKeys.map(key => {
@@ -461,7 +461,7 @@ export default function PostseasonTable() {
                       }
                       
                       return (
-                        <td key={key} className={`py-2 px-2 text-xs font-semibold border ${team1Better ? 'bg-blue-100 font-bold' : ''}`}>
+                        <td key={key} className={`py-2 px-2 text-sm font-semibold border ${team1Better ? 'bg-blue-100 font-bold' : ''}`}>
                           {team1.pitchers[key]}
                         </td>
                       );
@@ -470,7 +470,7 @@ export default function PostseasonTable() {
                   
                   {/* 第二隊投手數據 */}
                   <tr className="bg-gray-50">
-                    <td className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
+                    <td className="py-2 px-2 text-base font-bold text-[#0155A0] border">
                       {team2.team_name || 'TBD'}
                     </td>
                     {pitcherKeys.map(key => {
@@ -487,7 +487,7 @@ export default function PostseasonTable() {
                       }
                       
                       return (
-                        <td key={key} className={`py-2 px-2 text-xs font-semibold border ${team2Better ? 'bg-blue-100 font-bold' : ''}`}>
+                        <td key={key} className={`py-2 px-2 text-sm font-semibold border ${team2Better ? 'bg-blue-100 font-bold' : ''}`}>
                           {team2.pitchers[key]}
                         </td>
                       );

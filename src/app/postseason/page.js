@@ -12,6 +12,8 @@ export default function PostseasonTable() {
   const [playerDetailsModalOpen, setPlayerDetailsModalOpen] = useState(false)
   const [playerDetailsData, setPlayerDetailsData] = useState(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
+  const [missedData, setMissedData] = useState(null)
+  const [loadingMissedData, setLoadingMissedData] = useState(false)
   const [activeTab, setActiveTab] = useState('matchup') // 'matchup' 或 'today'
   const [todayData, setTodayData] = useState(null)
   const [loadingTodayData, setLoadingTodayData] = useState(false)
@@ -185,6 +187,46 @@ export default function PostseasonTable() {
     } finally {
       setTimeout(() => {
         setLoadingDetails(false)
+      }, 300)
+    }
+  }
+
+  // 獲取錯失數據
+  const fetchMissedData = async (managerId) => {
+    if (!selectedMatchup) return
+    
+    setLoadingMissedData(true)
+    try {
+      console.log(`正在載入 ${managerId} 的錯失數據...`)
+      
+      const res = await fetch('/api/postseason_stats/missed_data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          managerId,
+          startDate: selectedMatchup.start_date,
+          endDate: selectedMatchup.end_date
+        })
+      })
+      
+      if (!res.ok) {
+        throw new Error('獲取錯失數據失敗')
+      }
+      
+      const missedDataResult = await res.json()
+      
+      if (missedDataResult) {
+        setMissedData(missedDataResult)
+      } else {
+        console.error('找不到該玩家的錯失數據')
+        alert('找不到該玩家的錯失數據，請重試或聯絡管理員。')
+      }
+    } catch (err) {
+      console.error('❌ 獲取錯失數據錯誤:', err)
+      alert('獲取錯失數據時發生錯誤，請重試或聯絡管理員。')
+    } finally {
+      setTimeout(() => {
+        setLoadingMissedData(false)
       }, 300)
     }
   }
@@ -579,14 +621,15 @@ export default function PostseasonTable() {
                   <tr key={key} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                     <td 
                       onClick={() => {
-                        if (!loadingDetails && team1.manager_id) {
+                        if (!loadingDetails && team1.manager_id && !loadingMissedData) {
                           setSelectedManagerId(team1.manager_id)
                           setSelectedTeamName(team1.team_name)
                           fetchPlayerDetails(team1.manager_id)
+                          fetchMissedData(team1.manager_id)
                         }
                       }}
-                      className={`py-3 px-4 text-lg font-semibold ${team1Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
-                      title={!loadingDetails && team1.manager_id ? "點擊查看球員詳細數據" : ""}
+                      className={`py-3 px-4 text-lg font-semibold ${team1Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team1.manager_id && !loadingMissedData ? "cursor-pointer hover:bg-gray-200" : ""}`}
+                      title={!loadingDetails && team1.manager_id && !loadingMissedData ? "點擊查看球員詳細數據" : ""}
                     >
                       {team1[type][key]}
                     </td>
@@ -595,14 +638,15 @@ export default function PostseasonTable() {
                     </td>
                     <td 
                       onClick={() => {
-                        if (!loadingDetails && team2.manager_id) {
+                        if (!loadingDetails && team2.manager_id && !loadingMissedData) {
                           setSelectedManagerId(team2.manager_id)
                           setSelectedTeamName(team2.team_name)
                           fetchPlayerDetails(team2.manager_id)
+                          fetchMissedData(team2.manager_id)
                         }
                       }}
-                      className={`py-3 px-4 text-lg font-semibold ${team2Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id ? "cursor-pointer hover:bg-gray-200" : ""}`}
-                      title={!loadingDetails && team2.manager_id ? "點擊查看球員詳細數據" : ""}
+                      className={`py-3 px-4 text-lg font-semibold ${team2Better ? 'bg-blue-100 font-bold' : ''} ${!loadingDetails && team2.manager_id && !loadingMissedData ? "cursor-pointer hover:bg-gray-200" : ""}`}
+                      title={!loadingDetails && team2.manager_id && !loadingMissedData ? "點擊查看球員詳細數據" : ""}
                     >
                       {team2[type][key]}
                     </td>
@@ -631,12 +675,12 @@ export default function PostseasonTable() {
               </h2>
               <button 
                 onClick={() => {
-                  if (!loadingDetails && !loadingTodayData) {
+                  if (!loadingDetails && !loadingTodayData && !loadingMissedData) {
                     setPlayerDetailsModalOpen(false)
                   }
                 }}
-                disabled={loadingDetails || loadingTodayData}
-                className={`text-gray-700 hover:text-gray-900 text-2xl ${(loadingDetails || loadingTodayData) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={loadingDetails || loadingTodayData || loadingMissedData}
+                className={`text-gray-700 hover:text-gray-900 text-2xl ${(loadingDetails || loadingTodayData || loadingMissedData) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 &times;
               </button>
@@ -916,12 +960,12 @@ export default function PostseasonTable() {
           <div className="bg-gray-100 p-4 border-t sticky bottom-0">
             <button 
               onClick={() => {
-                if (!loadingDetails && !loadingTodayData) {
+                if (!loadingDetails && !loadingTodayData && !loadingMissedData) {
                   setPlayerDetailsModalOpen(false)
                 }
               }}
-              disabled={loadingDetails || loadingTodayData}
-              className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${(loadingDetails || loadingTodayData) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loadingDetails || loadingTodayData || loadingMissedData}
+              className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${(loadingDetails || loadingTodayData || loadingMissedData) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               關閉
             </button>
@@ -998,7 +1042,7 @@ export default function PostseasonTable() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">
                   球員詳細數據
-                  {(loadingDetails || loadingTodayData) && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
+                  {(loadingDetails || loadingTodayData || loadingMissedData) && <span className="ml-3 text-sm text-blue-600 animate-pulse">資料更新中...</span>}
                 </h2>
                 
                 {/* 添加一個按鈕來打開模態框查看更詳細的數據 */}
@@ -1047,14 +1091,15 @@ export default function PostseasonTable() {
                       <button
                         key={index}
                         onClick={() => {
-                          if (!isDisabled && !loadingDetails && !loadingTodayData) {
+                          if (!isDisabled && !loadingDetails && !loadingTodayData && !loadingMissedData) {
                             setSelectedManagerId(team.manager_id)
                             setSelectedTeamName(teamName)
                             fetchPlayerDetails(team.manager_id)
                             fetchTodayPlayerDetails(team.manager_id)
+                            fetchMissedData(team.manager_id)
                           }
                         }}
-                        disabled={isDisabled || loadingDetails || loadingTodayData}
+                        disabled={isDisabled || loadingDetails || loadingTodayData || loadingMissedData}
                         className={`px-4 py-2 rounded-t-lg transition-colors ${
                           isActive 
                             ? 'bg-blue-500 text-white' 
@@ -1107,14 +1152,15 @@ export default function PostseasonTable() {
                       <button
                         key={index}
                         onClick={() => {
-                          if (!isDisabled && !loadingDetails && !loadingTodayData) {
+                          if (!isDisabled && !loadingDetails && !loadingTodayData && !loadingMissedData) {
                             setSelectedManagerId(team.manager_id)
                             setSelectedTeamName(teamName)
                             fetchPlayerDetails(team.manager_id)
                             fetchTodayPlayerDetails(team.manager_id)
+                            fetchMissedData(team.manager_id)
                           }
                         }}
-                        disabled={isDisabled || loadingDetails || loadingTodayData}
+                        disabled={isDisabled || loadingDetails || loadingTodayData || loadingMissedData}
                         className={`px-4 py-2 rounded-t-lg transition-colors ${
                           isActive 
                             ? 'bg-blue-500 text-white' 
@@ -1197,6 +1243,96 @@ export default function PostseasonTable() {
                           </div>
                         ) : (
                           <p className="text-gray-500">無投手資料</p>
+                        )}
+                      </div>
+
+                      {/* 錯失數據區塊 */}
+                      <div className="border-t-2 border-gray-300 pt-8 mt-8">
+                        <h3 className="text-lg font-bold text-red-600 mb-4">🔍 錯失數據分析</h3>
+                        <p className="text-sm text-gray-600 mb-4">以下為非先發球員的數據統計，顯示未被納入先發陣容的球員表現</p>
+                        
+                        {loadingMissedData ? (
+                          <div className="flex justify-center items-center p-8">
+                            <p className="text-blue-600">載入錯失數據中...</p>
+                          </div>
+                        ) : missedData ? (
+                          <div className="space-y-6">
+                            {/* 錯失打者數據 */}
+                            <div>
+                              <h4 className="text-md font-bold text-[#0155A0] mb-2">錯失打者數據</h4>
+                              <p className="text-sm text-gray-600 mb-2">非先發打者的累計表現（總計 {missedData.summary?.totalMissedBatters || 0} 位球員）</p>
+                              {missedData.missedBatterRows && missedData.missedBatterRows.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                  <table className="w-full border text-sm">
+                                    <thead className="bg-red-50">
+                                      <tr>
+                                        {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map(key => (
+                                          <th key={key} className="border px-2 py-2 text-center font-bold">{key}</th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {missedData.missedBatterRows.map((row, i) => (
+                                        <tr key={i} className={
+                                          row.Name === '**總計**' 
+                                            ? 'bg-yellow-100 font-bold border-t-2 border-yellow-400' 
+                                            : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                        }>
+                                          {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, j) => (
+                                            <td key={j} className={`border px-2 py-1 text-center whitespace-nowrap ${row.Name === '**總計**' ? 'font-bold' : ''}`}>
+                                              {row[key]}
+                                            </td>
+                                          ))}
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <p className="text-gray-500">無錯失打者數據</p>
+                              )}
+                            </div>
+
+                            {/* 錯失投手數據 */}
+                            <div>
+                              <h4 className="text-md font-bold text-[#0155A0] mb-2">錯失投手數據</h4>
+                              <p className="text-sm text-gray-600 mb-2">非先發投手的累計表現（總計 {missedData.summary?.totalMissedPitchers || 0} 位球員）</p>
+                              {missedData.missedPitcherRows && missedData.missedPitcherRows.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                  <table className="w-full border text-sm">
+                                    <thead className="bg-red-50">
+                                      <tr>
+                                        {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map(key => (
+                                          <th key={key} className="border px-2 py-2 text-center font-bold">{key}</th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {missedData.missedPitcherRows.map((row, i) => (
+                                        <tr key={i} className={
+                                          row.Name === '**總計**' 
+                                            ? 'bg-yellow-100 font-bold border-t-2 border-yellow-400' 
+                                            : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                        }>
+                                          {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, j) => (
+                                            <td key={j} className={`border px-2 py-1 text-center whitespace-nowrap ${row.Name === '**總計**' ? 'font-bold' : ''}`}>
+                                              {row[key]}
+                                            </td>
+                                          ))}
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <p className="text-gray-500">無錯失投手數據</p>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-center items-center p-8">
+                            <p className="text-gray-500">請選擇一個有效的隊伍查看錯失數據</p>
+                          </div>
                         )}
                       </div>
                     </div>

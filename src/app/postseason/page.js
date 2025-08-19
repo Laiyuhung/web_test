@@ -453,7 +453,7 @@ export default function PostseasonTable() {
                     : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
                 }`}
               >
-                Today's Stats
+                Today&apos;s Stats
               </button>
             </div>
             

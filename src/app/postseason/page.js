@@ -618,61 +618,124 @@ export default function PostseasonTable() {
               </button>
             </div>
             
-            {/* Data Type Tab 選擇器 (Matchup Total vs Today's Stats) */}
-            <div className="flex space-x-2 mb-4">
-              <button
-                onClick={() => setActiveTab('matchup')}
-                className={`px-4 py-2 rounded-t-lg transition-colors ${
-                  activeTab === 'matchup' 
-                    ? 'bg-green-500 text-white' 
-                    : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                }`}
-              >
-                Matchup Total
-              </button>
-              <button
-                onClick={() => setActiveTab('today')}
-                className={`px-4 py-2 rounded-t-lg transition-colors ${
-                  activeTab === 'today' 
-                    ? 'bg-green-500 text-white' 
-                    : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                }`}
-              >
-                Today&apos;s Stats
-              </button>
+            {/* 電腦版：橫排佈局 (Data Type Tab 置左，Team Tab 靠右) */}
+            <div className="hidden lg:flex lg:justify-between lg:items-center mb-4">
+              {/* Data Type Tab 選擇器 (置左) */}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setActiveTab('matchup')}
+                  className={`px-4 py-2 rounded-t-lg transition-colors ${
+                    activeTab === 'matchup' 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
+                >
+                  Matchup Total
+                </button>
+                <button
+                  onClick={() => setActiveTab('today')}
+                  className={`px-4 py-2 rounded-t-lg transition-colors ${
+                    activeTab === 'today' 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
+                >
+                  Today&apos;s Stats
+                </button>
+              </div>
+              
+              {/* Team Tab 選擇器 (靠右) */}
+              <div className="flex space-x-4">
+                {data.map((team, index) => {
+                  const teamName = team.team_name || 'TBD';
+                  const isDisabled = !team.team_name || !team.manager_id;
+                  const isActive = selectedManagerId === team.manager_id;
+                  
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        if (!isDisabled && !loadingDetails && !loadingTodayData) {
+                          setSelectedManagerId(team.manager_id)
+                          setSelectedTeamName(teamName)
+                          fetchPlayerDetails(team.manager_id)
+                          fetchTodayPlayerDetails(team.manager_id)
+                        }
+                      }}
+                      disabled={isDisabled || loadingDetails || loadingTodayData}
+                      className={`px-4 py-2 rounded-t-lg transition-colors ${
+                        isActive 
+                          ? 'bg-blue-500 text-white' 
+                          : isDisabled 
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                      }`}
+                    >
+                      {teamName}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             
-            {/* Team Tab 選擇器 */}
-            <div className="flex space-x-4">
-              {data.map((team, index) => {
-                const teamName = team.team_name || 'TBD';
-                const isDisabled = !team.team_name || !team.manager_id;
-                const isActive = selectedManagerId === team.manager_id;
-                
-                return (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      if (!isDisabled && !loadingDetails && !loadingTodayData) {
-                        setSelectedManagerId(team.manager_id)
-                        setSelectedTeamName(teamName)
-                        fetchPlayerDetails(team.manager_id)
-                        fetchTodayPlayerDetails(team.manager_id)
-                      }
-                    }}
-                    disabled={isDisabled || loadingDetails || loadingTodayData}
-                    className={`px-4 py-2 rounded-t-lg transition-colors ${
-                      isActive 
-                        ? 'bg-blue-500 text-white' 
-                        : isDisabled 
-                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                          : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                    }`}
-                  >
-                    {teamName}
-                  </button>
-                );
-              })}
+            {/* 手機版：直排佈局 */}
+            <div className="lg:hidden space-y-4 mb-4">
+              {/* Data Type Tab 選擇器 */}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setActiveTab('matchup')}
+                  className={`px-4 py-2 rounded-t-lg transition-colors ${
+                    activeTab === 'matchup' 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
+                >
+                  Matchup Total
+                </button>
+                <button
+                  onClick={() => setActiveTab('today')}
+                  className={`px-4 py-2 rounded-t-lg transition-colors ${
+                    activeTab === 'today' 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
+                >
+                  Today&apos;s Stats
+                </button>
+              </div>
+              
+              {/* Team Tab 選擇器 */}
+              <div className="flex space-x-4">
+                {data.map((team, index) => {
+                  const teamName = team.team_name || 'TBD';
+                  const isDisabled = !team.team_name || !team.manager_id;
+                  const isActive = selectedManagerId === team.manager_id;
+                  
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        if (!isDisabled && !loadingDetails && !loadingTodayData) {
+                          setSelectedManagerId(team.manager_id)
+                          setSelectedTeamName(teamName)
+                          fetchPlayerDetails(team.manager_id)
+                          fetchTodayPlayerDetails(team.manager_id)
+                        }
+                      }}
+                      disabled={isDisabled || loadingDetails || loadingTodayData}
+                      className={`px-4 py-2 rounded-t-lg transition-colors ${
+                        isActive 
+                          ? 'bg-blue-500 text-white' 
+                          : isDisabled 
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                      }`}
+                    >
+                      {teamName}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
           
@@ -923,61 +986,124 @@ export default function PostseasonTable() {
                 </button> */}
               </div>
               
-              {/* Data Type Tab 選擇器 (Matchup Total vs Today's Stats) */}
-              <div className="flex space-x-2 mb-4">
-                <button
-                  onClick={() => setActiveTab('matchup')}
-                  className={`px-4 py-2 rounded-t-lg transition-colors ${
-                    activeTab === 'matchup' 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                  }`}
-                >
-                  Matchup Totals
-                </button>
-                <button
-                  onClick={() => setActiveTab('today')}
-                  className={`px-4 py-2 rounded-t-lg transition-colors ${
-                    activeTab === 'today' 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                  }`}
-                >
-                  Today&apos;s Stats
-                </button>
+              {/* 電腦版：橫排佈局 (Data Type Tab 置左，Team Tab 靠右) */}
+              <div className="hidden lg:flex lg:justify-between lg:items-center mb-6">
+                {/* Data Type Tab 選擇器 (置左) */}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setActiveTab('matchup')}
+                    className={`px-4 py-2 rounded-t-lg transition-colors ${
+                      activeTab === 'matchup' 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    }`}
+                  >
+                    Matchup Totals
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('today')}
+                    className={`px-4 py-2 rounded-t-lg transition-colors ${
+                      activeTab === 'today' 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    }`}
+                  >
+                    Today&apos;s Stats
+                  </button>
+                </div>
+                
+                {/* Team Tab 選擇器 (靠右) */}
+                <div className="flex space-x-4">
+                  {data.map((team, index) => {
+                    const teamName = team.team_name || 'TBD';
+                    const isDisabled = !team.team_name || !team.manager_id;
+                    const isActive = selectedManagerId === team.manager_id;
+                    
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          if (!isDisabled && !loadingDetails && !loadingTodayData) {
+                            setSelectedManagerId(team.manager_id)
+                            setSelectedTeamName(teamName)
+                            fetchPlayerDetails(team.manager_id)
+                            fetchTodayPlayerDetails(team.manager_id)
+                          }
+                        }}
+                        disabled={isDisabled || loadingDetails || loadingTodayData}
+                        className={`px-4 py-2 rounded-t-lg transition-colors ${
+                          isActive 
+                            ? 'bg-blue-500 text-white' 
+                            : isDisabled 
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                              : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                        }`}
+                      >
+                        {teamName}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               
-              {/* Team Tab 選擇器 */}
-              <div className="flex space-x-4 mb-6">
-                {data.map((team, index) => {
-                  const teamName = team.team_name || 'TBD';
-                  const isDisabled = !team.team_name || !team.manager_id;
-                  const isActive = selectedManagerId === team.manager_id;
-                  
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        if (!isDisabled && !loadingDetails && !loadingTodayData) {
-                          setSelectedManagerId(team.manager_id)
-                          setSelectedTeamName(teamName)
-                          fetchPlayerDetails(team.manager_id)
-                          fetchTodayPlayerDetails(team.manager_id)
-                        }
-                      }}
-                      disabled={isDisabled || loadingDetails || loadingTodayData}
-                      className={`px-4 py-2 rounded-t-lg transition-colors ${
-                        isActive 
-                          ? 'bg-blue-500 text-white' 
-                          : isDisabled 
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                      }`}
-                    >
-                      {teamName}
-                    </button>
-                  );
-                })}
+              {/* 手機版：直排佈局 */}
+              <div className="lg:hidden space-y-4 mb-6">
+                {/* Data Type Tab 選擇器 */}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setActiveTab('matchup')}
+                    className={`px-4 py-2 rounded-t-lg transition-colors ${
+                      activeTab === 'matchup' 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    }`}
+                  >
+                    Matchup Totals
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('today')}
+                    className={`px-4 py-2 rounded-t-lg transition-colors ${
+                      activeTab === 'today' 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    }`}
+                  >
+                    Today&apos;s Stats
+                  </button>
+                </div>
+                
+                {/* Team Tab 選擇器 */}
+                <div className="flex space-x-4">
+                  {data.map((team, index) => {
+                    const teamName = team.team_name || 'TBD';
+                    const isDisabled = !team.team_name || !team.manager_id;
+                    const isActive = selectedManagerId === team.manager_id;
+                    
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          if (!isDisabled && !loadingDetails && !loadingTodayData) {
+                            setSelectedManagerId(team.manager_id)
+                            setSelectedTeamName(teamName)
+                            fetchPlayerDetails(team.manager_id)
+                            fetchTodayPlayerDetails(team.manager_id)
+                          }
+                        }}
+                        disabled={isDisabled || loadingDetails || loadingTodayData}
+                        className={`px-4 py-2 rounded-t-lg transition-colors ${
+                          isActive 
+                            ? 'bg-blue-500 text-white' 
+                            : isDisabled 
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                              : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                        }`}
+                      >
+                        {teamName}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               
               {/* 球員詳細數據內容 */}

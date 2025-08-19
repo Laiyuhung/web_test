@@ -123,7 +123,8 @@ export async function POST(request) {
       if (!dailyStarters[item.date]) {
         dailyStarters[item.date] = new Set()
       }
-      if (item.position !== 'Bench') {
+      // 排除板凳球員和非先發位置
+      if (!['BN', 'NA', 'NA(備用)', 'Bench'].includes(item.position)) {
         dailyStarters[item.date].add(item.player_name)
       }
     })
@@ -248,7 +249,7 @@ export async function POST(request) {
 
     // 加入總計行
     missedBatterRows.push({
-      Name: '**總計**',
+      Name: '總計',
       AB: batterTotalSum.AB,
       R: batterTotalSum.R,
       H: batterTotalSum.H,

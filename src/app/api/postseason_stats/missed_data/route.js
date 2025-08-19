@@ -303,7 +303,7 @@ export async function POST(request) {
 
     // 加入總計行
     missedPitcherRows.push({
-      Name: '**總計**',
+      Name: '總計',
       IP: `${Math.floor(totalIP)}.${pitcherTotalSum.OUT % 3}`,
       W: pitcherTotalSum.W,
       L: pitcherTotalSum.L,

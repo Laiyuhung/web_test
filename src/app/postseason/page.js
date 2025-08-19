@@ -330,7 +330,7 @@ export default function PostseasonTable() {
                   </thead>
                   <tbody>
                     {missedData.missedBatterRows.map((row, i) => {
-                      const isTotal = row.Name === '**總計**'
+                      const isTotal = row.Name === '總計'
                       return (
                         <tr key={i} className={isTotal ? 'bg-red-200 font-bold' : (i % 2 === 0 ? 'bg-white' : 'bg-red-25')}>
                           {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, j) => (
@@ -362,7 +362,7 @@ export default function PostseasonTable() {
                   </thead>
                   <tbody>
                     {missedData.missedPitcherRows.map((row, i) => {
-                      const isTotal = row.Name === '**總計**'
+                      const isTotal = row.Name === '總計'
                       return (
                         <tr key={i} className={isTotal ? 'bg-red-200 font-bold' : (i % 2 === 0 ? 'bg-white' : 'bg-red-25')}>
                           {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, j) => (
@@ -1398,12 +1398,12 @@ export default function PostseasonTable() {
                                     <tbody>
                                       {missedData.missedBatterRows.map((row, i) => (
                                         <tr key={i} className={
-                                          row.Name === '**總計**' 
+                                          row.Name === '總計' 
                                             ? 'bg-yellow-100 font-bold border-t-2 border-yellow-400' 
                                             : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                         }>
                                           {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, j) => (
-                                            <td key={j} className={`border px-2 py-1 text-center whitespace-nowrap ${row.Name === '**總計**' ? 'font-bold' : ''}`}>
+                                            <td key={j} className={`border px-2 py-1 text-center whitespace-nowrap ${row.Name === '總計' ? 'font-bold' : ''}`}>
                                               {row[key]}
                                             </td>
                                           ))}
@@ -1434,12 +1434,12 @@ export default function PostseasonTable() {
                                     <tbody>
                                       {missedData.missedPitcherRows.map((row, i) => (
                                         <tr key={i} className={
-                                          row.Name === '**總計**' 
+                                          row.Name === '總計' 
                                             ? 'bg-yellow-100 font-bold border-t-2 border-yellow-400' 
                                             : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                         }>
                                           {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, j) => (
-                                            <td key={j} className={`border px-2 py-1 text-center whitespace-nowrap ${row.Name === '**總計**' ? 'font-bold' : ''}`}>
+                                            <td key={j} className={`border px-2 py-1 text-center whitespace-nowrap ${row.Name === '總計' ? 'font-bold' : ''}`}>
                                               {row[key]}
                                             </td>
                                           ))}

@@ -1346,6 +1346,103 @@ export default function PostseasonTable() {
                           <p className="text-gray-500">無投手資料</p>
                         )}
                       </div>
+
+                      {/* 錯失數據分析 */}
+                      <div>
+                        <h3 className="text-lg font-bold text-[#0155A0] mb-2">🔍 錯失數據分析</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          以下顯示你的球員在該期間內沒有被排入先發陣容，但實際上有表現的數據。這些是你可能錯失的得分機會。
+                        </p>
+                        
+                        {loadingMissedData ? (
+                          <div className="flex justify-center items-center p-8">
+                            <p className="text-blue-600 animate-pulse">載入錯失數據中...</p>
+                          </div>
+                        ) : !selectedManagerId ? (
+                          <div className="text-center p-8">
+                            <p className="text-gray-500">請點選上方隊伍標籤查看錯失數據</p>
+                          </div>
+                        ) : !missedData ? (
+                          <div className="text-center p-8">
+                            <p className="text-gray-500">載入錯失數據中...</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            {/* 錯失打者數據 */}
+                            {missedData.missedBatterRows && missedData.missedBatterRows.length > 0 && (
+                              <div>
+                                <h4 className="text-md font-bold text-[#0155A0] mb-2">錯失的打者表現</h4>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full border text-sm">
+                                    <thead className="bg-gray-100">
+                                      <tr>
+                                        {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map(key => (
+                                          <th key={key} className="border px-2 py-2 text-center font-semibold">{key}</th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {missedData.missedBatterRows.map((row, i) => {
+                                        const isTotal = row.Name === '總計'
+                                        return (
+                                          <tr key={i} className={isTotal ? 'bg-yellow-100 font-bold' : (i % 2 === 0 ? 'bg-white' : 'bg-gray-50')}>
+                                            {['Name', 'AB', 'R', 'H', 'HR', 'RBI', 'SB', 'K', 'BB', 'GIDP', 'XBH', 'TB', 'AVG', 'OPS'].map((key, j) => (
+                                              <td key={j} className={`border px-2 py-1 text-center whitespace-nowrap ${isTotal ? 'font-bold' : ''}`}>
+                                                {row[key]}
+                                              </td>
+                                            ))}
+                                          </tr>
+                                        )
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 錯失投手數據 */}
+                            {missedData.missedPitcherRows && missedData.missedPitcherRows.length > 0 && (
+                              <div>
+                                <h4 className="text-md font-bold text-[#0155A0] mb-2">錯失的投手表現</h4>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full border text-sm">
+                                    <thead className="bg-gray-100">
+                                      <tr>
+                                        {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map(key => (
+                                          <th key={key} className="border px-2 py-2 text-center font-semibold">{key}</th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {missedData.missedPitcherRows.map((row, i) => {
+                                        const isTotal = row.Name === '總計'
+                                        return (
+                                          <tr key={i} className={isTotal ? 'bg-yellow-100 font-bold' : (i % 2 === 0 ? 'bg-white' : 'bg-gray-50')}>
+                                            {['Name', 'IP', 'W', 'L', 'HLD', 'SV', 'H', 'ER', 'K', 'BB', 'QS', 'OUT', 'ERA', 'WHIP'].map((key, j) => (
+                                              <td key={j} className={`border px-2 py-1 text-center whitespace-nowrap ${isTotal ? 'font-bold' : ''}`}>
+                                                {row[key]}
+                                              </td>
+                                            ))}
+                                          </tr>
+                                        )
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 如果沒有錯失數據 */}
+                            {(!missedData.missedBatterRows || missedData.missedBatterRows.length === 0) && 
+                             (!missedData.missedPitcherRows || missedData.missedPitcherRows.length === 0) && (
+                              <div className="text-center p-8">
+                                <p className="text-green-600 font-semibold">🎉 太棒了！你沒有錯失任何重要的球員表現！</p>
+                                <p className="text-sm text-gray-600 mt-2">所有有表現的球員都已被正確安排在先發陣容中。</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div className="flex justify-center items-center p-8">

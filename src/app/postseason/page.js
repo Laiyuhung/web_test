@@ -673,7 +673,7 @@ export default function PostseasonTable() {
           }}
           className="px-3 py-2 border rounded text-sm"
         >
-          <option value="" disabled>請選擇賽程</option>
+          <option value="" disabled>賽程</option>
           {matchups.map(m => (
             <option key={m.id} value={m.id}>
               {m.stage} {m.stage_game}

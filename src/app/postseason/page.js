@@ -29,9 +29,63 @@ export default function PostseasonTable() {
         const result = await res.json()
         setMatchups(result)
         
-        // 預設選擇第一個賽程
+        // 根據當前日期選擇對應的賽程
         if (result.length > 0) {
-          setSelectedMatchup(result[0])
+          const today = new Date()
+          today.setHours(0, 0, 0, 0) // 設定為當天的開始時間
+          
+          let selectedMatchup = null
+          
+          // 按照開始日期排序賽程
+          const sortedMatchups = result.sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
+          
+          for (let matchup of sortedMatchups) {
+            const startDate = new Date(matchup.start_date)
+            const endDate = new Date(matchup.end_date)
+            startDate.setHours(0, 0, 0, 0)
+            endDate.setHours(23, 59, 59, 999)
+            
+            // 如果當前日期在這個賽程期間內
+            if (today >= startDate && today <= endDate) {
+              selectedMatchup = matchup
+              break
+            }
+          }
+          
+          // 如果沒有找到對應的賽程，則根據日期選擇最適合的
+          if (!selectedMatchup) {
+            const firstMatchup = sortedMatchups[0]
+            const lastMatchup = sortedMatchups[sortedMatchups.length - 1]
+            
+            const firstStartDate = new Date(firstMatchup.start_date)
+            const lastEndDate = new Date(lastMatchup.end_date)
+            firstStartDate.setHours(0, 0, 0, 0)
+            lastEndDate.setHours(23, 59, 59, 999)
+            
+            if (today < firstStartDate) {
+              // 早於最早周次，選擇最早的
+              selectedMatchup = firstMatchup
+            } else if (today > lastEndDate) {
+              // 晚於最晚周次，選擇最晚的
+              selectedMatchup = lastMatchup
+            } else {
+              // 在範圍內但沒有找到確切匹配，選擇最接近的
+              let closestMatchup = firstMatchup
+              let minDistance = Math.abs(today - new Date(firstMatchup.start_date))
+              
+              for (let matchup of sortedMatchups) {
+                const matchupStartDate = new Date(matchup.start_date)
+                const distance = Math.abs(today - matchupStartDate)
+                if (distance < minDistance) {
+                  minDistance = distance
+                  closestMatchup = matchup
+                }
+              }
+              selectedMatchup = closestMatchup
+            }
+          }
+          
+          setSelectedMatchup(selectedMatchup)
         }
       } catch (err) {
         console.error('❌ 取得季後賽賽程失敗:', err)

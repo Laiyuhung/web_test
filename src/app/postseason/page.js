@@ -354,112 +354,97 @@ export default function PostseasonTable() {
       console.log('💻 渲染電腦版記分板 (橫向佈局)')
       return (
         <div className="hidden lg:block">
-          <div className="grid grid-cols-2 gap-8">
-            {/* 打者統計表 */}
-            <div>
-              <div className="bg-gray-300 py-2 px-4 text-center text-sm font-bold text-gray-700 mb-2">
-                Batters Total
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-center border">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
-                        {team1.team_name || 'TBD'}
-                      </th>
-                      <th className="py-2 px-2 text-sm font-bold text-gray-600 border">Stat</th>
-                      <th className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
-                        {team2.team_name || 'TBD'}
-                      </th>
+          <div className="overflow-x-auto">
+            <table className="w-full text-center border">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
+                    {team1.team_name || 'TBD'}
+                  </th>
+                  <th className="py-2 px-2 text-sm font-bold text-gray-600 border">Stat</th>
+                  <th className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
+                    {team2.team_name || 'TBD'}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Batters Section Header */}
+                <tr className="bg-gray-300">
+                  <td colSpan="3" className="py-2 px-4 text-sm font-bold text-gray-700">
+                    Batters Total
+                  </td>
+                </tr>
+                
+                {/* 打者統計 */}
+                {batterKeys.map((key, index) => {
+                  const team1Value = parseFloat(team1.batters[key]) || 0;
+                  const team2Value = parseFloat(team2.batters[key]) || 0;
+                  
+                  let team1Better, team2Better;
+                  if (key === 'K' || key === 'GIDP') {
+                    // 數值越低越好
+                    team1Better = team1Value < team2Value && team1Value !== team2Value;
+                    team2Better = team2Value < team1Value && team1Value !== team2Value;
+                  } else {
+                    // 數值越高越好
+                    team1Better = team1Value > team2Value && team1Value !== team2Value;
+                    team2Better = team2Value > team1Value && team1Value !== team2Value;
+                  }
+                  
+                  return (
+                    <tr key={`batters-${key}`} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                      <td className={`py-2 px-2 text-sm font-semibold border ${team1Better ? 'bg-blue-100 font-bold' : ''}`}>
+                        {team1.batters[key]}
+                      </td>
+                      <td className="py-2 px-2 text-xs font-bold text-gray-600 bg-gray-100 border">
+                        {key}
+                      </td>
+                      <td className={`py-2 px-2 text-sm font-semibold border ${team2Better ? 'bg-blue-100 font-bold' : ''}`}>
+                        {team2.batters[key]}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {batterKeys.map((key, index) => {
-                      const team1Value = parseFloat(team1.batters[key]) || 0;
-                      const team2Value = parseFloat(team2.batters[key]) || 0;
-                      
-                      let team1Better, team2Better;
-                      if (key === 'K' || key === 'GIDP') {
-                        // 數值越低越好
-                        team1Better = team1Value < team2Value && team1Value !== team2Value;
-                        team2Better = team2Value < team1Value && team1Value !== team2Value;
-                      } else {
-                        // 數值越高越好
-                        team1Better = team1Value > team2Value && team1Value !== team2Value;
-                        team2Better = team2Value > team1Value && team1Value !== team2Value;
-                      }
-                      
-                      return (
-                        <tr key={`batters-${key}`} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                          <td className={`py-2 px-2 text-sm font-semibold border ${team1Better ? 'bg-blue-100 font-bold' : ''}`}>
-                            {team1.batters[key]}
-                          </td>
-                          <td className="py-2 px-2 text-xs font-bold text-gray-600 bg-gray-100 border">
-                            {key}
-                          </td>
-                          <td className={`py-2 px-2 text-sm font-semibold border ${team2Better ? 'bg-blue-100 font-bold' : ''}`}>
-                            {team2.batters[key]}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* 投手統計表 */}
-            <div>
-              <div className="bg-gray-300 py-2 px-4 text-center text-sm font-bold text-gray-700 mb-2">
-                Pitchers Total
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-center border">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
-                        {team1.team_name || 'TBD'}
-                      </th>
-                      <th className="py-2 px-2 text-sm font-bold text-gray-600 border">Stat</th>
-                      <th className="py-2 px-2 text-sm font-bold text-[#0155A0] border">
-                        {team2.team_name || 'TBD'}
-                      </th>
+                  );
+                })}
+                
+                {/* Pitchers Section Header */}
+                <tr className="bg-gray-300">
+                  <td colSpan="3" className="py-2 px-4 text-sm font-bold text-gray-700">
+                    Pitchers Total
+                  </td>
+                </tr>
+                
+                {/* 投手統計 */}
+                {pitcherKeys.map((key, index) => {
+                  const team1Value = parseFloat(team1.pitchers[key]) || 0;
+                  const team2Value = parseFloat(team2.pitchers[key]) || 0;
+                  
+                  let team1Better, team2Better;
+                  if (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key)) {
+                    // 數值越低越好
+                    team1Better = team1Value < team2Value && team1Value !== team2Value;
+                    team2Better = team2Value < team1Value && team1Value !== team2Value;
+                  } else {
+                    // 數值越高越好
+                    team1Better = team1Value > team2Value && team1Value !== team2Value;
+                    team2Better = team2Value > team1Value && team1Value !== team2Value;
+                  }
+                  
+                  return (
+                    <tr key={`pitchers-${key}`} className={(index + batterKeys.length + 1) % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                      <td className={`py-2 px-2 text-sm font-semibold border ${team1Better ? 'bg-blue-100 font-bold' : ''}`}>
+                        {team1.pitchers[key]}
+                      </td>
+                      <td className="py-2 px-2 text-xs font-bold text-gray-600 bg-gray-100 border">
+                        {key}
+                      </td>
+                      <td className={`py-2 px-2 text-sm font-semibold border ${team2Better ? 'bg-blue-100 font-bold' : ''}`}>
+                        {team2.pitchers[key]}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {pitcherKeys.map((key, index) => {
-                      const team1Value = parseFloat(team1.pitchers[key]) || 0;
-                      const team2Value = parseFloat(team2.pitchers[key]) || 0;
-                      
-                      let team1Better, team2Better;
-                      if (['L', 'H', 'ER', 'BB', 'ERA', 'WHIP'].includes(key)) {
-                        // 數值越低越好
-                        team1Better = team1Value < team2Value && team1Value !== team2Value;
-                        team2Better = team2Value < team1Value && team1Value !== team2Value;
-                      } else {
-                        // 數值越高越好
-                        team1Better = team1Value > team2Value && team1Value !== team2Value;
-                        team2Better = team2Value > team1Value && team1Value !== team2Value;
-                      }
-                      
-                      return (
-                        <tr key={`pitchers-${key}`} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                          <td className={`py-2 px-2 text-sm font-semibold border ${team1Better ? 'bg-blue-100 font-bold' : ''}`}>
-                            {team1.pitchers[key]}
-                          </td>
-                          <td className="py-2 px-2 text-xs font-bold text-gray-600 bg-gray-100 border">
-                            {key}
-                          </td>
-                          <td className={`py-2 px-2 text-sm font-semibold border ${team2Better ? 'bg-blue-100 font-bold' : ''}`}>
-                            {team2.pitchers[key]}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       );

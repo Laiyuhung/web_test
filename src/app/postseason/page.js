@@ -883,9 +883,9 @@ export default function PostseasonTable() {
                   {/* 錯失數據分析 */}
                   <div>
                     <h3 className="text-lg font-bold text-[#0155A0] mb-2">🔍 錯失數據分析</h3>
-                    <p className="text-sm text-gray-600 mb-4">
+                    {/* <p className="text-sm text-gray-600 mb-4">
                       以下顯示你的球員在該期間內沒有被排入先發陣容，但實際上有表現的數據。這些是你可能錯失的得分機會。
-                    </p>
+                    </p> */}
                     
                     {loadingMissedData ? (
                       <div className="flex justify-center items-center p-8">
@@ -969,7 +969,7 @@ export default function PostseasonTable() {
                         {(!missedData.missedBatterRows || missedData.missedBatterRows.length === 0) && 
                          (!missedData.missedPitcherRows || missedData.missedPitcherRows.length === 0) && (
                           <div className="text-center p-8">
-                            <p className="text-green-600 font-semibold">🎉 太棒了！你沒有錯失任何重要的球員表現！</p>
+                            <p className="text-green-600 font-semibold">此玩家沒有錯失任何重要的球員表現</p>
                             <p className="text-sm text-gray-600 mt-2">所有有表現的球員都已被正確安排在先發陣容中。</p>
                           </div>
                         )}

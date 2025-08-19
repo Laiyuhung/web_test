@@ -212,10 +212,14 @@ export async function POST(request) {
     let batterTotalSum = { AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0, K: 0, BB: 0, GIDP: 0, XBH: 0, TB: 0 }
 
     Object.entries(missedBatterData).forEach(([name, stats]) => {
-      const AVG = stats.AB ? (stats.H / stats.AB).toFixed(3) : '.000'
-      const OBP = (stats.AB + stats.BB) ? ((stats.H + stats.BB) / (stats.AB + stats.BB)).toFixed(3) : '.000'
-      const SLG = stats.AB ? (stats.TB / stats.AB).toFixed(3) : '.000'
-      const OPS = (parseFloat(OBP) + parseFloat(SLG)).toFixed(3)
+      const AB = stats.AB || 0
+      const rawAVG = AB ? stats.H / AB : 0
+      const AVG = rawAVG.toFixed(3).replace(/^0\./, '.')
+      
+      const OBP = (AB + stats.BB) ? ((stats.H + stats.BB) / (AB + stats.BB)) : 0
+      const SLG = AB ? stats.TB / AB : 0
+      const rawOPS = OBP + SLG
+      const OPS = rawOPS.toFixed(3).replace(/^0\./, '.')
 
       missedBatterRows.push({
         Name: name,
@@ -241,11 +245,15 @@ export async function POST(request) {
     })
 
     // 計算總計的 AVG 和 OPS
-    const totalAVG = batterTotalSum.AB ? (batterTotalSum.H / batterTotalSum.AB).toFixed(3) : '.000'
-    const totalOBP = (batterTotalSum.AB + batterTotalSum.BB) ? 
-      ((batterTotalSum.H + batterTotalSum.BB) / (batterTotalSum.AB + batterTotalSum.BB)).toFixed(3) : '.000'
-    const totalSLG = batterTotalSum.AB ? (batterTotalSum.TB / batterTotalSum.AB).toFixed(3) : '.000'
-    const totalOPS = (parseFloat(totalOBP) + parseFloat(totalSLG)).toFixed(3)
+    const totalAB = batterTotalSum.AB || 0
+    const rawTotalAVG = totalAB ? batterTotalSum.H / totalAB : 0
+    const totalAVG = rawTotalAVG.toFixed(3).replace(/^0\./, '.')
+    
+    const totalOBP = (totalAB + batterTotalSum.BB) ? 
+      ((batterTotalSum.H + batterTotalSum.BB) / (totalAB + batterTotalSum.BB)) : 0
+    const totalSLG = totalAB ? batterTotalSum.TB / totalAB : 0
+    const rawTotalOPS = totalOBP + totalSLG
+    const totalOPS = rawTotalOPS.toFixed(3).replace(/^0\./, '.')
 
     // 加入總計行
     missedBatterRows.push({

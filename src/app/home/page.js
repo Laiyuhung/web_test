@@ -350,18 +350,18 @@ export default function HomePage() {
                 const lowerTeam = series.lower_seed_team_name || 'TBD';
                 const higherScore = series.higher_seed_score || 0;
                 const lowerScore = series.lower_seed_score || 0;
-                
-                // 判斷系列賽狀態
+                // 晉級規則：stage 1 需積分2獲勝，stage 2 只需1勝
+                let winScore = 2;
+                if (stage === '2' || stage === 2) winScore = 1;
+                const higherWon = higherScore >= winScore;
+                const lowerWon = lowerScore >= winScore;
+                const seriesCompleted = higherWon || lowerWon;
                 const now = new Date();
                 const startDate = series.start_date ? new Date(series.start_date) : null;
                 const hasStarted = startDate ? now >= startDate : true; // 如果沒有 start_date，預設已開始
-                
-                const higherWon = higherScore >= 2;
-                const lowerWon = lowerScore >= 2;
-                const seriesCompleted = higherWon || lowerWon;
                 const hasScore = higherScore > 0 || lowerScore > 0;
                 
-                // 狀態判定
+                // 判斷系列賽狀態
                 let status = '';
                 let statusColor = '';
                 if (!hasStarted) {
@@ -476,30 +476,15 @@ export default function HomePage() {
                   const lowerTeam = series.lower_seed_team_name || 'TBD';
                   const higherScore = series.higher_seed_score || 0;
                   const lowerScore = series.lower_seed_score || 0;
-                  
-                  // 判斷系列賽狀態
+                  // 晉級規則：stage 1 需積分2獲勝，stage 2 只需1勝
+                  let winScore = 2;
+                  if (stage === '2' || stage === 2) winScore = 1;
+                  const higherWon = higherScore >= winScore;
+                  const lowerWon = lowerScore >= winScore;
+                  const seriesCompleted = higherWon || lowerWon;
                   const now = new Date();
                   const startDate = series.start_date ? new Date(series.start_date) : null;
                   const hasStarted = startDate ? now >= startDate : true; // 如果沒有 start_date，預設已開始
-                  
-                  const higherWon = higherScore >= 2;
-                  const lowerWon = lowerScore >= 2;
-                  const seriesCompleted = higherWon || lowerWon;
-                  const hasScore = higherScore > 0 || lowerScore > 0;
-                  
-                  // 狀態判定
-                  let status = '';
-                  let statusColor = '';
-                  if (!hasStarted) {
-                    status = '未開始';
-                    statusColor = 'bg-gray-500';
-                  } else if (seriesCompleted) {
-                    status = '完賽';
-                    statusColor = 'bg-green-500';
-                  } else if (hasScore) {
-                    status = '進行中';
-                    statusColor = 'bg-orange-500';
-                  }
                   
                   return (
                     <div key={series.id || i} className="relative">
@@ -573,10 +558,12 @@ export default function HomePage() {
               const finalMatch = finalSeries[0]; // 假設最後一輪只有一場比賽
               const higherScore = finalMatch.higher_seed_score || 0;
               const lowerScore = finalMatch.lower_seed_score || 0;
-              
-              if (higherScore >= 2) {
+              // 冠軍判定依照最後一輪規則
+              let winScore = 2;
+              if (finalStage === 2) winScore = 1;
+              if (higherScore >= winScore) {
                 champion = finalMatch.higher_seed_team_name;
-              } else if (lowerScore >= 2) {
+              } else if (lowerScore >= winScore) {
                 champion = finalMatch.lower_seed_team_name;
               }
             }

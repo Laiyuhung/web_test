@@ -66,9 +66,11 @@ export async function GET() {
     if (name) registeredNames.add(name)
   })
   movements.forEach(row => {
-    const name = cleanName(row.name)
-    if (row.action === '新註冊') registeredNames.add(name)
-  })
+  const name = cleanName(row.name)
+  if (row.action === '新註冊' || row.action === '新入團') {
+    registeredNames.add(name)
+  }
+})
 
   // 4. 建立註銷名單
   const canceledNames = new Set()

@@ -15,7 +15,7 @@ export default function HomePage() {
   const [selectedWeek, setSelectedWeek] = useState('')
   const [currentWeek, setCurrentWeek] = useState('')
   const [standings, setStandings] = useState([])
-  const [standingTab, setStandingTab] = useState('secondHalf')
+  const [standingTab, setStandingTab] = useState('season')
   const [rewardTab, setRewardTab] = useState('summary')
   const [rewardSummary, setRewardSummary] = useState([])
   const [rewardList, setRewardList] = useState([])
@@ -629,7 +629,7 @@ export default function HomePage() {
         </CardContent>
       </Card>
 
-      <div className="mb-4 flex gap-2 flex-wrap">
+      {/* <div className="mb-4 flex gap-2 flex-wrap">
         <Button
           onClick={() => currentWeek && handleFilter(currentWeek)}
           variant={selectedWeek === currentWeek ? 'default' : 'outline'}
@@ -677,7 +677,7 @@ export default function HomePage() {
             </tbody>
           </table>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <h2 className="text-xl font-bold text-[#0155A0] mt-8 mb-2">LIVE STANDINGS</h2>
       <Card className="mt-6">

@@ -607,7 +607,7 @@ export default function HomePage() {
   return (
     <div className="p-6">
       {/* 季後賽賽程區塊 */}
-      <h2 className="text-lg font-bold text-[#0155A0] mt-8 mb-2">【季後賽賽程】</h2>
+      <h2 className="text-lg font-bold text-[#0155A0] mt-8 mb-2">POSTSEASON SCHEDULE</h2>
       <Card className="mb-6">
         <CardContent className="p-4">
           <Tabs value={postseasonTab} onValueChange={setPostseasonTab}>

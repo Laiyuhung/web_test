@@ -34,7 +34,7 @@ export default function HomePage() {
           body: JSON.stringify({ mode: transactionMode }), // ✅ 改這裡！
         })
         const data = await res.json()
-        console.log('📦 交易資料', data) // 👈 這行加進來！
+        // console.log('📦 交易資料', data) // 👈 這行加進來！
         if (res.ok) setRecentTransactions(data)
       } catch (err) {
         console.error('❌ 載入交易紀錄失敗', err)
@@ -375,13 +375,6 @@ export default function HomePage() {
                   statusColor = 'bg-orange-500';
                 }
 
-                // 計算 bracket 下方進行中比數
-                const ongoingCount = postseasonSchedule.filter(sch => {
-                  const start = new Date(sch.start_date);
-                  const end = new Date(sch.end_date + 'T23:59:59');
-                  return now >= start && now <= end && sch.stage === series.stage;
-                }).length;
-
                 return (
                   <div key={series.id || i} className="border rounded-lg overflow-hidden relative">
                     {/* 狀態標籤與 Stage 同排 */}
@@ -410,10 +403,7 @@ export default function HomePage() {
                       <span className="text-sm truncate flex-1">{higherTeam}</span>
                       <span className="text-lg font-bold ml-3 w-8 text-center">{higherScore}</span>
                     </div>
-                    {/* bracket下方顯示進行中比數 */}
-                    <div className="text-xs text-blue-700 text-center py-1">
-                      {ongoingCount > 0 && `目前進行中比數：${ongoingCount}`}
-                    </div>
+                    
                     {/* 晉級箭頭 */}
                     {stageIndex < stages.length - 1 && seriesCompleted && (
                       <div className="text-center py-2 bg-blue-50">

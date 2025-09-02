@@ -485,7 +485,22 @@ export default function HomePage() {
                   const now = new Date();
                   const startDate = series.start_date ? new Date(series.start_date) : null;
                   const hasStarted = startDate ? now >= startDate : true; // 如果沒有 start_date，預設已開始
-                  
+
+                  // 補上系列賽狀態判斷
+                  const hasScore = higherScore > 0 || lowerScore > 0;
+                  let status = '';
+                  let statusColor = '';
+                  if (!hasStarted) {
+                    status = '未開始';
+                    statusColor = 'bg-gray-500';
+                  } else if (seriesCompleted) {
+                    status = '完賽';
+                    statusColor = 'bg-green-500';
+                  } else if (hasScore) {
+                    status = '進行中';
+                    statusColor = 'bg-orange-500';
+                  }
+
                   return (
                     <div key={series.id || i} className="relative">
                       {/* 連接線 - 右側輸出 */}

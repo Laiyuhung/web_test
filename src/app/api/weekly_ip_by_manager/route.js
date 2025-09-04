@@ -41,7 +41,7 @@ export async function POST(req) {
       if (postError) throw postError
       console.log('📚 postseason 賽程週數:', postRows.length)
 
-      currentWeek = postRows.find(row => todayStr >= row.start && todayStr <= row.end)
+      currentWeek = postRows.find(row => todayStr >= row.start_date && todayStr <= row.end_date)
     }
 
     if (!currentWeek) {
@@ -49,7 +49,9 @@ export async function POST(req) {
       return NextResponse.json({ IP: '0.0', message: '找不到本週或季後賽區間' })
     }
 
-    const { start, end } = currentWeek
+    // ✅ 統一處理兩種欄位來源
+    const start = currentWeek.start || currentWeek.start_date
+    const end = currentWeek.end || currentWeek.end_date
     console.log(`✅ 週期範圍：${start} ~ ${end}`)
 
     // 撈出這個 manager 當週的先發名單

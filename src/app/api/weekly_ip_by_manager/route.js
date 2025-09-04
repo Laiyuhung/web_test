@@ -20,19 +20,28 @@ export async function POST(req) {
     const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
     const todayStr = taiwanNow.toISOString().slice(0, 10)
 
-    // 查詢 schedule_date 表，找出今天所在週
-    const { data: scheduleRows, error: scheduleError } = await supabase
+    // 🟢 查 regular season schedule
+    const { data: regularRows, error: regularError } = await supabase
       .from('schedule_date')
       .select('start, end')
 
-    if (scheduleError) throw scheduleError
+    if (regularError) throw regularError
 
-    const currentWeek = scheduleRows.find(row => {
-      return todayStr >= row.start && todayStr <= row.end
-    })
+    let currentWeek = regularRows.find(row => todayStr >= row.start && todayStr <= row.end)
+
+    // 🔁 若 regular 沒有，再查 postseason schedule
+    if (!currentWeek) {
+      const { data: postRows, error: postError } = await supabase
+        .from('fantasy_postseason_schedule')
+        .select('start, end')
+
+      if (postError) throw postError
+
+      currentWeek = postRows.find(row => todayStr >= row.start && todayStr <= row.end)
+    }
 
     if (!currentWeek) {
-      return NextResponse.json({ IP: '0.0', message: '找不到本週區間' })
+      return NextResponse.json({ IP: '0.0', message: '找不到本週或季後賽區間' })
     }
 
     const { start, end } = currentWeek

@@ -33,7 +33,7 @@ export async function POST(req) {
     if (!currentWeek) {
       const { data: postRows, error: postError } = await supabase
         .from('fantasy_postseason_schedule')
-        .select('start, end')
+        .select('start_date, end_date')
 
       if (postError) throw postError
 

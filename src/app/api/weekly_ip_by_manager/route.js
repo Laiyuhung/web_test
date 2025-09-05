@@ -15,27 +15,44 @@ export async function POST(req) {
       return NextResponse.json({ error: '缺少 manager_id' }, { status: 400 })
     }
 
-    // 取得今天（台灣時間）
+    // 📅 今天（台灣時間）
     const now = new Date()
     const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000)
     const todayStr = taiwanNow.toISOString().slice(0, 10)
+    console.log('📅 今天（台灣）:', todayStr)
 
-    // 查詢 schedule_date 表，找出今天所在週
-    const { data: scheduleRows, error: scheduleError } = await supabase
+    // 🟢 查 regular season schedule
+    const { data: regularRows, error: regularError } = await supabase
       .from('schedule_date')
       .select('start, end')
 
-    if (scheduleError) throw scheduleError
+    if (regularError) throw regularError
+    console.log('📚 regular 賽程週數:', regularRows.length)
 
-    const currentWeek = scheduleRows.find(row => {
-      return todayStr >= row.start && todayStr <= row.end
-    })
+    let currentWeek = regularRows.find(row => todayStr >= row.start && todayStr <= row.end)
 
+    // 🔁 若 regular 沒有，再查 postseason schedule
     if (!currentWeek) {
-      return NextResponse.json({ IP: '0.0', message: '找不到本週區間' })
+      console.log('⚠️ 找不到 regular 賽程週，改查季後賽')
+      const { data: postRows, error: postError } = await supabase
+        .from('fantasy_postseason_schedule')
+        .select('start_date, end_date')
+
+      if (postError) throw postError
+      console.log('📚 postseason 賽程週數:', postRows.length)
+
+      currentWeek = postRows.find(row => todayStr >= row.start_date && todayStr <= row.end_date)
     }
 
-    const { start, end } = currentWeek
+    if (!currentWeek) {
+      console.log('❌ 找不到任何週期（regular + postseason）')
+      return NextResponse.json({ IP: '0.0', message: '找不到本週或季後賽區間' })
+    }
+
+    // ✅ 統一處理兩種欄位來源
+    const start = currentWeek.start || currentWeek.start_date
+    const end = currentWeek.end || currentWeek.end_date
+    console.log(`✅ 週期範圍：${start} ~ ${end}`)
 
     // 撈出這個 manager 當週的先發名單
     const { data: assigned } = await supabase
@@ -45,7 +62,10 @@ export async function POST(req) {
       .gte('date', start)
       .lte('date', end)
 
+    console.log('📌 assigned 總筆數:', assigned?.length ?? 0)
+
     const starters = assigned.filter(row => !['BN', 'NA', 'NA(備用)'].includes(row.position))
+    console.log('✅ 符合先發條件人數:', starters.length)
 
     const playerDatesMap = {}
     for (const row of starters) {
@@ -54,6 +74,7 @@ export async function POST(req) {
     }
 
     const playerNames = Object.keys(playerDatesMap)
+    console.log('👤 有上場紀錄的投手名單:', playerNames)
 
     if (playerNames.length === 0) {
       return NextResponse.json({ IP: '0.0' })
@@ -67,6 +88,8 @@ export async function POST(req) {
       .lte('game_date', end)
       .eq('is_major', true)
 
+    console.log('📊 撈到的投手場次數量:', pitchingStats?.length ?? 0)
+
     let totalOuts = 0
 
     for (const row of pitchingStats) {
@@ -74,11 +97,15 @@ export async function POST(req) {
       if (dates?.has(row.game_date)) {
         const ip = row.innings_pitched || 0
         const outs = Math.floor(ip) * 3 + Math.round((ip % 1) * 10)
+        console.log(`🧾 ${row.name} @ ${row.game_date}：IP = ${ip}, 換算出局數 = ${outs}`)
         totalOuts += outs
       }
     }
 
-    return NextResponse.json({ IP: formatIP(totalOuts) })
+    const finalIP = formatIP(totalOuts)
+    console.log('🧮 最後計算出 IP:', finalIP)
+
+    return NextResponse.json({ IP: finalIP })
 
   } catch (err) {
     console.error('❌ weekly_ip_by_manager 錯誤:', err)

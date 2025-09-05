@@ -117,16 +117,22 @@ export async function POST(request) {
     const allPlayerNames = [...new Set(allPlayerData.map(p => p.player_name))]
     console.log(`👥 該經理人總共有 ${allPlayerNames.length} 位球員`)
 
-    // 3. 建立每日先發球員對照表
+    // 3. 建立每日先發球員對照表與每日在隊球員對照表
     const dailyStarters = {}
+    const dailyRoster = {}
     assignedData.forEach(item => {
       if (!dailyStarters[item.date]) {
         dailyStarters[item.date] = new Set()
+      }
+      if (!dailyRoster[item.date]) {
+        dailyRoster[item.date] = new Set()
       }
       // 排除板凳球員和非先發位置
       if (!['BN', 'NA', 'NA(備用)', 'Bench'].includes(item.position)) {
         dailyStarters[item.date].add(item.player_name)
       }
+      // 只要有紀錄就算在隊上
+      dailyRoster[item.date].add(item.player_name)
     })
 
     // 4. 取得所有球員的打擊和投球數據
@@ -136,7 +142,7 @@ export async function POST(request) {
     console.log(`🏏 取得 ${battingData.length} 筆打擊數據`)
     console.log(`⚾ 取得 ${pitchingData.length} 筆投球數據`)
 
-    // 5. 分析錯失數據（非先發球員的表現）
+    // 5. 分析錯失數據（非先發且該日已在隊上的球員表現）
     const missedBatterData = {}
     const missedPitcherData = {}
 
@@ -144,18 +150,17 @@ export async function POST(request) {
     battingData.forEach(record => {
       const gameDate = record.game_date
       const playerName = record.name
-      
+      // 檢查該球員該日是否在隊上
+      const isInRoster = dailyRoster[gameDate]?.has(playerName) || false
       // 檢查該球員該日是否為先發
       const isStarter = dailyStarters[gameDate]?.has(playerName) || false
-      
-      if (!isStarter) {
+      if (isInRoster && !isStarter) {
         // 這是錯失數據
         if (!missedBatterData[playerName]) {
           missedBatterData[playerName] = {
             AB: 0, R: 0, H: 0, HR: 0, RBI: 0, SB: 0, K: 0, BB: 0, GIDP: 0, XBH: 0, TB: 0
           }
         }
-        
         missedBatterData[playerName].AB += record.at_bats || 0
         missedBatterData[playerName].R += record.runs || 0
         missedBatterData[playerName].H += record.hits || 0
@@ -165,7 +170,6 @@ export async function POST(request) {
         missedBatterData[playerName].K += record.strikeouts || 0
         missedBatterData[playerName].BB += record.walks || 0
         missedBatterData[playerName].GIDP += record.double_plays || 0
-        
         const doubles = record.doubles || 0
         const triples = record.triples || 0
         const hr = record.home_runs || 0
@@ -179,11 +183,11 @@ export async function POST(request) {
     pitchingData.forEach(record => {
       const gameDate = record.game_date
       const playerName = record.name
-      
+      // 檢查該球員該日是否在隊上
+      const isInRoster = dailyRoster[gameDate]?.has(playerName) || false
       // 檢查該球員該日是否為先發
       const isStarter = dailyStarters[gameDate]?.has(playerName) || false
-      
-      if (!isStarter) {
+      if (isInRoster && !isStarter) {
         // 這是錯失數據
         if (!missedPitcherData[playerName]) {
           missedPitcherData[playerName] = {
@@ -192,14 +196,11 @@ export async function POST(request) {
         }
         const ip = record.innings_pitched || 0
         const outs = Math.floor(ip) * 3 + Math.round((ip % 1) * 10)
-        
-        
         missedPitcherData[playerName].OUT += outs
         missedPitcherData[playerName].H += record.hits_allowed || 0
         missedPitcherData[playerName].ER += record.earned_runs || 0
         missedPitcherData[playerName].K += record.strikeouts || 0
         missedPitcherData[playerName].BB += record.walks || 0
-        
         if (record.record === 'W') missedPitcherData[playerName].W += 1
         if (record.record === 'L') missedPitcherData[playerName].L += 1
         if (record.record === 'H') missedPitcherData[playerName].HLD += 1

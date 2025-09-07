@@ -19,6 +19,8 @@ export default function CpblPage() {
   if (error) return <div>發生錯誤: {error.message}</div>;
 
   // 顯示打擊成績表格
+
+  // 支援 puppeteer-cpbl.js 產生的 JSON 格式（battersData 為陣列，每隊一個陣列）
   const renderBattersTable = (batters, idx) => {
     if (!batters || batters.length === 0) return null;
     // 取所有欄位名稱（表頭）
@@ -26,7 +28,7 @@ export default function CpblPage() {
     return (
       <div key={idx} style={{ marginBottom: 32 }}>
         <h2>打擊成績 {idx === 0 ? '主隊' : '客隊'}</h2>
-        <table border="1" cellPadding={4} style={{ borderCollapse: 'collapse', minWidth: 600 }}>
+        <table border="1" cellPadding={4} style={{ borderCollapse: 'collapse', minWidth: 900 }}>
           <thead>
             <tr>
               {columns.map(col => <th key={col}>{col}</th>)}
@@ -47,7 +49,7 @@ export default function CpblPage() {
   return (
     <main style={{ padding: 24 }}>
       <h1>CPBL 比賽資訊</h1>
-      {data?.battersData?.map?.((batters, idx) => renderBattersTable(batters, idx))}
+  {data?.battersData?.map?.((batters, idx) => renderBattersTable(batters, idx))}
     </main>
   );
 }

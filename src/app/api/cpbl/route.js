@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import cheerio from 'cheerio';
+const cheerio = require('cheerio');
 
 export async function GET() {
   const res = await fetch('https://www.cpbl.com.tw/box/index?year=2025&kindCode=A&gameSno=313', {

@@ -1111,23 +1111,24 @@ export default function PostseasonTable() {
         <div className="space-y-8">
           {/* 球隊名稱和總分在最上面 */}
           <div className="text-center">
-            <div className="flex justify-center items-center mb-6">
-              <div className="text-center flex-shrink-0">
-                <div className="text-lg md:text-2xl font-bold text-[#0155A0] whitespace-nowrap text-ellipsis overflow-hidden max-w-[120px] md:max-w-none">
+            <div className="flex flex-wrap justify-center items-stretch mb-6 gap-2 w-full max-w-full">
+              {/* Team 1 Name */}
+              <div className="flex-1 min-w-0 flex flex-col items-center justify-center">
+                <div className="text-lg md:text-2xl font-bold text-[#0155A0] break-words text-center leading-tight max-w-[90px] md:max-w-[160px]">
                   {data[0].team_name || 'TBD'}
                 </div>
               </div>
-              <div className="mx-4 md:mx-8 flex items-center justify-center">
-                <div className="text-4xl font-bold text-right" style={{minWidth: '60px'}}>
-                  {data[0].fantasyPoints?.Total || '0'}
-                </div>
-                <div className="text-2xl font-bold text-gray-400 mx-3">/</div>
-                <div className="text-4xl font-bold text-left" style={{minWidth: '60px'}}>
-                  {data[1].fantasyPoints?.Total || '0'}
+              {/* Score Block */}
+              <div className="flex flex-col items-center justify-center px-2 min-w-[90px] max-w-[120px] flex-shrink-0">
+                <div className="flex items-center justify-center w-full">
+                  <div className="text-4xl font-bold text-center w-[60px]">{data[0].fantasyPoints?.Total || '0'}</div>
+                  <div className="text-2xl font-bold text-gray-400 mx-1">/</div>
+                  <div className="text-4xl font-bold text-center w-[60px]">{data[1].fantasyPoints?.Total || '0'}</div>
                 </div>
               </div>
-              <div className="text-center flex-shrink-0">
-                <div className="text-lg md:text-2xl font-bold text-[#0155A0] whitespace-nowrap text-ellipsis overflow-hidden max-w-[120px] md:max-w-none">
+              {/* Team 2 Name */}
+              <div className="flex-1 min-w-0 flex flex-col items-center justify-center">
+                <div className="text-lg md:text-2xl font-bold text-[#0155A0] break-words text-center leading-tight max-w-[90px] md:max-w-[160px]">
                   {data[1].team_name || 'TBD'}
                 </div>
               </div>
